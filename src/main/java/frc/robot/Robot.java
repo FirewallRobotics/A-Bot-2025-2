@@ -4,13 +4,15 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.pathfinding.Pathfinding;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.FlexAutoSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
@@ -35,6 +37,7 @@ public class Robot extends TimedRobot
   {
     instance = this;
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    //flex auto will find the first coral it sees, score it on the reef and repeat until disabled
     m_chooser.addOption("Vision Flex Auto", "vis");
     SmartDashboard.putData("Auto choices", m_chooser);
   }
@@ -107,7 +110,8 @@ public class Robot extends TimedRobot
     System.out.println("Auto selected: " + m_autoSelected);
 
     if(m_autoSelected.equals("vis")){
-      m_autonomousCommand = VisionSubsystem.FlexAuto();
+      Pathfinding.setPathfinder(new FlexAutoSubsystem());
+      // TODO: Make auto setup path and run
     }
     else{
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
