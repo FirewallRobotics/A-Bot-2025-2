@@ -39,7 +39,6 @@ import frc.robot.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -310,7 +309,6 @@ public class SwerveSubsystem extends SubsystemBase
   public Command driveWithSetpointGenerator(DoubleSupplier translationX, DoubleSupplier translationY,
                                             DoubleSupplier rotationX)
   {
-    SwerveController swerveController = swerveDrive.getSwerveController();
     try
     {
       return driveWithSetpointGenerator(() -> {
