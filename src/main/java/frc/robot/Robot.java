@@ -4,8 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -110,8 +111,8 @@ public class Robot extends TimedRobot
     System.out.println("Auto selected: " + m_autoSelected);
 
     if(m_autoSelected.equals("vis")){
+      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
       Pathfinding.setPathfinder(new FlexAutoSubsystem());
-      // TODO: Make auto setup path and run
     }
     else{
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -132,6 +133,11 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
+    //if pathfinding can get a new make one and run it
+    if(Pathfinding.isNewPathAvailable()){
+      PathPlannerPath path = Pathfinding.getCurrentPath(null, null);
+      m_autonomousCommand.andThen(AutoBuilder.followPath(path));
+    }
   }
 
   @Override

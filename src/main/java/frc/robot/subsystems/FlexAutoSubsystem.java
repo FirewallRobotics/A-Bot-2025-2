@@ -41,9 +41,14 @@ public class FlexAutoSubsystem implements Pathfinder {
   @Override
   public boolean isNewPathAvailable() {
     for(int i = 0; i < GoToPoints.size(); i++){
-        if(!GoToPoints.get(i).equals(GetCoralLocationInFieldSpace())){
-            return true;
+      Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+      if(temp.getX() == GoToPoints.get(GoToPoints.size()-1).getX()){
+        if(temp.getY() == GoToPoints.get(GoToPoints.size()-1).getY()){
+          if(!GoToPoints.get(i).equals(GetCoralLocationInFieldSpace()) || !GoToPoints.get(i).equals(getReefLocationInFieldSpace())){
+              return true;
+          }
         }
+      }
     }
     return false;
   }
@@ -85,6 +90,15 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
+    if(isNewPathAvailable()){
+      Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+      while(GoToPoints.size() != 0){
+        GoToPoints.remove(0);
+      }
+      setStartPosition(new Translation2d(temp.getX(), temp.getY()));
+      GoToPoints.add(GetCoralLocationInFieldSpace());
+      setGoalPosition(getReefLocationInFieldSpace());
+    }
     for(int i = 0; i < GoToPoints.size(); i++){
         if(i == 0){
             waypoints.add(new Waypoint(GoToPoints.get(i),GoToPoints.get(i),GoToPoints.get(i+1)));
@@ -102,13 +116,6 @@ public class FlexAutoSubsystem implements Pathfinder {
             new GoalEndState(0.0, Rotation2d.fromDegrees(-90)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
     );
     return path;
-  }
-
-  public void CreateWaypoints(){
-    Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-    setStartPosition(new Translation2d(temp.getX(), temp.getY()));
-    GoToPoints.add(GetCoralLocationInFieldSpace());
-    setGoalPosition(getReefLocationInFieldSpace());
   }
 
   /**
@@ -154,6 +161,6 @@ public class FlexAutoSubsystem implements Pathfinder {
   @Override
   public void setDynamicObstacles(
           List<Pair<Translation2d, Translation2d>> obs, Translation2d currentRobotPos) {
-    // TODO: Figure out how to do this
+    // non used
   }
 }
