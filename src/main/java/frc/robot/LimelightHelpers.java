@@ -47,45 +47,45 @@ public class LimelightHelpers {
         private double[] cameraPose_TargetSpace;
 
         @JsonProperty("t6r_fs")
-        private double[] robotPose_FieldSpace;
-
-        @JsonProperty("t6r_ts")
-        private  double[] robotPose_TargetSpace;
-
-        @JsonProperty("t6t_cs")
-        private double[] targetPose_CameraSpace;
-
-        @JsonProperty("t6t_rs")
-        private double[] targetPose_RobotSpace;
-
-        public Pose3d getCameraPose_TargetSpace()
-        {
-            return toPose3D(cameraPose_TargetSpace);
-        }
-        public Pose3d getRobotPose_FieldSpace()
-        {
-            return toPose3D(robotPose_FieldSpace);
-        }
-        public Pose3d getRobotPose_TargetSpace()
-        {
-            return toPose3D(robotPose_TargetSpace);
-        }
-        public Pose3d getTargetPose_CameraSpace()
-        {
-            return toPose3D(targetPose_CameraSpace);
-        }
-        public Pose3d getTargetPose_RobotSpace()
-        {
-            return toPose3D(targetPose_RobotSpace);
-        }
-
-        public Pose2d getCameraPose_TargetSpace2D()
-        {
-            return toPose2D(cameraPose_TargetSpace);
-        }
-        public Pose2d getRobotPose_FieldSpace2D()
-        {
-            return toPose2D(robotPose_FieldSpace);
+        private static double[] robotPose_FieldSpace;
+        
+                @JsonProperty("t6r_ts")
+                private  double[] robotPose_TargetSpace;
+        
+                @JsonProperty("t6t_cs")
+                private double[] targetPose_CameraSpace;
+        
+                @JsonProperty("t6t_rs")
+                private double[] targetPose_RobotSpace;
+        
+                public Pose3d getCameraPose_TargetSpace()
+                {
+                    return toPose3D(cameraPose_TargetSpace);
+                }
+                public Pose3d getRobotPose_FieldSpace()
+                {
+                    return toPose3D(robotPose_FieldSpace);
+                }
+                public Pose3d getRobotPose_TargetSpace()
+                {
+                    return toPose3D(robotPose_TargetSpace);
+                }
+                public Pose3d getTargetPose_CameraSpace()
+                {
+                    return toPose3D(targetPose_CameraSpace);
+                }
+                public Pose3d getTargetPose_RobotSpace()
+                {
+                    return toPose3D(targetPose_RobotSpace);
+                }
+        
+                public Pose2d getCameraPose_TargetSpace2D()
+                {
+                    return toPose2D(cameraPose_TargetSpace);
+                }
+                public static Pose2d getRobotPose_FieldSpace2D()
+                {
+                    return toPose2D(robotPose_FieldSpace);
         }
         public Pose2d getRobotPose_TargetSpace2D()
         {
