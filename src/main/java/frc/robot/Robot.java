@@ -36,6 +36,7 @@ public class Robot extends TimedRobot
 
   public Robot()
   {
+    Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     //flex auto will find the first coral it sees, score it on the reef and repeat until disabled
@@ -112,7 +113,6 @@ public class Robot extends TimedRobot
 
     if(m_autoSelected.equals("vis")){
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-      Pathfinding.setPathfinder(new FlexAutoSubsystem());
     }
     else{
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
