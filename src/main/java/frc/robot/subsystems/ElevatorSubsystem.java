@@ -1,19 +1,19 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  private final MotorController motor;
+  private final SparkFlex motor;
   private final Encoder encoder;
 
   // Elevator levels in encoder ticks
   private final int[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
-    motor = new PWMSparkMax(0); // Assign motor controller port
+    motor = new SparkFlex(0, MotorType.kBrushless); // Assign motor controller port
     encoder = new Encoder(0, 1); // Assign encoder ports
   }
 
