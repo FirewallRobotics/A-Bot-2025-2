@@ -1,13 +1,13 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private final SparkFlex motor;
-    private final Encoder encoder;
+  private final SparkFlex motor;
+  private final Encoder encoder;
 
   // Elevator levels in encoder ticks
   private final int[] levels = {0, 1000, 2000, 3000, 4000};
