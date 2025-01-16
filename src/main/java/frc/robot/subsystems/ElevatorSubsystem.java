@@ -13,7 +13,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final int[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
-    motor = new PWMSparkMax(0); // Assign motor controller port
+    motor = new SparkFlex(0, MotorType.kBrushless); // Assign motor controller port
     encoder = new Encoder(0, 1); // Assign encoder ports
   }
 
