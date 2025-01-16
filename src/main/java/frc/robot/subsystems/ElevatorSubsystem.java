@@ -9,22 +9,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkFlex motor;
     private final Encoder encoder;
 
-    // Elevator levels in encoder ticks
-    private final int[] levels = {0, 1000, 2000, 3000, 4000};
-
-    public ElevatorSubsystem() {
-        motor = new SparkFlex(0, MotorType.kBrushless); // Assign motor controller port
-        encoder = new Encoder(0, 1); // Assign encoder ports
-    }
-
-    public void setLevel(int level) {
-        if (level < 0 || level >= levels.length) {
-            System.out.println("Invalid level: " + level);
-            return;
-        }
-        moveToPosition(levels[level]);
-    }
-
   // Elevator levels in encoder ticks
   private final int[] levels = {0, 1000, 2000, 3000, 4000};
 
