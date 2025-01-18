@@ -44,7 +44,7 @@ public class FlexAutoSubsystem implements Pathfinder {
       Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
       if(temp.getX() == GoToPoints.get(GoToPoints.size()-1).getX()){
         if(temp.getY() == GoToPoints.get(GoToPoints.size()-1).getY()){
-          if(!GoToPoints.get(i).equals(GetCoralLocationInFieldSpace()) || !GoToPoints.get(i).equals(getReefLocationInFieldSpace())){
+          if(!GoToPoints.get(i).equals(GetAlgaeLocationInFieldSpace()) || !GoToPoints.get(i).equals(getReefLocationInFieldSpace())){
               return true;
           }
         }
@@ -96,7 +96,7 @@ public class FlexAutoSubsystem implements Pathfinder {
         GoToPoints.remove(0);
       }
       setStartPosition(new Translation2d(temp.getX(), temp.getY()));
-      GoToPoints.add(GetCoralLocationInFieldSpace());
+      GoToPoints.add(GetAlgaeLocationInFieldSpace());
       setGoalPosition(getReefLocationInFieldSpace());
     }
     for(int i = 0; i < GoToPoints.size(); i++){
