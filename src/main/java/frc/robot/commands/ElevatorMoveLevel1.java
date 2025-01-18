@@ -19,12 +19,12 @@ public class ElevatorMoveLevel1 extends Command {
   }
 
   @Override
-  public void initialize(){
+  public void initialize() {
     m_subsystem.setLevel(1);
   }
 
   @Override
-  public boolean isFinished(){
+  public boolean isFinished() {
     return m_subsystem.isFinished(1);
   }
 }
