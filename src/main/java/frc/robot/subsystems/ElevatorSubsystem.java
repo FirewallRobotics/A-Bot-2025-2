@@ -42,4 +42,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void stop() {
     motor.set(0);
   }
+
+  public boolean isFinished(int position){
+    if(levels[position] - encoder.get() == 0){
+      return true;
+    }else{
+      return false;
+    }
+  }
 }
