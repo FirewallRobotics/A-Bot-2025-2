@@ -31,7 +31,7 @@ public class FlexAutoSubsystem implements Pathfinder {
 
   private final SendableChooser<String> m_AutoObjChooser = new SendableChooser<>();
 
-  public FlexAutoSubsystem(){
+  public FlexAutoSubsystem() {
     m_AutoObjChooser.setDefaultOption("Coral", "coral");
     m_AutoObjChooser.addOption("Algae", "algae");
     SmartDashboard.putData("Auto  Obj choices", m_AutoObjChooser);
@@ -47,10 +47,11 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public boolean isNewPathAvailable() {
-    //new path is avaliable if:
-    //coral is in view and we dont have a coral
-    //we just picked up a coral
-    if(VisionSubsystem.getCoralLocationCamera() != null){ // TODO: Add coral sensor to this statement
+    // new path is avaliable if:
+    // coral is in view and we dont have a coral
+    // we just picked up a coral
+    if (VisionSubsystem.getCoralLocationCamera()
+        != null) { // TODO: Add coral sensor to this statement
       return true;
     }
     return false;
@@ -61,8 +62,7 @@ public class FlexAutoSubsystem implements Pathfinder {
     if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
       drivebase.driveCommand(null, null, scanspeed);
-    }
-    else{
+    } else {
       drivebase.driveCommand(null, null, null);
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
       double xActual = ReefLocation[0] + RobotFieldSpace.getX();
@@ -72,13 +72,12 @@ public class FlexAutoSubsystem implements Pathfinder {
     return null;
   }
 
-  public Translation2d getProcessorLocationInFieldSpace(){
+  public Translation2d getProcessorLocationInFieldSpace() {
     ProcLocation = VisionSubsystem.getProcessorLocation();
     if (ProcLocation[0] == -1 && ProcLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
       drivebase.driveCommand(null, null, scanspeed);
-    }
-    else{
+    } else {
       drivebase.driveCommand(null, null, null);
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
       double xActual = ProcLocation[0] + RobotFieldSpace.getX();
@@ -86,7 +85,6 @@ public class FlexAutoSubsystem implements Pathfinder {
       return new Translation2d(xActual, yActual);
     }
     return null;
-
   }
 
   /**
@@ -98,8 +96,8 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
-    if(m_AutoObjChooser.getSelected().equals("coral")){
-      if (isNewPathAvailable()) { //TODO: and we have a coral (use coral sensor)
+    if (m_AutoObjChooser.getSelected().equals("coral")) {
+      if (isNewPathAvailable()) { // TODO: and we have a coral (use coral sensor)
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
           GoToPoints.remove(0);
@@ -107,25 +105,26 @@ public class FlexAutoSubsystem implements Pathfinder {
         setStartPosition(new Translation2d(temp.getX(), temp.getY()));
         setGoalPosition(getReefLocationInFieldSpace());
       }
-      //TODO: when we don't have a coral (use coral sensor)
-      if(isNewPathAvailable() && false){
-        while(VisionSubsystem.getCoralLocationCamera()[0] > 0){
+      // TODO: when we don't have a coral (use coral sensor)
+      if (isNewPathAvailable() && false) {
+        while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           drivebase.driveCommand(null, null, rotspeed);
         }
-        while(VisionSubsystem.getCoralLocationCamera()[0] < 0){
+        while (VisionSubsystem.getCoralLocationCamera()[0] < 0) {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           drivebase.driveCommand(null, null, rotspeed);
         }
-        if(VisionSubsystem.getCoralLocationCamera()[0] == 0 && SmartDashboard.getBoolean("AutoCanMove", false)){
-          while(VisionSubsystem.getCoralLocationCamera() != null){
+        if (VisionSubsystem.getCoralLocationCamera()[0] == 0
+            && SmartDashboard.getBoolean("AutoCanMove", false)) {
+          while (VisionSubsystem.getCoralLocationCamera() != null) {
             DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
             drivebase.driveCommand(movespeed, null, null);
           }
         }
       }
-    }else{
-      if (isNewPathAvailable()) { //TODO: and we have an algae (use algae sensor)
+    } else {
+      if (isNewPathAvailable()) { // TODO: and we have an algae (use algae sensor)
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
           GoToPoints.remove(0);
@@ -133,18 +132,19 @@ public class FlexAutoSubsystem implements Pathfinder {
         setStartPosition(new Translation2d(temp.getX(), temp.getY()));
         setGoalPosition(getProcessorLocationInFieldSpace());
       }
-      //TODO: when we don't have a coral (use coral sensor)
-      if(isNewPathAvailable() && false){
-        while(VisionSubsystem.getCoralLocationCamera()[0] > 0){
+      // TODO: when we don't have a coral (use coral sensor)
+      if (isNewPathAvailable() && false) {
+        while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           drivebase.driveCommand(null, null, rotspeed);
         }
-        while(VisionSubsystem.getCoralLocationCamera()[0] < 0){
+        while (VisionSubsystem.getCoralLocationCamera()[0] < 0) {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           drivebase.driveCommand(null, null, rotspeed);
         }
-        if(VisionSubsystem.getCoralLocationCamera()[0] == 0 && SmartDashboard.getBoolean("AutoCanMove", false)){
-          while(VisionSubsystem.getCoralLocationCamera() != null){
+        if (VisionSubsystem.getCoralLocationCamera()[0] == 0
+            && SmartDashboard.getBoolean("AutoCanMove", false)) {
+          while (VisionSubsystem.getCoralLocationCamera() != null) {
             DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
             drivebase.driveCommand(movespeed, null, null);
           }

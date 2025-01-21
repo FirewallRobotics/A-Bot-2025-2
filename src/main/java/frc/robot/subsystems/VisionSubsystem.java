@@ -7,7 +7,6 @@ import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
-import frc.robot.LimelightHelpers.RawDetection;
 import frc.robot.LimelightHelpers.RawFiducial;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -57,9 +56,9 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
-      for(int i = 0; i < results.targets_Detector.length; i++){
+      for (int i = 0; i < results.targets_Detector.length; i++) {
         LimelightTarget_Detector detection = results.targets_Detector[i];
-        if(detection.className.equals("coral")){
+        if (detection.className.equals("coral")) {
           return new double[] {detection.tx, detection.ty};
         }
       }
@@ -71,9 +70,9 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
-      for(int i = 0; i < results.targets_Detector.length; i++){
+      for (int i = 0; i < results.targets_Detector.length; i++) {
         LimelightTarget_Detector detection = results.targets_Detector[i];
-        if(detection.className.equals("algae")){
+        if (detection.className.equals("algae")) {
           return new double[] {detection.tx, detection.ty};
         }
       }
@@ -112,7 +111,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public static double[] getProcessorLocation(){
+  public static double[] getProcessorLocation() {
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
