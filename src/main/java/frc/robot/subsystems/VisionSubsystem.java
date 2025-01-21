@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 
@@ -12,13 +13,12 @@ public class VisionSubsystem extends SubsystemBase {
 
   // pipeline layout:
   // 0 - april tags
-  // 1 - Coral / white mask
-  // 2 - Algae / Circlular Green mask
+  // 1 - Neural network coral/algae
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
-  private int[] coralTags = {1, 2, 12, 13};
-  private int[] processorTags = {3, 16};
-  private int[] bargeTags = {4, 5, 14, 15};
+  private static int[] coralTags = {1, 2, 12, 13};
+  private static int[] processorTags = {3, 16};
+  private static int[] bargeTags = {4, 5, 14, 15};
 
   @Override
   public void periodic() {
@@ -52,14 +52,32 @@ public class VisionSubsystem extends SubsystemBase {
     return tag.getRobotPose_FieldSpace();
   }
 
-  public static double[] getCoralLocation() {
+  public static double[] getCoralLocationCamera() {
     LimelightHelpers.setPipelineIndex("", 1);
-    return LimelightHelpers.getTargetPose_RobotSpace("");
+    LimelightResults results = LimelightHelpers.getLatestResults("");
+    if (results.targets_Detector.length > 0) {
+      for (int i = 0; i < results.targets_Detector.length; i++) {
+        LimelightTarget_Detector detection = results.targets_Detector[i];
+        if (detection.className.equals("coral")) {
+          return new double[] {detection.tx, detection.ty};
+        }
+      }
+    }
+    return null;
   }
 
-  public static double[] getAlgaeLocation() {
-    LimelightHelpers.setPipelineIndex("", 2);
-    return LimelightHelpers.getTargetPose_RobotSpace("");
+  public static double[] getAlgaeLocationCamera() {
+    LimelightHelpers.setPipelineIndex("", 1);
+    LimelightResults results = LimelightHelpers.getLatestResults("");
+    if (results.targets_Detector.length > 0) {
+      for (int i = 0; i < results.targets_Detector.length; i++) {
+        LimelightTarget_Detector detection = results.targets_Detector[i];
+        if (detection.className.equals("algae")) {
+          return new double[] {detection.tx, detection.ty};
+        }
+      }
+    }
+    return null;
   }
 
   public static double[] getReefLocation() {
@@ -75,6 +93,37 @@ public class VisionSubsystem extends SubsystemBase {
       // find out if any of the tags we have are those of the reef
       for (int reeftag : reefTags) {
         if (tag.fiducialID == reeftag) {
+          // if we have found a reef tag break out
+          tagPoseRobot = tag.getTargetPose_RobotSpace();
+          break;
+        }
+      }
+      if (tagPoseRobot != null) {
+        // continue to break out if we have a reef tag
+        break;
+      }
+    }
+    // if the view of the limelight has no reef tags in return -1, -1 so that auto can scan
+    if (tagPoseRobot != null) {
+      return new double[] {tagPoseRobot.getX(), tagPoseRobot.getY()};
+    } else {
+      return new double[] {-1.0, -1.0};
+    }
+  }
+
+  public static double[] getProcessorLocation() {
+    LimelightHelpers.setPipelineIndex("", 0);
+    LimelightResults results = LimelightHelpers.getLatestResults("");
+    Pose3d tagPoseRobot = null;
+    // if the limelights intel is good look for reef tag
+    while (!results.valid) {
+      results = LimelightHelpers.getLatestResults("");
+    }
+    // loop through all tags in the view of limelight
+    for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
+      // find out if any of the tags we have are those of the reef
+      for (int processorTag : processorTags) {
+        if (tag.fiducialID == processorTag) {
           // if we have found a reef tag break out
           tagPoseRobot = tag.getTargetPose_RobotSpace();
           break;
