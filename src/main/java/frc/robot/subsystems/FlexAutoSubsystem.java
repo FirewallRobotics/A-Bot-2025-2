@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -25,7 +26,16 @@ public class FlexAutoSubsystem implements Pathfinder {
   double[] RobotSpaceCoralLocation;
   double[] RobotSpaceAlgaeLocation;
   double[] ReefLocation;
+  double[] ProcLocation;
   Pose2d RobotFieldSpace;
+
+  private final SendableChooser<String> m_AutoObjChooser = new SendableChooser<>();
+
+  public FlexAutoSubsystem(){
+    m_AutoObjChooser.setDefaultOption("Coral", "coral");
+    m_AutoObjChooser.addOption("Algae", "algae");
+    SmartDashboard.putData("Auto  Obj choices", m_AutoObjChooser);
+  }
 
   private final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
@@ -37,34 +47,13 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public boolean isNewPathAvailable() {
-    for (int i = 0; i < GoToPoints.size(); i++) {
-      Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-      if (temp.getX() == GoToPoints.get(GoToPoints.size() - 1).getX()) {
-        if (temp.getY() == GoToPoints.get(GoToPoints.size() - 1).getY()) {
-          if (!GoToPoints.get(i).equals(GetCoralLocationInFieldSpace())
-              || !GoToPoints.get(i).equals(getReefLocationInFieldSpace())) {
-            return true;
-          }
-        }
-      }
+    //new path is avaliable if:
+    //coral is in view and we dont have a coral
+    //we just picked up a coral
+    if(VisionSubsystem.getCoralLocationCamera() != null){ // TODO: Add coral sensor to this statement
+      return true;
     }
     return false;
-  }
-
-  public Translation2d GetCoralLocationInFieldSpace() {
-    RobotSpaceCoralLocation = VisionSubsystem.getCoralLocation();
-    RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-    double xActual = RobotSpaceCoralLocation[0] + RobotFieldSpace.getX();
-    double yActual = RobotSpaceCoralLocation[1] + RobotFieldSpace.getY();
-    return new Translation2d(xActual, yActual);
-  }
-
-  public Translation2d GetAlgaeLocationInFieldSpace() {
-    RobotSpaceAlgaeLocation = VisionSubsystem.getAlgaeLocation();
-    RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-    double xActual = RobotSpaceAlgaeLocation[0] + RobotFieldSpace.getX();
-    double yActual = RobotSpaceAlgaeLocation[1] + RobotFieldSpace.getY();
-    return new Translation2d(xActual, yActual);
   }
 
   public Translation2d getReefLocationInFieldSpace() {
@@ -73,10 +62,31 @@ public class FlexAutoSubsystem implements Pathfinder {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
       drivebase.driveCommand(null, null, scanspeed);
     }
-    RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-    double xActual = ReefLocation[0] + RobotFieldSpace.getX();
-    double yActual = ReefLocation[1] + RobotFieldSpace.getY();
-    return new Translation2d(xActual, yActual);
+    else{
+      drivebase.driveCommand(null, null, null);
+      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
+      double xActual = ReefLocation[0] + RobotFieldSpace.getX();
+      double yActual = ReefLocation[1] + RobotFieldSpace.getY();
+      return new Translation2d(xActual, yActual);
+    }
+    return null;
+  }
+
+  public Translation2d getProcessorLocationInFieldSpace(){
+    ProcLocation = VisionSubsystem.getProcessorLocation();
+    if (ProcLocation[0] == -1 && ProcLocation[1] == -1) {
+      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+      drivebase.driveCommand(null, null, scanspeed);
+    }
+    else{
+      drivebase.driveCommand(null, null, null);
+      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
+      double xActual = ProcLocation[0] + RobotFieldSpace.getX();
+      double yActual = ProcLocation[1] + RobotFieldSpace.getY();
+      return new Translation2d(xActual, yActual);
+    }
+    return null;
+
   }
 
   /**
@@ -88,14 +98,58 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
-    if (isNewPathAvailable()) {
-      Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-      while (GoToPoints.size() != 0) {
-        GoToPoints.remove(0);
+    if(m_AutoObjChooser.getSelected().equals("coral")){
+      if (isNewPathAvailable()) { //TODO: and we have a coral (use coral sensor)
+        Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+        while (GoToPoints.size() != 0) {
+          GoToPoints.remove(0);
+        }
+        setStartPosition(new Translation2d(temp.getX(), temp.getY()));
+        setGoalPosition(getReefLocationInFieldSpace());
       }
-      setStartPosition(new Translation2d(temp.getX(), temp.getY()));
-      GoToPoints.add(GetCoralLocationInFieldSpace());
-      setGoalPosition(getReefLocationInFieldSpace());
+      //TODO: when we don't have a coral (use coral sensor)
+      if(isNewPathAvailable() && false){
+        while(VisionSubsystem.getCoralLocationCamera()[0] > 0){
+          DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
+          drivebase.driveCommand(null, null, rotspeed);
+        }
+        while(VisionSubsystem.getCoralLocationCamera()[0] < 0){
+          DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
+          drivebase.driveCommand(null, null, rotspeed);
+        }
+        if(VisionSubsystem.getCoralLocationCamera()[0] == 0 && SmartDashboard.getBoolean("AutoCanMove", false)){
+          while(VisionSubsystem.getCoralLocationCamera() != null){
+            DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+            drivebase.driveCommand(movespeed, null, null);
+          }
+        }
+      }
+    }else{
+      if (isNewPathAvailable()) { //TODO: and we have an algae (use algae sensor)
+        Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+        while (GoToPoints.size() != 0) {
+          GoToPoints.remove(0);
+        }
+        setStartPosition(new Translation2d(temp.getX(), temp.getY()));
+        setGoalPosition(getProcessorLocationInFieldSpace());
+      }
+      //TODO: when we don't have a coral (use coral sensor)
+      if(isNewPathAvailable() && false){
+        while(VisionSubsystem.getCoralLocationCamera()[0] > 0){
+          DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
+          drivebase.driveCommand(null, null, rotspeed);
+        }
+        while(VisionSubsystem.getCoralLocationCamera()[0] < 0){
+          DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
+          drivebase.driveCommand(null, null, rotspeed);
+        }
+        if(VisionSubsystem.getCoralLocationCamera()[0] == 0 && SmartDashboard.getBoolean("AutoCanMove", false)){
+          while(VisionSubsystem.getCoralLocationCamera() != null){
+            DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+            drivebase.driveCommand(movespeed, null, null);
+          }
+        }
+      }
     }
     for (int i = 0; i < GoToPoints.size(); i++) {
       if (i == 0) {

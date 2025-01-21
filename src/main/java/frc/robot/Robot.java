@@ -32,14 +32,14 @@ public class Robot extends TimedRobot {
 
   private static final String kDefaultAuto = "Default Drop";
   private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final SendableChooser<String> m_AutoChooser = new SendableChooser<>();
 
   public Robot() {
     instance = this;
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_AutoChooser.setDefaultOption("Default Auto", kDefaultAuto);
     // flex auto will find the first coral it sees, score it on the reef and repeat until disabled
-    m_chooser.addOption("Vision Flex Auto", "vis");
-    SmartDashboard.putData("Auto choices", m_chooser);
+    m_AutoChooser.addOption("Vision Flex Auto", "vis");
+    SmartDashboard.putData("Auto choices", m_AutoChooser);
   }
 
   public static Robot getInstance() {
@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
+    m_autoSelected = m_AutoChooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
 
     if (m_autoSelected.equals("vis")) {
