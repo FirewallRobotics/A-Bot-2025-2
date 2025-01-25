@@ -50,7 +50,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex("", 0);
-    
+
     // get all results
     LimelightResults results = LimelightHelpers.getLatestResults("");
 
@@ -75,7 +75,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     // change the pipeline to the game object AI
     LimelightHelpers.setPipelineIndex("", 1);
-    
+
     // get the results from the AI
     LimelightResults results = LimelightHelpers.getLatestResults("");
 
@@ -176,14 +176,14 @@ public class VisionSubsystem extends SubsystemBase {
   public static double[] getProcessorLocation() {
     // get the pipeline used before and save it for after we have finished our work
     int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
-    
+
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex("", 0);
 
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
-    
+
     // if the limelights intel is good look for reef tag
     while (!results.valid) {
       results = LimelightHelpers.getLatestResults("");
