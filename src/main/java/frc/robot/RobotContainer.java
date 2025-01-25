@@ -50,6 +50,9 @@ public class RobotContainer {
     SmartDashboard.putNumber("AutoScanSpeed", 1.0);
     SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
     SmartDashboard.putNumber("AutoMoveSpeed", 1.0);
+    SmartDashboard.putNumber("AssistLossRange", 1.0);
+    SmartDashboard.putNumber("AssistProcessorDistance", 1.0);
+    SmartDashboard.putNumber("AssistReefDistance", 1.0);
     // Configure the trigger bindings
     configureBindings();
   }

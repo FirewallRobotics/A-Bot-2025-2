@@ -24,22 +24,48 @@ public class AlignWithNearest extends Command {
     @Override
     public void initialize() {
 
-        //if we are close enough
+        //if we are close enough to the reef
         if(VisionSubsystem.DistanceToReef() < SmartDashboard.getNumber("AssistMinDistance", 10)){
             LimelightHelpers.setPipelineIndex("",2);
-            while(LimelightHelpers.getTX("") > 1){
+            DoubleSupplier zero = () -> 0.0;
+            while(LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)){
                 DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-                drivebase.driveCommand(movespeed, null, null);
+                drivebase.driveCommand(zero, movespeed, null);
             }
-            while(LimelightHelpers.getTX("") < -1){
+            while(LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)){
                 DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-                drivebase.driveCommand(movespeed, null, null);
+                drivebase.driveCommand(zero, movespeed, null);
             }
+            while(VisionSubsystem.DistanceToReef() > SmartDashboard.getNumber("AssistReefDistance", 1.0)){
+                DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+                drivebase.driveCommand(movespeed, zero, null);
+            }
+            drivebase.driveCommand(zero, zero, null);
+        }
+
+        //if we are close enough to the processor
+        if(VisionSubsystem.DistanceToProcessor() < SmartDashboard.getNumber("AssistMinDistance", 10)){
+            LimelightHelpers.setPipelineIndex("",3);
+            DoubleSupplier zero = () -> 0.0;
+            while(LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)){
+                DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+                drivebase.driveCommand(zero, movespeed, null);
+            }
+            while(LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)){
+                DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+                drivebase.driveCommand(zero, movespeed, null);
+            }
+            while(VisionSubsystem.DistanceToProcessor() > SmartDashboard.getNumber("AssistProcessorDistance", 1.0)){
+                DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
+                drivebase.driveCommand(movespeed, zero, null);
+            }
+            drivebase.driveCommand(zero, zero, null);
         }
     }
 
     @Override
     public boolean isFinished() {
-        return LimelightHelpers.getTX("") < 1;
+        double temp = LimelightHelpers.getTX("");
+        return temp < SmartDashboard.getNumber("AssistLossRange", 1.0) && temp > -SmartDashboard.getNumber("AssistLossRange", 1.0);
     }
 }

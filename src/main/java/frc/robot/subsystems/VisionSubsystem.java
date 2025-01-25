@@ -14,7 +14,8 @@ public class VisionSubsystem extends SubsystemBase {
   // pipeline layout:
   // 0 - april tags
   // 1 - Neural network coral/algae
-  // 2 - align with elevator via april tag
+  // 2 - align with Coral elevator via april tag
+  // 3 - align with Algae elevator via april tag
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
@@ -43,6 +44,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static Pose3d getRobotPoseInFieldSpace() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     // if the limelights intel is good look for reef tag
@@ -50,10 +52,12 @@ public class VisionSubsystem extends SubsystemBase {
       results = LimelightHelpers.getLatestResults("");
     }
     LimelightTarget_Fiducial tag = results.targets_Fiducials[0];
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     return tag.getRobotPose_FieldSpace();
   }
 
   public static double[] getCoralLocationCamera() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
@@ -64,10 +68,12 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     return null;
   }
 
   public static double[] getAlgaeLocationCamera() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
@@ -78,10 +84,12 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     return null;
   }
 
   public static double[] getReefLocation() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
@@ -105,6 +113,7 @@ public class VisionSubsystem extends SubsystemBase {
       }
     }
     // if the view of the limelight has no reef tags in return -1, -1 so that auto can scan
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (tagPoseRobot != null) {
       return new double[] {tagPoseRobot.getX(), tagPoseRobot.getY()};
     } else {
@@ -113,6 +122,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double[] getProcessorLocation() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
@@ -136,6 +146,7 @@ public class VisionSubsystem extends SubsystemBase {
       }
     }
     // if the view of the limelight has no reef tags in return -1, -1 so that auto can scan
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (tagPoseRobot != null) {
       return new double[] {tagPoseRobot.getX(), tagPoseRobot.getY()};
     } else {
@@ -144,6 +155,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToReef() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -156,6 +168,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (shortest != Double.MAX_VALUE) {
       return shortest;
     } else {
@@ -164,6 +177,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToCoralStation() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -176,6 +190,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (shortest != Double.MAX_VALUE) {
       return shortest;
     } else {
@@ -184,6 +199,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToProcessor() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -196,6 +212,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (shortest != Double.MAX_VALUE) {
       return shortest;
     } else {
@@ -204,6 +221,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToBarge() {
+    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -216,6 +234,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
     if (shortest != Double.MAX_VALUE) {
       return shortest;
     } else {
