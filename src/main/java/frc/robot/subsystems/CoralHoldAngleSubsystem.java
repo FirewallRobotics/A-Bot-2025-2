@@ -1,12 +1,16 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   private final SparkFlex motor;
+  private final SparkFlexConfig motorConfig;
 
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
@@ -14,7 +18,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   public CoralHoldAngleSubsystem() {
     motor = new SparkFlex(1, MotorType.kBrushless); // Assign motor controller port
-
+    motorConfig = new SparkFlexConfig();
     // encoder = new Encoder(1, 1); // Assign encoder ports
   }
 
@@ -26,11 +30,17 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   // Free hand tilt down. Just hold a button and go. Need an if statement
   public void tiltedDown() {
 
-    motor.set(setSpeed() * -1); // reverses the motor. Might break it.
+    motorConfig.inverted(true);
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    motor.set(setSpeed()); // reverses the motor. Might break it.
   }
 
   // Free hand tilt up. Just hold a button and go. Need an if statement
   public void tiltUp() {
+
+    motorConfig.inverted(false);
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     motor.set(setSpeed());
   }
