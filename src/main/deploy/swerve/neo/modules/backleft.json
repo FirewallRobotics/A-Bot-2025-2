@@ -11,12 +11,12 @@
   },
   "angle": {
     "type": "sparkflex_vortex",
-    "id": 6,
+    "id": 3,
     "canbus": null
   },
   "encoder": {
-    "type": "none",
-    "id": 0,
+    "type": "thrifty",
+    "id": 11,
     "canbus": null
   },
   "inverted": {
