@@ -47,6 +47,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    // create all the smartdashboard values
     SmartDashboard.putNumber("AutoScanSpeed", 1.0);
     SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
     SmartDashboard.putNumber("AutoMoveSpeed", 1.0);

@@ -23,51 +23,77 @@ public class AlignWithNearest extends Command {
   @Override
   public void initialize() {
 
+    // drive commands take doubleSuppliers
+    DoubleSupplier zero = () -> 0.0;
+
     // if we are close enough to the reef
     if (VisionSubsystem.DistanceToReef() < SmartDashboard.getNumber("AssistMinDistance", 10)) {
+      // switch to the pipeline with the right crosshair position for the coral side of the elevator
       LimelightHelpers.setPipelineIndex("", 2);
-      DoubleSupplier zero = () -> 0.0;
+
+      // if we are to much too the right move left
       while (LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)) {
         DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(zero, movespeed, null);
       }
+
+      // if we are too much to the left move right
       while (LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)) {
         DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(zero, movespeed, null);
       }
+
+      // if we are too far from the tag move forward
       while (VisionSubsystem.DistanceToReef()
           > SmartDashboard.getNumber("AssistReefDistance", 1.0)) {
         DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(movespeed, zero, null);
       }
+
+      // we are now on target and can stop!
       drivebase.driveCommand(zero, zero, null);
     }
 
     // if we are close enough to the processor
     if (VisionSubsystem.DistanceToProcessor() < SmartDashboard.getNumber("AssistMinDistance", 10)) {
+      // switch to the pipeline with the right crosshair position for the algae side of the elevator
       LimelightHelpers.setPipelineIndex("", 3);
-      DoubleSupplier zero = () -> 0.0;
+
+      // if we are to much too the right move left
       while (LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)) {
         DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(zero, movespeed, null);
       }
+
+      // if we are too much to the left move right
       while (LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)) {
         DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(zero, movespeed, null);
       }
+
+      // if we are too far from the tag move forward
       while (VisionSubsystem.DistanceToProcessor()
           > SmartDashboard.getNumber("AssistProcessorDistance", 1.0)) {
         DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
         drivebase.driveCommand(movespeed, zero, null);
       }
+
+      // we are now on target and can stop!
       drivebase.driveCommand(zero, zero, null);
     }
   }
 
   @Override
   public boolean isFinished() {
+
+    // we are done if:
+    // - we are within the range created by lossRange
+    // - we are within the distance set by ReefDistance OR ProcessorDistance
     double temp = LimelightHelpers.getTX("");
     return temp < SmartDashboard.getNumber("AssistLossRange", 1.0)
-        && temp > -SmartDashboard.getNumber("AssistLossRange", 1.0);
+        && temp > -SmartDashboard.getNumber("AssistLossRange", 1.0)
+        && (VisionSubsystem.DistanceToReef() > SmartDashboard.getNumber("AssistReefDistance", 1.0)
+            || VisionSubsystem.DistanceToProcessor()
+                > SmartDashboard.getNumber("AssistProcessorDistance", 1.0));
   }
 }
