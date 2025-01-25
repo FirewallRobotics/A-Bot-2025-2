@@ -8,7 +8,6 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
-import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -38,7 +37,6 @@ public class VisionSubsystem extends SubsystemBase {
 
     // send targets to drivers
     SmartDashboard.putNumber("AprilTags Found:", LimelightHelpers.getTargetCount(getName()));
-
   }
 
   public static Pose3d getRobotPoseInFieldSpace() {
