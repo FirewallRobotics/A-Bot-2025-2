@@ -8,6 +8,11 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -16,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.FlexAutoSubsystem;
+import java.util.Random;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -39,9 +45,19 @@ public class Robot extends TimedRobot {
 
   PigeonIMU mPigeonIMU = new PigeonIMU(0);
   int loopcount = 0;
+  private NetworkTableInstance ntInstance;
+  private NetworkTable table;
+  private NetworkTableEntry poseEntry;
+  Random random = new Random();
 
   public Robot() {
     instance = this;
+
+    // Setup posting Pose data to Networktables for AdvantageScope
+    ntInstance = NetworkTableInstance.getDefault();
+    table = ntInstance.getTable("AdvantageScope");
+    poseEntry = table.getEntry("RobotPose");
+
     m_AutoChooser.setDefaultOption("Default Auto Close", "Default Drop C");
     // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until
     // disabled
@@ -53,6 +69,12 @@ public class Robot extends TimedRobot {
 
   public static Robot getInstance() {
     return instance;
+  }
+
+  // Compliments of Co-pilot
+  public void updatePose(Pose2d pose) {
+    double[] poseArray = new double[] {pose.getX(), pose.getY(), pose.getRotation().getDegrees()};
+    poseEntry.setDoubleArray(poseArray);
   }
 
   /**
@@ -85,6 +107,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    // Example pose update
+    Pose2d currentPose = new Pose2d(1.0, 2.0, new Rotation2d(Math.toRadians(45)));
+    updatePose(currentPose);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -178,5 +203,21 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    // Update pose data in simulation mode
+    Pose2d simulatedPose = getSimulatedPose();
+    updatePose(simulatedPose);
+  }
+
+  private Pose2d getSimulatedPose() {
+    // Generate random positions within the boundaries of the field
+    double fieldWidth = 16.46; // Example field width in meters
+    double fieldHeight = 8.23; // Example field height in meters
+
+    double x = random.nextDouble() * fieldWidth;
+    double y = random.nextDouble() * fieldHeight;
+    double rotationDegrees = random.nextDouble() * 360.0;
+
+    return new Pose2d(x, y, new Rotation2d(Math.toRadians(rotationDegrees)));
+  }
 }
