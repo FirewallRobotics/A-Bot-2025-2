@@ -47,9 +47,13 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    // create all the smartdashboard values
     SmartDashboard.putNumber("AutoScanSpeed", 1.0);
     SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
     SmartDashboard.putNumber("AutoMoveSpeed", 1.0);
+    SmartDashboard.putNumber("AssistLossRange", 1.0);
+    SmartDashboard.putNumber("AssistProcessorDistance", 1.0);
+    SmartDashboard.putNumber("AssistReefDistance", 1.0);
     // Configure the trigger bindings
     configureBindings();
   }
@@ -101,9 +105,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand(String pathName) {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+    return drivebase.getAutonomousCommand(pathName);
   }
 
   public void setDriveMode() {
