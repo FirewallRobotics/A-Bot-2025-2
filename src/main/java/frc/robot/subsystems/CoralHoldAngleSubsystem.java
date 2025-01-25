@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CoralHoldAngleSubsystemConstants;
 
 public class CoralHoldAngleSubsystem extends SubsystemBase {
 
@@ -17,7 +18,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   // private final Encoder encoder;
 
   public CoralHoldAngleSubsystem() {
-    motor = new SparkFlex(1, MotorType.kBrushless); // Assign motor controller port
+    motor =
+        new SparkFlex(
+            CoralHoldAngleSubsystemConstants.CORAL_HOLD_ANGLE_MOTOR_ID,
+            MotorType.kBrushless); // Assign motor controller port
     motorConfig = new SparkFlexConfig();
     // encoder = new Encoder(1, 1); // Assign encoder ports
   }

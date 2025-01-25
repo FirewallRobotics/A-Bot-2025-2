@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ElevatorSubsystemConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -24,8 +25,14 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final double[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
-    leftMotor = new SparkFlex(9, MotorType.kBrushless); // Assign motor controller port
-    rightMotor = new SparkFlex(10, MotorType.kBrushless); // Assign motor controller port
+    leftMotor =
+        new SparkFlex(
+            ElevatorSubsystemConstants.ELEVATOR_LEFT_MOTOR_ID,
+            MotorType.kBrushless); // Assign motor controller port
+    rightMotor =
+        new SparkFlex(
+            ElevatorSubsystemConstants.ELEVATOR_RIGHT_MOTOR_ID,
+            MotorType.kBrushless); // Assign motor controller port
     closedLoopController = leftMotor.getClosedLoopController();
     encoder = leftMotor.getEncoder();
     leftMotorConfig = new SparkFlexConfig();
