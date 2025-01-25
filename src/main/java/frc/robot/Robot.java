@@ -43,7 +43,8 @@ public class Robot extends TimedRobot {
   public Robot() {
     instance = this;
     m_AutoChooser.setDefaultOption("Default Auto Close", "Default Drop C");
-    // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until disabled
+    // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until
+    // disabled
     m_AutoChooser.addOption("Default Auto Middle", "Default Drop M");
     m_AutoChooser.addOption("VDefault Auto Far", "Default Drop F");
     SmartDashboard.putBoolean("FlexAutoEnabled", false);
@@ -129,7 +130,7 @@ public class Robot extends TimedRobot {
       PathPlannerPath path = Pathfinding.getCurrentPath(null, null);
       m_autonomousCommand.andThen(AutoBuilder.followPath(path));
       flexcooldown = 0;
-    }else if (flexcooldown < 500){
+    } else if (flexcooldown < 500) {
       flexcooldown += 1;
     }
   }
@@ -148,7 +149,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
 
-    if(loopcount > 10){
+    if (loopcount > 10) {
       loopcount = 0;
       double[] ypr = new double[3];
       mPigeonIMU.getYawPitchRoll(ypr);

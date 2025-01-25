@@ -51,8 +51,10 @@ public class FlexAutoSubsystem implements Pathfinder {
     // coral is in view and we dont have a coral
     // we just picked up a coral
     // we got to the end of the current path
-    if (VisionSubsystem.getCoralLocationCamera()
-        != null || drivebase.getRobotVelocity().vxMetersPerSecond < 1 || drivebase.getRobotVelocity().vyMetersPerSecond < 1) { // TODO: Add coral sensor to this statement
+    if (VisionSubsystem.getCoralLocationCamera() != null
+        || drivebase.getRobotVelocity().vxMetersPerSecond < 1
+        || drivebase.getRobotVelocity().vyMetersPerSecond
+            < 1) { // TODO: Add coral sensor to this statement
       return true;
     }
     return false;

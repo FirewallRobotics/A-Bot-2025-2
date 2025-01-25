@@ -44,7 +44,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static Pose3d getRobotPoseInFieldSpace() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     // if the limelights intel is good look for reef tag
@@ -57,7 +57,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double[] getCoralLocationCamera() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
@@ -73,7 +73,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double[] getAlgaeLocationCamera() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 1);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     if (results.targets_Detector.length > 0) {
@@ -89,7 +89,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double[] getReefLocation() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
@@ -122,7 +122,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double[] getProcessorLocation() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     LimelightResults results = LimelightHelpers.getLatestResults("");
     Pose3d tagPoseRobot = null;
@@ -155,7 +155,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToReef() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -177,7 +177,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToCoralStation() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -199,7 +199,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToProcessor() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -221,7 +221,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToBarge() {
-    int pipelineTempdex = (int)LimelightHelpers.getCurrentPipelineIndex("");
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
