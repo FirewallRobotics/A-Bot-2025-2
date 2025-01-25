@@ -4,9 +4,14 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DataLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -30,15 +35,21 @@ public class Robot extends TimedRobot {
 
   private Timer disabledTimer;
 
-  private static final String kDefaultAuto = "Default Drop";
   private String m_autoSelected;
   private final SendableChooser<String> m_AutoChooser = new SendableChooser<>();
 
+  int flexcooldown = 0;
+
+  PigeonIMU mPigeonIMU = new PigeonIMU(0);
+  int loopcount = 0;
+
   public Robot() {
     instance = this;
-    m_AutoChooser.setDefaultOption("Default Auto", kDefaultAuto);
-    // flex auto will find the first coral it sees, score it on the reef and repeat until disabled
-    m_AutoChooser.addOption("Vision Flex Auto", "vis");
+    m_AutoChooser.setDefaultOption("Default Auto Close", "Default Drop C");
+    // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until disabled
+    m_AutoChooser.addOption("Default Auto Middle", "Default Drop M");
+    m_AutoChooser.addOption("VDefault Auto Far", "Default Drop F");
+    SmartDashboard.putBoolean("FlexAutoEnabled", false);
     SmartDashboard.putData("Auto choices", m_AutoChooser);
   }
 
@@ -100,12 +111,10 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_AutoChooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
 
-    if (m_autoSelected.equals("vis")) {
-      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    if (SmartDashboard.getBoolean("FlexAutoEnabled", false)) {
       Pathfinding.setPathfinder(new FlexAutoSubsystem());
-    } else {
-      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     }
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
     m_robotContainer.setMotorBrake(true);
 
@@ -119,9 +128,12 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // if pathfinding can get a new make one and run it
-    if (Pathfinding.isNewPathAvailable()) {
+    if (Pathfinding.isNewPathAvailable() && flexcooldown >= 500) {
       PathPlannerPath path = Pathfinding.getCurrentPath(null, null);
       m_autonomousCommand.andThen(AutoBuilder.followPath(path));
+      flexcooldown = 0;
+    }else if (flexcooldown < 500){
+      flexcooldown += 1;
     }
   }
 
@@ -138,6 +150,13 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
+
+    if(loopcount > 10){
+      loopcount = 0;
+      double[] ypr = new double[3];
+      mPigeonIMU.getYawPitchRoll(ypr);
+      DataLogManager.log("IMU: " + ypr);
+    }
   }
 
   /** This function is called periodically during operator control. */

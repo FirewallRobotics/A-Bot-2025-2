@@ -14,6 +14,7 @@ public class VisionSubsystem extends SubsystemBase {
   // pipeline layout:
   // 0 - april tags
   // 1 - Neural network coral/algae
+  // 2 - align with elevator via april tag
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
@@ -142,7 +143,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public double DistanceToReef() {
+  public static double DistanceToReef() {
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -162,7 +163,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public double DistanceToCoralStation() {
+  public static double DistanceToCoralStation() {
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -182,7 +183,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public double DistanceToProcessor() {
+  public static double DistanceToProcessor() {
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
@@ -202,7 +203,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public double DistanceToBarge() {
+  public static double DistanceToBarge() {
     LimelightHelpers.setPipelineIndex("", 0);
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("");
     double shortest = Double.MAX_VALUE;
