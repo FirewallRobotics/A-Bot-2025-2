@@ -8,7 +8,12 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
-
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://maven.reduxrobotics.com'
+    }
+}
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
