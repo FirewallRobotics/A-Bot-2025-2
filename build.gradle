@@ -57,6 +57,10 @@ dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2023.1.1'
+
+    implementation 'com.revrobotics.frc:SparkMax-java:1.5.2'
+
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
 
@@ -71,8 +75,13 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // JUnit 5 dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    // Add Mockito dependency for mocking
+    testImplementation 'org.mockito:mockito-core:3.12.4'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
 }
 
 test {
