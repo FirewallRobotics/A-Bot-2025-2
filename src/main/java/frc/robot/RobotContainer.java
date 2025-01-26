@@ -125,9 +125,9 @@ public class RobotContainer {
   }
 
   /**
-   * Schedules the selected subsystem from the chooser.
-   * If a subsystem is selected, it registers the subsystem with the CommandScheduler.
-   * Initial use is to schedule the CanBusLogger subsystem when selected on the SmartDashboard.
+   * Schedules the selected subsystem from the chooser. If a subsystem is selected, it registers the
+   * subsystem with the CommandScheduler. Initial use is to schedule the CanBusLogger subsystem when
+   * selected on the SmartDashboard.
    */
   public void scheduleSelectedSubsystem() {
     SubsystemBase selectedSubsystem = chooser.getSelected();

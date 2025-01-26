@@ -13,52 +13,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The CanBusLogger class is responsible for logging CAN bus data and alerts.
- * It extends the SubsystemBase class and periodically logs CAN signal data
- * from devices on the CAN bus. It also checks for errors and alerts related
- * to the CAN bus and posts them to NetworkTables. It's purpose is to help diagnose 
- * problems on the CAN bus and monitor the health of devices connected to it.
- * 
+ * The CanBusLogger class is responsible for logging CAN bus data and alerts. It extends the
+ * SubsystemBase class and periodically logs CAN signal data from devices on the CAN bus. It also
+ * checks for errors and alerts related to the CAN bus and posts them to NetworkTables. It's purpose
+ * is to help diagnose problems on the CAN bus and monitor the health of devices connected to it.
+ *
  * <p>Key functionalities include:
+ *
  * <ul>
- *   <li>Polling the CAN bus for devices and maintaining a list of device IDs.</li>
- *   <li>Logging CAN signal data periodically.</li>
- *   <li>Checking for errors and alerts on the CAN bus and posting them to NetworkTables.</li>
+ *   <li>Polling the CAN bus for devices and maintaining a list of device IDs.
+ *   <li>Logging CAN signal data periodically.
+ *   <li>Checking for errors and alerts on the CAN bus and posting them to NetworkTables.
  * </ul>
- * 
+ *
  * <p>Usage:
- * <pre>
- * {@code
+ *
+ * <pre>{@code
  * CanBusLogger canBusLogger = new CanBusLogger();
  * canBusLogger.periodic();
- * }
- * </pre>
- * 
+ * }</pre>
+ *
  * <p>Methods:
+ *
  * <ul>
- *   <li>{@link #CanBusLogger()}: Constructs a new CanBusLogger instance.</li>
- *   <li>{@link #getTimer()}: Returns the timer used for logging intervals.</li>
- *   <li>{@link #periodic()}: Logs CAN signal data periodically.</li>
- *   <li>{@link #pollCanBusForDevices()}: Polls the CAN bus for devices and updates the device list.</li>
- *   <li>{@link #getDeviceIds()}: Returns the list of device IDs.</li>
- *   <li>{@link #setDeviceIds(List)}: Sets the list of device IDs.</li>
- *   <li>{@link #logCanSignals()}: Logs CAN signals from devices on the CAN bus.</li>
- *   <li>{@link #bytesToHex(byte[])}: Converts a byte array to a hexadecimal string.</li>
- *   <li>{@link #checkForErrors()}: Checks for errors and alerts on the CAN bus.</li>
+ *   <li>{@link #CanBusLogger()}: Constructs a new CanBusLogger instance.
+ *   <li>{@link #getTimer()}: Returns the timer used for logging intervals.
+ *   <li>{@link #periodic()}: Logs CAN signal data periodically.
+ *   <li>{@link #pollCanBusForDevices()}: Polls the CAN bus for devices and updates the device list.
+ *   <li>{@link #getDeviceIds()}: Returns the list of device IDs.
+ *   <li>{@link #setDeviceIds(List)}: Sets the list of device IDs.
+ *   <li>{@link #logCanSignals()}: Logs CAN signals from devices on the CAN bus.
+ *   <li>{@link #bytesToHex(byte[])}: Converts a byte array to a hexadecimal string.
+ *   <li>{@link #checkForErrors()}: Checks for errors and alerts on the CAN bus.
  * </ul>
- * 
+ *
  * <p>Example:
- * <pre>
- * {@code
+ *
+ * <pre>{@code
  * CanBusLogger logger = new CanBusLogger();
  * logger.pollCanBusForDevices();
  * logger.logCanSignals();
- * }
- * </pre>
- * 
- * <p>Note: This class assumes that device IDs range from 0 to 63 and uses a specific CAN signal ID (0x1FF) for logging.
- * 
- * @author 
+ * }</pre>
+ *
+ * <p>Note: This class assumes that device IDs range from 0 to 63 and uses a specific CAN signal ID
+ * (0x1FF) for logging.
+ *
+ * @author
  * @version 1.0
  * @since 2023-10-01
  */
@@ -73,11 +73,9 @@ public class CanBusLogger extends SubsystemBase {
   private int currentDeviceIndex;
 
   /**
-   * Constructs a new CanBusLogger instance.
-   * Initializes the timer and starts it.
-   * Sets up the NetworkTable instance and entries for logging CAN bus data and alerts.
-   * Initializes the list of device IDs and polls the CAN bus for devices.
-   * Sets the current device index to 0.
+   * Constructs a new CanBusLogger instance. Initializes the timer and starts it. Sets up the
+   * NetworkTable instance and entries for logging CAN bus data and alerts. Initializes the list of
+   * device IDs and polls the CAN bus for devices. Sets the current device index to 0.
    */
   public CanBusLogger() {
     timer = new Timer();
@@ -92,8 +90,6 @@ public class CanBusLogger extends SubsystemBase {
     pollCanBusForDevices();
     currentDeviceIndex = 0;
   }
-
- 
 
   public Timer getTimer() {
     return timer;
@@ -139,22 +135,18 @@ public class CanBusLogger extends SubsystemBase {
 
   /**
    * Logs CAN signals from devices on the CAN bus.
-   * 
-   * This method iterates through a list of CAN device IDs, reads a specific CAN signal
-   * from each device, and logs the data. If an error occurs while reading the CAN data,
-   * an error message is logged. The method cycles through the devices in a round-robin
-   * fashion.
-   * 
-   * The method performs the following steps:
-   * 1. Checks if the list of device IDs is empty. If it is, the method returns immediately.
-   * 2. Retrieves the current device ID from the list and creates a CAN device instance.
-   * 3. Attempts to read a specific CAN signal (with ID 0x1FF) from the device.
-   * 4. If the read is successful, converts the data to a hexadecimal string and logs it.
-   * 5. If an error occurs, logs an error message with the device ID and the exception message.
-   * 6. Cycles to the next device in the list.
-   * 7. Closes the CAN device instance.
-   * 8. Checks for any errors.
-   * 9. Closes the CAN device instance again.
+   *
+   * <p>This method iterates through a list of CAN device IDs, reads a specific CAN signal from each
+   * device, and logs the data. If an error occurs while reading the CAN data, an error message is
+   * logged. The method cycles through the devices in a round-robin fashion.
+   *
+   * <p>The method performs the following steps: 1. Checks if the list of device IDs is empty. If it
+   * is, the method returns immediately. 2. Retrieves the current device ID from the list and
+   * creates a CAN device instance. 3. Attempts to read a specific CAN signal (with ID 0x1FF) from
+   * the device. 4. If the read is successful, converts the data to a hexadecimal string and logs
+   * it. 5. If an error occurs, logs an error message with the device ID and the exception message.
+   * 6. Cycles to the next device in the list. 7. Closes the CAN device instance. 8. Checks for any
+   * errors. 9. Closes the CAN device instance again.
    */
   public void logCanSignals() {
     if (deviceIds.isEmpty()) {
