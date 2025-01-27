@@ -27,6 +27,8 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -137,7 +139,14 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    // Update pose data in simulation mode
+    final Field2d m_field = new Field2d();
+    // Do this in either robot or subsystem init
+    SmartDashboard.putData("Field", m_field);
+    // Do this in either robot periodic or subsystem periodic
+    m_field.setRobotPose(getPose());
+  }
 
   /** Setup AutoBuilder for PathPlanner. */
   public void setupPathPlanner() {
