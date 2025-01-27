@@ -28,9 +28,11 @@ jobs:
     # Grant execute permission for gradlew
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    # when we fail to build its usually spotless so lets apply it
-    - name: Run Spotless
-      run: ./gradlew :spotlessApply
     # Runs a single command using the runners shell
     - name: Compile and run tests on robot code
       run: ./gradlew build
+    # when we fail to build its usually spotless so lets apply it
+    - name: Run Spotless
+      if: failure()
+      run: ./gradlew :spotlessApply && git commit && git push
+    
