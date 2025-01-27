@@ -10,12 +10,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.CanBusLogger;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -31,6 +35,10 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+  private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
+
+  // SendableChooser for SmartDashboard
+  private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -56,6 +64,12 @@ public class RobotContainer {
     SmartDashboard.putNumber("AssistReefDistance", 1.0);
     // Configure the trigger bindings
     configureBindings();
+    // Setup DriverStation control for turning on CanBus Diags
+    // Use canBusLogger to log some information
+    SmartDashboard.putString("CanBusLogger", "RobotContainer initialized CanBusLogger");
+    // Add options to the chooser
+    chooser.setDefaultOption("None", null);
+    chooser.addOption("CanBusLogger", canBusLogger);
   }
 
   /**
@@ -108,6 +122,18 @@ public class RobotContainer {
   public Command getAutonomousCommand(String pathName) {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand(pathName);
+  }
+
+  /**
+   * Schedules the selected subsystem from the chooser. If a subsystem is selected, it registers the
+   * subsystem with the CommandScheduler. Initial use is to schedule the CanBusLogger subsystem when
+   * selected on the SmartDashboard.
+   */
+  public void scheduleSelectedSubsystem() {
+    SubsystemBase selectedSubsystem = chooser.getSelected();
+    if (selectedSubsystem != null) {
+      CommandScheduler.getInstance().registerSubsystem(selectedSubsystem);
+    }
   }
 
   public void setDriveMode() {
