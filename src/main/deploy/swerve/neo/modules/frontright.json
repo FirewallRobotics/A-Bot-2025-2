@@ -7,12 +7,12 @@
   "drive": {
     "type": "sparkflex_vortex",
     "id": 2,
-    "canbus": null
+    "canbus": 2
   },
   "angle": {
     "type": "sparkflex_vortex",
     "id": 6,
-    "canbus": null
+    "canbus": 6
   },
   "encoder": {
     "type": "analog",
