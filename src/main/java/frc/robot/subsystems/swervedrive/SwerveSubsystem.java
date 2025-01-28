@@ -57,6 +57,9 @@ public class SwerveSubsystem extends SubsystemBase {
   /** Swerve drive object. */
   private final SwerveDrive swerveDrive;
 
+  // Update pose data in simulation mode
+  final Field2d m_field = new Field2d();
+
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -112,6 +115,8 @@ public class SwerveSubsystem extends SubsystemBase {
         .pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder
     // and push the offsets onto it. Throws warning if not possible
     setupPathPlanner();
+    // Do this in either robot or subsystem init
+    SmartDashboard.putData("Field", m_field);
   }
 
   /**
@@ -140,10 +145,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    // Update pose data in simulation mode
-    final Field2d m_field = new Field2d();
-    // Do this in either robot or subsystem init
-    SmartDashboard.putData("Field", m_field);
     // Do this in either robot periodic or subsystem periodic
     m_field.setRobotPose(getPose());
   }
