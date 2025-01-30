@@ -40,6 +40,13 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+  private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
+
+  // SendableChooser for SmartDashboard
+  private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
+
+  private VisionSubsystem visionSubsystem = new VisionSubsystem();
+  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
