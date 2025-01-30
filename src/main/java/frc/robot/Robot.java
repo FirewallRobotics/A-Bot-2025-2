@@ -209,21 +209,5 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {
-    // Update pose data in simulation mode
-    Pose2d simulatedPose = getSimulatedPose();
-    updatePose(simulatedPose);
-  }
-
-  private Pose2d getSimulatedPose() {
-    // Generate random positions within the boundaries of the field
-    double fieldWidth = 16.46; // Example field width in meters
-    double fieldHeight = 8.23; // Example field height in meters
-
-    double x = random.nextDouble() * fieldWidth;
-    double y = random.nextDouble() * fieldHeight;
-    double rotationDegrees = random.nextDouble() * 360.0;
-
-    return new Pose2d(x, y, new Rotation2d(Math.toRadians(rotationDegrees)));
-  }
+  public void simulationPeriodic() {}
 }
