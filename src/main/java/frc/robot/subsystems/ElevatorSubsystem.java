@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ElevatorSubsystemConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -37,8 +38,15 @@ public class ElevatorSubsystem extends SubsystemBase {
       MechanismRoot2d root = mech.getRoot("climber", 2, 0);
       m_elevator = root.append(new MechanismLigament2d("elevator", levels[levels.length], 90));
     }
-    leftMotor = new SparkFlex(9, MotorType.kBrushless); // Assign motor controller port
-    rightMotor = new SparkFlex(10, MotorType.kBrushless); // Assign motor controller port
+    leftMotor =
+        new SparkFlex(
+            ElevatorSubsystemConstants.ELEVATOR_LEFT_MOTOR_ID,
+            MotorType.kBrushless); // Assign motor controller port
+    rightMotor =
+        new SparkFlex(
+            ElevatorSubsystemConstants.ELEVATOR_RIGHT_MOTOR_ID,
+            MotorType.kBrushless); // Assign motor controller port
+
     closedLoopController = leftMotor.getClosedLoopController();
     encoder = leftMotor.getEncoder();
     leftMotorConfig = new SparkFlexConfig();

@@ -39,6 +39,21 @@ public final class Constants {
     public static final double WHEEL_LOCK_TIME = 10; // seconds
   }
 
+  public static class CoralHoldAngleSubsystemConstants {
+    public static final int CORAL_HOLD_ANGLE_MOTOR_ID = 9;
+  }
+
+  public static class CoralHoldSubsystemConstants {
+    public static final int CORAL_HOLD_MOTOR_ID = 10;
+  }
+
+  public static class ElevatorSubsystemConstants {
+    public static final int ELEVATOR_LEFT_MOTOR_ID = 11;
+    public static final int ELEVATOR_RIGHT_MOTOR_ID = 12;
+  }
+
+  public static class FlexAutoSubsystemConstants {}
+
   public static class OperatorConstants {
 
     // Joystick Deadband
