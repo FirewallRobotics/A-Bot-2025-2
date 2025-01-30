@@ -10,6 +10,10 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase {
@@ -19,11 +23,20 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlexConfig rightMotorConfig;
   private RelativeEncoder encoder;
   private SparkClosedLoopController closedLoopController;
+  private MechanismLigament2d m_elevator;
 
   // Elevator levels in encoder ticks
-  private final double[] levels = {0, 1000, 2000, 3000, 4000};
+  public final double[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
+
+    try (
+      // the main mechanism object
+      Mechanism2d mech = new Mechanism2d(3, 3)) {
+      // the mechanism root node
+      MechanismRoot2d root = mech.getRoot("climber", 2, 0);
+      m_elevator = root.append(new MechanismLigament2d("elevator", levels[levels.length], 90));
+    }
     leftMotor = new SparkFlex(9, MotorType.kBrushless); // Assign motor controller port
     rightMotor = new SparkFlex(10, MotorType.kBrushless); // Assign motor controller port
     closedLoopController = leftMotor.getClosedLoopController();
@@ -52,6 +65,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     moveToPosition(levels[level]);
   }
 
+  public double getPosition(){
+    return leftMotor.getEncoder().getPosition();
+  }
+
   private void moveToPosition(double position) {
     closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
@@ -61,6 +78,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public boolean isFinished(int position) {
+    m_elevator.setLength(leftMotor.getEncoder().getPosition());
     if (levels[position] - (leftMotor.getEncoder().getPosition()) == 0) {
       return true;
     } else {

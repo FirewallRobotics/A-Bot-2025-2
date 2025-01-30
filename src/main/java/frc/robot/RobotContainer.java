@@ -20,6 +20,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.CanBusLogger;
+import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ElevatorNextPosition;
+import frc.robot.commands.ElevatorPrevPosition;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -35,10 +40,6 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
-  private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
-
-  // SendableChooser for SmartDashboard
-  private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -89,13 +90,13 @@ public class RobotContainer {
               Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
     }
     if (DriverStation.isTest()) {
-      driverXbox.b().whileTrue(drivebase.sysIdDriveMotorCommand());
+      driverXbox.b().onTrue(new AlignWithNearest(visionSubsystem));
       // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       // driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
-      driverXbox.leftBumper().onTrue(Commands.none());
-      driverXbox.rightBumper().onTrue(Commands.none());
+      driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
+      driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     } else {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
