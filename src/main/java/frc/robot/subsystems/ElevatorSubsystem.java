@@ -10,7 +10,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -32,8 +31,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   public ElevatorSubsystem() {
 
     try (
-      // the main mechanism object
-      Mechanism2d mech = new Mechanism2d(3, 3)) {
+    // the main mechanism object
+    Mechanism2d mech = new Mechanism2d(3, 3)) {
       // the mechanism root node
       MechanismRoot2d root = mech.getRoot("climber", 2, 0);
       m_elevator = root.append(new MechanismLigament2d("elevator", levels[levels.length], 90));
@@ -73,7 +72,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     moveToPosition(levels[level]);
   }
 
-  public double getPosition(){
+  public double getPosition() {
     return leftMotor.getEncoder().getPosition();
   }
 
