@@ -22,12 +22,12 @@ public class AlgaeSubsystem extends SubsystemBase {
   }
 
   /**
-   * This method returns a constant speed for now.
-   * Adjust this to take joystick input or PID control later on.
+   * This method returns a constant speed for now. Adjust this to take joystick input or PID control
+   * later on.
    */
   private double setSpeed() {
     double kP = 0.1; // Tweak as necessary.
-    return kP * 1;  // Currently a placeholder for speed calculation
+    return kP * 1; // Currently a placeholder for speed calculation
   }
 
   // This method will be called in the periodic loop for constant operation if needed
@@ -40,18 +40,18 @@ public class AlgaeSubsystem extends SubsystemBase {
   public void shoot() {
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    motor.set(setSpeed());  // Run motor forward to shoot the ball (algae)
+    motor.set(setSpeed()); // Run motor forward to shoot the ball (algae)
   }
 
   // Intakes the ball (algae). The claw motor runs in the reverse direction.
   public void intake() {
-    motorConfig.inverted(true);  // Invert motor direction for intake
+    motorConfig.inverted(true); // Invert motor direction for intake
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    motor.set(setSpeed());  // Reverse the motor to pull the algae into the claw
+    motor.set(setSpeed()); // Reverse the motor to pull the algae into the claw
   }
 
   // Stops the motor. Useful for stopping the claw at any time.
   public void stop() {
-    motor.set(0);  // Completely stop motor when the claw doesn't need to run
+    motor.set(0); // Completely stop motor when the claw doesn't need to run
   }
 }
