@@ -10,6 +10,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,6 +44,8 @@ public class RobotContainer {
   private final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
+
+  private MechanismLigament2d m_elevator;
 
   // SendableChooser for SmartDashboard
   private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
@@ -150,5 +155,21 @@ public class RobotContainer {
 
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
+  }
+
+  public void simulationInit() {
+    try (
+    // the main mechanism object
+    Mechanism2d mech = new Mechanism2d(3, 3)) {
+      // the mechanism root node
+      MechanismRoot2d root = mech.getRoot("climber", 2, 0);
+      m_elevator = root.append(new MechanismLigament2d("elevator", elevatorSubsystem.levels[elevatorSubsystem.levels.length - 1], 90));
+      SmartDashboard.putData("Mech2d", mech);
+    }
+  }
+
+  /** This function is called periodically whilst in simulation. */
+  public void simulationPeriodic() {
+    m_elevator.setLength(elevatorSubsystem.getPosition());
   }
 }

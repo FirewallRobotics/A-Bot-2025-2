@@ -10,9 +10,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
 
@@ -21,22 +18,16 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex rightMotor;
   private final SparkFlexConfig leftMotorConfig;
   private final SparkFlexConfig rightMotorConfig;
+
+  @SuppressWarnings("unused")
   private RelativeEncoder encoder;
+
   private SparkClosedLoopController closedLoopController;
-  private MechanismLigament2d m_elevator;
 
   // Elevator levels in encoder ticks
   public final double[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
-
-    try (
-    // the main mechanism object
-    Mechanism2d mech = new Mechanism2d(3, 3)) {
-      // the mechanism root node
-      MechanismRoot2d root = mech.getRoot("climber", 2, 0);
-      m_elevator = root.append(new MechanismLigament2d("elevator", levels[levels.length], 90));
-    }
     leftMotor =
         new SparkFlex(
             ElevatorSubsystemConstants.ELEVATOR_LEFT_MOTOR_ID,
@@ -85,7 +76,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public boolean isFinished(int position) {
-    m_elevator.setLength(leftMotor.getEncoder().getPosition());
     if (levels[position] - (leftMotor.getEncoder().getPosition()) == 0) {
       return true;
     } else {
