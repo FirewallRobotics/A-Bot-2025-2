@@ -62,7 +62,8 @@ public class Robot extends TimedRobot {
     // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until
     // disabled
     m_AutoChooser.addOption("Default Auto Middle", "Default Drop M");
-    m_AutoChooser.addOption("VDefault Auto Far", "Default Drop F");
+    m_AutoChooser.addOption("Default Auto Far", "Default Drop F");
+    m_AutoChooser.addOption("Box-9", "Box-9");
     SmartDashboard.putBoolean("FlexAutoEnabled", false);
     SmartDashboard.putData("Auto choices", m_AutoChooser);
   }

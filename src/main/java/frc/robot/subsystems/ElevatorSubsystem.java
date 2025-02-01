@@ -10,8 +10,10 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
+import frc.robot.Robot;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -64,10 +66,14 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public double getPosition() {
+    if (Robot.isSimulation()) {
+      return SmartDashboard.getNumber("ElevatorPos", 0);
+    }
     return leftMotor.getEncoder().getPosition();
   }
 
   private void moveToPosition(double position) {
+    SmartDashboard.putNumber("ElevatorPos", position);
     closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
@@ -76,6 +82,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public boolean isFinished(int position) {
+    if (Robot.isSimulation()) {
+      return true;
+    }
     if (levels[position] - (leftMotor.getEncoder().getPosition()) == 0) {
       return true;
     } else {

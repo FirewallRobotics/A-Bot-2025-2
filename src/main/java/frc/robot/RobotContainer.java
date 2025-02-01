@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -41,11 +43,12 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandXboxController driverXbox = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem drivebase =
+  public final static SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
 
   private MechanismLigament2d m_elevator;
+  private MechanismLigament2d m_wrist;
 
   // SendableChooser for SmartDashboard
   private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
@@ -163,13 +166,17 @@ public class RobotContainer {
     Mechanism2d mech = new Mechanism2d(3, 3)) {
       // the mechanism root node
       MechanismRoot2d root = mech.getRoot("climber", 2, 0);
-      m_elevator = root.append(new MechanismLigament2d("elevator", elevatorSubsystem.levels[elevatorSubsystem.levels.length - 1], 90));
+      m_elevator = root.append(new MechanismLigament2d("elevator", 5, 90));
+      m_wrist =
+          m_elevator.append(
+              new MechanismLigament2d("wrist", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+
       SmartDashboard.putData("Mech2d", mech);
     }
   }
 
   /** This function is called periodically whilst in simulation. */
   public void simulationPeriodic() {
-    m_elevator.setLength(elevatorSubsystem.getPosition());
+    m_elevator.setLength(SmartDashboard.getNumber("ElevatorPos", 0) / 3);
   }
 }
