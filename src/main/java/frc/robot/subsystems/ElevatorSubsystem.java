@@ -10,19 +10,24 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
+import frc.robot.Robot;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
   private final SparkFlex rightMotor;
   private final SparkFlexConfig leftMotorConfig;
   private final SparkFlexConfig rightMotorConfig;
+
+  @SuppressWarnings("unused")
   private RelativeEncoder encoder;
+
   private SparkClosedLoopController closedLoopController;
 
   // Elevator levels in encoder ticks
-  private final double[] levels = {0, 1000, 2000, 3000, 4000};
+  public final double[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
     leftMotor =
@@ -33,6 +38,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         new SparkFlex(
             ElevatorSubsystemConstants.ELEVATOR_RIGHT_MOTOR_ID,
             MotorType.kBrushless); // Assign motor controller port
+
     closedLoopController = leftMotor.getClosedLoopController();
     encoder = leftMotor.getEncoder();
     leftMotorConfig = new SparkFlexConfig();
@@ -59,7 +65,15 @@ public class ElevatorSubsystem extends SubsystemBase {
     moveToPosition(levels[level]);
   }
 
+  public double getPosition() {
+    if (Robot.isSimulation()) {
+      return SmartDashboard.getNumber("ElevatorPos", 0);
+    }
+    return leftMotor.getEncoder().getPosition();
+  }
+
   private void moveToPosition(double position) {
+    SmartDashboard.putNumber("ElevatorPos", position);
     closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
@@ -68,6 +82,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public boolean isFinished(int position) {
+    if (Robot.isSimulation()) {
+      return true;
+    }
     if (levels[position] - (leftMotor.getEncoder().getPosition()) == 0) {
       return true;
     } else {

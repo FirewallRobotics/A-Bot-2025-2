@@ -10,8 +10,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,7 +24,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ElevatorNextPosition;
+import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.subsystems.CanBusLogger;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -33,12 +43,18 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandXboxController driverXbox = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem drivebase =
+  public final static SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
 
+  private MechanismLigament2d m_elevator;
+  private MechanismLigament2d m_wrist;
+
   // SendableChooser for SmartDashboard
   private final SendableChooser<SubsystemBase> chooser = new SendableChooser<>();
+
+  private VisionSubsystem visionSubsystem = new VisionSubsystem();
+  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -89,13 +105,13 @@ public class RobotContainer {
               Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
     }
     if (DriverStation.isTest()) {
-      driverXbox.b().whileTrue(drivebase.sysIdDriveMotorCommand());
+      driverXbox.b().onTrue(new AlignWithNearest(visionSubsystem));
       // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       // driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
-      driverXbox.leftBumper().onTrue(Commands.none());
-      driverXbox.rightBumper().onTrue(Commands.none());
+      driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
+      driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     } else {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
@@ -142,5 +158,25 @@ public class RobotContainer {
 
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
+  }
+
+  public void simulationInit() {
+    try (
+    // the main mechanism object
+    Mechanism2d mech = new Mechanism2d(3, 3)) {
+      // the mechanism root node
+      MechanismRoot2d root = mech.getRoot("climber", 2, 0);
+      m_elevator = root.append(new MechanismLigament2d("elevator", 5, 90));
+      m_wrist =
+          m_elevator.append(
+              new MechanismLigament2d("wrist", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+
+      SmartDashboard.putData("Mech2d", mech);
+    }
+  }
+
+  /** This function is called periodically whilst in simulation. */
+  public void simulationPeriodic() {
+    m_elevator.setLength(SmartDashboard.getNumber("ElevatorPos", 0) / 3);
   }
 }
