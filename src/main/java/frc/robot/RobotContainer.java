@@ -48,6 +48,7 @@ public class RobotContainer {
   private final CanBusLogger canBusLogger = new CanBusLogger(); // Example device ID
 
   private MechanismLigament2d m_elevator;
+  @SuppressWarnings("unused")
   private MechanismLigament2d m_wrist;
 
   // SendableChooser for SmartDashboard
