@@ -1,7 +1,7 @@
 {
   "conversionFactors": {
     "angle": {
-      "gearRatio": 5.79,
+      "gearRatio": 25,
       "factor": 0
     },
     "drive": {

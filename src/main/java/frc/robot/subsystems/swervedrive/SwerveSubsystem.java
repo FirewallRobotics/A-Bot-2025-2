@@ -69,7 +69,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // Angle conversion factor is 360 / (GEAR RATIO * ENCODER RESOLUTION)
     //  In this case the gear ratio is 12.8 motor revolutions per wheel rotation.
     //  The encoder resolution per motor revolution is 1 per motor revolution.
-    double angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8);
+    double angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(25);
     // Motor conversion factor is (PI * WHEEL DIAMETER IN METERS) / (GEAR RATIO * ENCODER
     // RESOLUTION).
     //  In this case the wheel diameter is 4 inches, which must be converted to meters to get
@@ -114,6 +114,7 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive
         .pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder
     // and push the offsets onto it. Throws warning if not possible
+    swerveDrive.setModuleStateOptimization(false);
     setupPathPlanner();
     // Do this in either robot or subsystem init
     SmartDashboard.putData("Field", m_field);
