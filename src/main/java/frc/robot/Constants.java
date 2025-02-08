@@ -16,6 +16,8 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import swervelib.math.Matter;
 
 /**
@@ -35,8 +37,29 @@ public final class Constants {
 
   public static final Mechanism2d sideRobotView = new Mechanism2d(36, 72);
   public static final MechanismRoot2d kElevatorCarriage;
-  public static final MechanismLigament2d kArmMech;
+  // public static final MechanismLigament2d kArmMech;
   public static final MechanismLigament2d kElevatorTower;
+
+  static {
+    kElevatorCarriage =
+        Constants.sideRobotView.getRoot(
+            "ElevatorCarriage", 10.5, ElevatorSubsystemConstants.kStartingHeightSim.in(Meters));
+    /*  kArmMech = kElevatorCarriage.append(
+    new MechanismLigament2d(
+        "Arm",
+        ArmConstants.kArmLength,
+        ArmConstants.kArmStartingAngle.in(Degrees),
+        6,
+        new Color8Bit(Color.kYellow))); */
+    kElevatorTower =
+        kElevatorCarriage.append(
+            new MechanismLigament2d(
+                "Elevator",
+                ElevatorSubsystemConstants.kStartingHeightSim.in(Meters),
+                -90,
+                6,
+                new Color8Bit(Color.kRed)));
+  }
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS =

@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import static au.grapplerobotics.interfaces.LaserCanInterface.LASERCAN_STATUS_WEAK_SIGNAL;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -15,7 +16,13 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
+import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
+import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
@@ -51,6 +58,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorSubsystemConstants;
+import frc.robot.RobotMath.Elevator;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
@@ -77,6 +85,7 @@ public class ElevatorSubsystem extends SubsystemBase {
           ElevatorSubsystemConstants.kElevatorkA);
   private final SparkFlex m_motor = new SparkFlex(1, MotorType.kBrushless);
   private final RelativeEncoder m_encoder = m_motor.getEncoder();
+  private final SparkFlexSim m_motorSim = new SparkFlexSim(m_motor, m_elevatorGearbox);
 
   // Sensors
   private final LaserCan m_elevatorLaserCan = new LaserCan(0);
@@ -200,7 +209,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Update lasercan sim.
     m_elevatorLaserCanSim.setMeasurementFullSim(
         new Measurement(
-            LASERCAN_STATUS_VALID_MEASUREMENT,
+            LASERCAN_STATUS_WEAK_SIGNAL,
             (int)
                 (Math.floor(Meters.of(m_elevatorSim.getPositionMeters()).in(Millimeters))
                     + ElevatorSubsystemConstants.kLaserCANOffset.in(Millimeters)),
@@ -211,8 +220,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Update elevator visualization with position
     Constants.kElevatorTower.setLength(getLinearPosition().in(Meters));
-    Constants.kElevatorCarriage.setPosition(
-        ArmConstants.kArmLength, getLinearPosition().in(Meters));
+    // Constants.kElevatorCarriage.setPosition(ArmConstants.kArmLength,
+    // getLinearPosition().in(Meters));
   }
 
   /**
