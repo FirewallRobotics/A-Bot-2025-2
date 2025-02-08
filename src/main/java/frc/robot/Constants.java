@@ -52,6 +52,11 @@ public final class Constants {
     public static final int ELEVATOR_RIGHT_MOTOR_ID = 12;
   }
 
+  public static class ClimberSubsystemConstants {
+    public static final int CLIMBER_LEFT_MOTOR_ID = 13;
+    public static final int CLIMBER_RIGHT_MOTOR_ID = 14;
+  }
+
   public static class FlexAutoSubsystemConstants {}
 
   public static class OperatorConstants {
