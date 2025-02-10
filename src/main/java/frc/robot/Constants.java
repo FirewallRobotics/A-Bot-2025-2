@@ -4,8 +4,20 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Second;
+
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.LinearVelocityUnit;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import swervelib.math.Matter;
 
 /**
@@ -17,6 +29,37 @@ import swervelib.math.Matter;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static final int kMotorPort = 0;
+  public static final int kEncoderAChannel = 0;
+  public static final int kEncoderBChannel = 1;
+  public static final int kJoystickPort = 0;
+
+  public static final Mechanism2d sideRobotView = new Mechanism2d(36, 72);
+  public static final MechanismRoot2d kElevatorCarriage;
+  // public static final MechanismLigament2d kArmMech;
+  public static final MechanismLigament2d kElevatorTower;
+
+  static {
+    kElevatorCarriage =
+        Constants.sideRobotView.getRoot(
+            "ElevatorCarriage", 10.5, ElevatorSubsystemConstants.kStartingHeightSim.in(Meters));
+    /*  kArmMech = kElevatorCarriage.append(
+    new MechanismLigament2d(
+        "Arm",
+        ArmConstants.kArmLength,
+        ArmConstants.kArmStartingAngle.in(Degrees),
+        6,
+        new Color8Bit(Color.kYellow))); */
+    kElevatorTower =
+        kElevatorCarriage.append(
+            new MechanismLigament2d(
+                "Elevator",
+                ElevatorSubsystemConstants.kStartingHeightSim.in(Meters),
+                -90,
+                6,
+                new Color8Bit(Color.kRed)));
+  }
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS =
@@ -50,6 +93,31 @@ public final class Constants {
   public static class ElevatorSubsystemConstants {
     public static final int ELEVATOR_LEFT_MOTOR_ID = 11;
     public static final int ELEVATOR_RIGHT_MOTOR_ID = 12;
+    public static final double kElevatorKp = 26.722;
+    public static final double kElevatorKi = 0;
+    public static final double kElevatorKd = 1.6047;
+
+    public static final double kElevatorkS = 0.01964; // volts (V)
+    public static final double kElevatorkV = 3.894; // volt per velocity (V/(m/s))
+    public static final double kElevatorkA = 0.173; // volt per acceleration (V/(m/s²))
+    public static final double kElevatorkG = 0.91274; // volts (V)
+
+    public static final double kElevatorGearing = 10.0;
+    public static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
+    public static final double kCarriageMass = 4.0; // kg
+
+    // Encoder is reset to measure 0 at the bottom, so minimum height is 0.
+    public static final Distance kLaserCANOffset = Inches.of(3);
+    public static final Distance kStartingHeightSim = Meters.of(0);
+    public static final Distance kMinElevatorHeight = Meters.of(0.0);
+    public static final Distance kMaxElevatorHeight = Meters.of(10.25);
+    private static final LinearVelocityUnit MetersPerSecond = null;
+
+    public static double kElevatorRampRate = 0.1;
+    public static int kElevatorCurrentLimit = 40;
+    public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);
+    public static double kMaxAcceleration =
+        Meters.of(8).per(Second).per(Second).in(MetersPerSecondPerSecond);
   }
 
   public static class FlexAutoSubsystemConstants {}
