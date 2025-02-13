@@ -10,12 +10,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
-import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import java.io.File;
+import frc.robot.RobotContainer;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 
@@ -37,9 +35,6 @@ public class FlexAutoSubsystem implements Pathfinder {
     SmartDashboard.putData("Auto  Obj choices", m_AutoObjChooser);
   }
 
-  private final SwerveSubsystem drivebase =
-      new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
-
   /**
    * Get if a new path has been calculated since the last time a path was retrieved
    *
@@ -52,8 +47,8 @@ public class FlexAutoSubsystem implements Pathfinder {
     // we just picked up a coral
     // we got to the end of the current path
     if (VisionSubsystem.getCoralLocationCamera() != null
-        || drivebase.getRobotVelocity().vxMetersPerSecond < 1
-        || drivebase.getRobotVelocity().vyMetersPerSecond
+        || RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 1
+        || RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond
             < 1) { // TODO: Add coral sensor to this statement
       return true;
     }
@@ -64,9 +59,9 @@ public class FlexAutoSubsystem implements Pathfinder {
     ReefLocation = VisionSubsystem.getReefLocation();
     if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      drivebase.driveCommand(null, null, scanspeed);
+      RobotContainer.drivebase.driveCommand(null, null, scanspeed);
     } else {
-      drivebase.driveCommand(null, null, null);
+      RobotContainer.drivebase.driveCommand(null, null, null);
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
       double xActual = ReefLocation[0] + RobotFieldSpace.getX();
       double yActual = ReefLocation[1] + RobotFieldSpace.getY();
@@ -79,9 +74,9 @@ public class FlexAutoSubsystem implements Pathfinder {
     ProcLocation = VisionSubsystem.getProcessorLocation();
     if (ProcLocation[0] == -1 && ProcLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      drivebase.driveCommand(null, null, scanspeed);
+      RobotContainer.drivebase.driveCommand(null, null, scanspeed);
     } else {
-      drivebase.driveCommand(null, null, null);
+      RobotContainer.drivebase.driveCommand(null, null, null);
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
       double xActual = ProcLocation[0] + RobotFieldSpace.getX();
       double yActual = ProcLocation[1] + RobotFieldSpace.getY();
@@ -112,17 +107,17 @@ public class FlexAutoSubsystem implements Pathfinder {
       if (isNewPathAvailable() && false) {
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
-          drivebase.driveCommand(null, null, rotspeed);
+          RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
         while (VisionSubsystem.getCoralLocationCamera()[0] < 0) {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
-          drivebase.driveCommand(null, null, rotspeed);
+          RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
         if (VisionSubsystem.getCoralLocationCamera()[0] == 0
             && SmartDashboard.getBoolean("AutoCanMove", false)) {
           while (VisionSubsystem.getCoralLocationCamera() != null) {
             DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-            drivebase.driveCommand(movespeed, null, null);
+            RobotContainer.drivebase.driveCommand(movespeed, null, null);
           }
         }
       }
@@ -139,17 +134,17 @@ public class FlexAutoSubsystem implements Pathfinder {
       if (isNewPathAvailable() && false) {
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
-          drivebase.driveCommand(null, null, rotspeed);
+          RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
         while (VisionSubsystem.getCoralLocationCamera()[0] < 0) {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
-          drivebase.driveCommand(null, null, rotspeed);
+          RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
         if (VisionSubsystem.getCoralLocationCamera()[0] == 0
             && SmartDashboard.getBoolean("AutoCanMove", false)) {
           while (VisionSubsystem.getCoralLocationCamera() != null) {
             DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-            drivebase.driveCommand(movespeed, null, null);
+            RobotContainer.drivebase.driveCommand(movespeed, null, null);
           }
         }
       }
