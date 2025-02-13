@@ -25,7 +25,13 @@ public class Robot extends TimedRobot {
 
   private Timer disabledTimer;
 
-  public Robot() {
+  private static final String kDefaultAuto = "Default Drop";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  public Robot()
+  {
+    Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
   }
 
@@ -87,7 +93,17 @@ public class Robot extends TimedRobot {
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
-  public void autonomousInit() {
+  public void autonomousInit()
+  {
+    m_autoSelected = m_chooser.getSelected();
+    System.out.println("Auto selected: " + m_autoSelected);
+
+    if(m_autoSelected.equals("vis")){
+      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    }
+    else{
+      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    }
     m_robotContainer.setMotorBrake(true);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
