@@ -28,15 +28,17 @@ public class Robot extends TimedRobot {
 
   private Timer disabledTimer;
 
-  @SuppressWarnings("unused")
-  private static final String kDefaultAuto = "Default Drop";
-
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
     // Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
+    m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
+    m_chooser.addOption("Default Drop M", "Default Drop M");
+    m_chooser.addOption("Default Drop F", "Default Drop F");
+    m_chooser.addOption("CoralDouble C", "CoralDouble C");
+    m_chooser.addOption("CoralDouble M", "CoralDouble M");
   }
 
   public static Robot getInstance() {

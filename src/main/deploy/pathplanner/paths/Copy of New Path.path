@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.7981844515413847,
-        "y": 5.200330744562922
+        "x": 5.229437255859375,
+        "y": 5.159800101615287
       },
       "prevControl": {
-        "x": 3.5481844515413847,
-        "y": 6.700330744562931
+        "x": 6.471411957611909,
+        "y": 5.483929443359375
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,14 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "ElevatorLvl1",
+      "waypointRelativePos": 0.31903303349875933,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,7 +49,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -60.856788357242614
+    "rotation": -122.66140935919456
   },
   "reversed": false,
   "folder": null,

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,9 +24,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -73,6 +78,7 @@ public class RobotContainer {
 
   private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   private ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -101,6 +107,11 @@ public class RobotContainer {
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
     elevatorSubsystem = new ElevatorSubsystem();
+
+    new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
+    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel1(elevatorSubsystem));
+    new EventTrigger("GrabCoral")
+        .onTrue(new CoralIntakeCommand(coralHoldSubsystem, elevatorSubsystem));
   }
 
   public void init() {

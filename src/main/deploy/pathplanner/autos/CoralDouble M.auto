@@ -7,13 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of New Path"
+            "pathName": "New Path"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "DropCoral"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Then grab coral"
           }
         }
       ]
