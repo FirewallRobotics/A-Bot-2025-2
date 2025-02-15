@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -158,15 +157,14 @@ public class RobotContainer {
         driverXbox
             .b()
             .whileTrue(
-                drivebase.driveToPose(
-                    new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0))));
+                drivebase.driveToPose(new Pose2d(new Translation2d(4, 4), drivebase.getHeading())));
       }
       if (ally.get() == Alliance.Red) {
         driverXbox
             .b()
             .whileTrue(
                 drivebase.driveToPose(
-                    new Pose2d(new Translation2d(13, 4), Rotation2d.fromDegrees(0))));
+                    new Pose2d(new Translation2d(13, 4), drivebase.getHeading())));
       }
     }
     driverXbox.start().whileTrue(Commands.none());
