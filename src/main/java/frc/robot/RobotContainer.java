@@ -22,8 +22,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.ArmLower;
+import frc.robot.commands.ArmRaise;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -41,7 +44,6 @@ public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandXboxController driverXbox = new CommandXboxController(0);
-  public final ElevatorSubsystem elevatorSubsystem;
   // The robot's subsystems and commands are defined here...
   public static final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
@@ -69,6 +71,9 @@ public class RobotContainer {
           .copy()
           .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
+
+  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  private ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -168,6 +173,9 @@ public class RobotContainer {
     driverXbox.back().whileTrue(Commands.none());
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
+    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
+    driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
   }
 
   /**

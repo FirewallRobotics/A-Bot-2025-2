@@ -12,4 +12,24 @@ public class ArmRaise extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
   }
+
+  @Override
+  public void initialize() {
+    // ;)
+  }
+
+  @Override
+  public void execute() {
+    m_subsystem.StartExtending();
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    m_subsystem.stop();
+  }
+
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
 }
