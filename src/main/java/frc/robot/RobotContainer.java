@@ -25,9 +25,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ArmLower;
+import frc.robot.commands.ArmRaise;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.subsystems.CanBusLogger;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -55,6 +58,7 @@ public class RobotContainer {
 
   private VisionSubsystem visionSubsystem = new VisionSubsystem();
   private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  private ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -127,6 +131,8 @@ public class RobotContainer {
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+      driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
+      driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
     }
   }
 
