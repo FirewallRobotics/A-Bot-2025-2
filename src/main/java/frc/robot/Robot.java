@@ -28,6 +28,7 @@ public class Robot extends TimedRobot {
 
   private Timer disabledTimer;
 
+  @SuppressWarnings("unused")
   private static final String kDefaultAuto = "Default Drop";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
