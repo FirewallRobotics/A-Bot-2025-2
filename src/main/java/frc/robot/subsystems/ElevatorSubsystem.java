@@ -27,7 +27,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private SparkClosedLoopController closedLoopController;
 
   // Elevator levels in encoder ticks
-  public final double[] levels = {0, 1000, 2000, 3000, 4000};
+  public static final double[] levels = {0, 1000, 2000, 3000, 4000};
 
   public ElevatorSubsystem() {
     leftMotor =
@@ -67,13 +67,17 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public double getPosition() {
     if (Robot.isSimulation()) {
-      return SmartDashboard.getNumber("ElevatorPos", 0);
+      return levels[(int) SmartDashboard.getNumber("ElevatorPos", 0)];
     }
     return leftMotor.getEncoder().getPosition();
   }
 
   private void moveToPosition(double position) {
-    SmartDashboard.putNumber("ElevatorPos", position);
+    for (int i = 0; i < levels.length; i++) {
+      if (levels[i] == position) {
+        SmartDashboard.putNumber("ElevatorPos", i);
+      }
+    }
     closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 

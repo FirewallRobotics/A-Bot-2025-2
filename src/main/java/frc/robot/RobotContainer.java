@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -12,6 +11,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -34,6 +39,7 @@ import swervelib.SwerveInputStream;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
+@SuppressWarnings("unused")
 public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -41,6 +47,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+
+  private MechanismLigament2d m_elevator;
+  private MechanismLigament2d m_wrist;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -91,10 +100,26 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
-    configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
-    NamedCommands.registerCommand("test", Commands.print("I EXIST"));
     elevatorSubsystem = new ElevatorSubsystem();
+  }
+
+  public void init() {
+    configureBindings();
+
+    Mechanism2d mech = new Mechanism2d(3, 3);
+    MechanismRoot2d root = mech.getRoot("climber", 2, 0);
+    m_elevator =
+        root.append(new MechanismLigament2d("elevator", ElevatorSubsystem.levels.length, 90));
+    m_wrist =
+        m_elevator.append(
+            new MechanismLigament2d("wrist", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+    SmartDashboard.putData("Mech2d", mech);
+  }
+
+  public void Periodic() {
+    m_elevator.setLength(0.25 + (SmartDashboard.getNumber("ElevatorPos", 0) / 3));
+    m_wrist.setAngle(90);
   }
 
   /**
@@ -106,7 +131,6 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  @SuppressWarnings("unused")
   private void configureBindings() {
 
     Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
@@ -136,14 +160,13 @@ public class RobotContainer {
             .whileTrue(
                 drivebase.driveToPose(
                     new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0))));
-        drivebase.driveToPose(new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)));
       }
       if (ally.get() == Alliance.Red) {
         driverXbox
             .b()
             .whileTrue(
                 drivebase.driveToPose(
-                    new Pose2d(new Translation2d(8, 4), Rotation2d.fromDegrees(0))));
+                    new Pose2d(new Translation2d(13, 4), Rotation2d.fromDegrees(0))));
       }
     }
     driverXbox.start().whileTrue(Commands.none());
