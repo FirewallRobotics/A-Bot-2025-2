@@ -100,7 +100,6 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-    elevatorSubsystem = new ElevatorSubsystem();
   }
 
   public void init() {

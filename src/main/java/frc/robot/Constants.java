@@ -57,6 +57,10 @@ public final class Constants {
     public static final int CLIMBER_RIGHT_MOTOR_ID = 14;
   }
 
+  public static class AlgaeSubsystemConstants {
+    public static final int AlGAE_MOTOR_ID = 15;
+  }
+
   public static class FlexAutoSubsystemConstants {}
 
   public static class OperatorConstants {
