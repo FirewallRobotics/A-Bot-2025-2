@@ -4,11 +4,14 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.FlexAutoSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -29,8 +32,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  public Robot()
-  {
+  public Robot() {
     Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
   }
@@ -93,15 +95,13 @@ public class Robot extends TimedRobot {
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
-  public void autonomousInit()
-  {
+  public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
 
-    if(m_autoSelected.equals("vis")){
+    if (m_autoSelected.equals("vis")) {
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    }
-    else{
+    } else {
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     }
     m_robotContainer.setMotorBrake(true);

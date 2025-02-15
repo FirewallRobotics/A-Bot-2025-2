@@ -42,15 +42,15 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public boolean isNewPathAvailable() {
-    for(int i = 0; i < GoToPoints.size(); i++){
-      Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-      if(temp.getX() == GoToPoints.get(GoToPoints.size()-1).getX()){
-        if(temp.getY() == GoToPoints.get(GoToPoints.size()-1).getY()){
-          if(!GoToPoints.get(i).equals(GetAlgaeLocationInFieldSpace()) || !GoToPoints.get(i).equals(getReefLocationInFieldSpace())){
-              return true;
-          }
-        }
-      }
+    // new path is avaliable if:
+    // coral is in view and we dont have a coral
+    // we just picked up a coral
+    // we got to the end of the current path
+    if (VisionSubsystem.getCoralLocationCamera() != null
+        || RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 1
+        || RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond
+            < 1) { // TODO: Add coral sensor to this statement
+      return true;
     }
     return false;
   }
@@ -103,13 +103,11 @@ public class FlexAutoSubsystem implements Pathfinder {
         setStartPosition(new Translation2d(temp.getX(), temp.getY()));
         setGoalPosition(getReefLocationInFieldSpace());
       }
-      setStartPosition(new Translation2d(temp.getX(), temp.getY()));
-      GoToPoints.add(GetAlgaeLocationInFieldSpace());
-      setGoalPosition(getReefLocationInFieldSpace());
-    }
-    for(int i = 0; i < GoToPoints.size(); i++){
-        if(i == 0){
-            waypoints.add(new Waypoint(GoToPoints.get(i),GoToPoints.get(i),GoToPoints.get(i+1)));
+      // TODO: when we don't have a coral (use coral sensor)
+      if (isNewPathAvailable() && false) {
+        while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
+          DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
+          RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
         while (VisionSubsystem.getCoralLocationCamera()[0] < 0) {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
