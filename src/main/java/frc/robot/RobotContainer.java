@@ -7,7 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -16,6 +15,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.ArmLower;
+import frc.robot.commands.ArmRaise;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
+import frc.robot.subsystems.CoralHoldAngleSubsystem;
+import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -33,6 +38,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final SwerveSubsystem drivebase =
       new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+
+  public static final CoralHoldSubsystem coralHold = new CoralHoldSubsystem();
+  public static final CoralHoldAngleSubsystem coralAngle = new CoralHoldAngleSubsystem();
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -130,17 +138,23 @@ public class RobotContainer {
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
       driverXbox.leftBumper().onTrue(Commands.none());
       driverXbox.rightBumper().onTrue(Commands.none());
+
     } else {
+
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
-      driverXbox
-          .b()
-          .whileTrue(
-              drivebase.driveToPose(
-                  new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0))));
+      // driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+      /*driverXbox
+      .b()
+      .whileTrue(
+          drivebase.driveToPose(
+              new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0))));*/
+      driverXbox.x().onTrue(new CoralIntakeCommand(coralHold));
+      driverXbox.b().onTrue(new CoralShootCommand(coralHold));
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      driverXbox.rightTrigger(0.5).onTrue(new ArmRaise(coralAngle));
+      driverXbox.leftTrigger(0.5).onTrue(new ArmLower(coralAngle));
       driverXbox.rightBumper().onTrue(Commands.none());
     }
   }
