@@ -4,24 +4,15 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.FlexAutoSubsystem;
-import java.util.Random;
+import frc.robot.subsystems.UltrasonicSensor;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -35,47 +26,23 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  public static UltrasonicSensor globalUltraSensors;
 
   private Timer disabledTimer;
 
+  @SuppressWarnings("unused")
+  private static final String kDefaultAuto = "Default Drop";
+
   private String m_autoSelected;
-  private final SendableChooser<String> m_AutoChooser = new SendableChooser<>();
-
-  int flexcooldown = 0;
-
-  PigeonIMU mPigeonIMU = new PigeonIMU(0);
-  int loopcount = 0;
-  private NetworkTableInstance ntInstance;
-  private NetworkTable table;
-  private NetworkTableEntry poseEntry;
-  Random random = new Random();
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
+    Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
-
-    // Setup posting Pose data to Networktables for AdvantageScope
-    ntInstance = NetworkTableInstance.getDefault();
-    table = ntInstance.getTable("AdvantageScope");
-    poseEntry = table.getEntry("RobotPose");
-
-    m_AutoChooser.setDefaultOption("Default Auto Close", "Default Drop C");
-    // flex auto will find the first coral/or algae it sees, score it on the reef and repeat until
-    // disabled
-    m_AutoChooser.addOption("Default Auto Middle", "Default Drop M");
-    m_AutoChooser.addOption("Default Auto Far", "Default Drop F");
-    m_AutoChooser.addOption("Box-9", "Box-9");
-    SmartDashboard.putBoolean("FlexAutoEnabled", false);
-    SmartDashboard.putData("Auto choices", m_AutoChooser);
   }
 
   public static Robot getInstance() {
     return instance;
-  }
-
-  // Compliments of Co-pilot
-  public void updatePose(Pose2d pose) {
-    double[] poseArray = new double[] {pose.getX(), pose.getY(), pose.getRotation().getDegrees()};
-    poseEntry.setDoubleArray(poseArray);
   }
 
   /**
@@ -92,6 +59,10 @@ public class Robot extends TimedRobot {
     // stop
     // immediately when disabled, but then also let it be pushed more
     disabledTimer = new Timer();
+
+    if (isSimulation()) {
+      DriverStation.silenceJoystickConnectionWarning(true);
+    }
   }
 
   /**
@@ -108,18 +79,12 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    // Example pose update
-    Pose2d currentPose = new Pose2d(1.0, 2.0, new Rotation2d(Math.toRadians(45)));
-    updatePose(currentPose);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
     m_robotContainer.setMotorBrake(true);
-    if (disabledTimer == null) {
-      disabledTimer = new Timer();
-    }
     disabledTimer.reset();
     disabledTimer.start();
   }
@@ -135,16 +100,16 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_robotContainer.scheduleSelectedSubsystem();
-    m_autoSelected = m_AutoChooser.getSelected();
+    m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
 
-    if (SmartDashboard.getBoolean("FlexAutoEnabled", false)) {
-      Pathfinding.setPathfinder(new FlexAutoSubsystem());
+    if (m_autoSelected.equals("vis")) {
+      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    } else {
+      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     }
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
-
     m_robotContainer.setMotorBrake(true);
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
@@ -154,20 +119,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    // if pathfinding can get a new make one and run it
-    if (Pathfinding.isNewPathAvailable() && flexcooldown >= 500) {
-      PathPlannerPath path = Pathfinding.getCurrentPath(null, null);
-      m_autonomousCommand.andThen(AutoBuilder.followPath(path));
-      flexcooldown = 0;
-    } else if (flexcooldown < 500) {
-      flexcooldown += 1;
-    }
-  }
+  public void autonomousPeriodic() {}
 
   @Override
   public void teleopInit() {
-    m_robotContainer.scheduleSelectedSubsystem();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -176,15 +131,6 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     } else {
       CommandScheduler.getInstance().cancelAll();
-    }
-    m_robotContainer.setDriveMode();
-    m_robotContainer.setMotorBrake(true);
-
-    if (loopcount > 10) {
-      loopcount = 0;
-      double[] ypr = new double[3];
-      mPigeonIMU.getYawPitchRoll(ypr);
-      DataLogManager.log("IMU: " + ypr);
     }
   }
 
@@ -196,8 +142,6 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
-    m_robotContainer.scheduleSelectedSubsystem();
-    m_robotContainer.setDriveMode();
   }
 
   /** This function is called periodically during test mode. */
@@ -206,13 +150,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {
-    m_robotContainer.simulationInit();
-  }
+  public void simulationInit() {}
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {
-    m_robotContainer.simulationPeriodic();
-  }
+  public void simulationPeriodic() {}
 }
