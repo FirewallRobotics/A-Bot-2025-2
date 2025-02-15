@@ -59,7 +59,7 @@ public class SwerveSubsystem extends SubsystemBase {
   /** AprilTag field layout. */
   @SuppressWarnings("unused")
   private final AprilTagFieldLayout aprilTagFieldLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
   /** Enable vision odometry updates while driving. */
   private final boolean visionDriveTest = false;
