@@ -4,17 +4,12 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.pathfinding.Pathfinding;
-
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
 
 /**
@@ -40,7 +35,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
-    Pathfinding.setPathfinder(new FlexAutoSubsystem());
+    // Pathfinding.setPathfinder(new FlexAutoSubsystem());
     instance = this;
   }
 
@@ -82,6 +77,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    if (!DriverStation.isDisabled()) {
+      m_robotContainer.Periodic();
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -103,6 +101,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
 
@@ -130,6 +129,7 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    m_robotContainer.init();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     } else {
@@ -143,6 +143,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    m_robotContainer.init();
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
   }
