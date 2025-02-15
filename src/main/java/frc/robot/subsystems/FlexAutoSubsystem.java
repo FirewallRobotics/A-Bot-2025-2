@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import java.util.List;
 import java.util.function.DoubleSupplier;
@@ -50,8 +51,9 @@ public class FlexAutoSubsystem implements Pathfinder {
     // we got to the end of the current path
     if (VisionSubsystem.getCoralLocationCamera() != null
         || RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 1
-        || RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond
-            < 1) { // TODO: Add coral sensor to this statement
+        || RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 1
+            && Robot.globalUltraSensors.getDistanceCoral()
+                > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
       return true;
     }
     return false;
@@ -126,7 +128,9 @@ public class FlexAutoSubsystem implements Pathfinder {
 
       // stop gap while we wait for the coral and algae sensor
       // creates a direct path between the current position and the goal position
-      if (isNewPathAvailable()) { // TODO: and we have a coral (use coral sensor)
+      if (isNewPathAvailable()
+          && Robot.globalUltraSensors.getDistanceCoral()
+              > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
           GoToPoints.remove(0);
@@ -135,8 +139,9 @@ public class FlexAutoSubsystem implements Pathfinder {
         setGoalPosition(getReefLocationInFieldSpace());
       }
 
-      // TODO: when we don't have a coral (use coral sensor)
-      if (isNewPathAvailable() && false) {
+      if (isNewPathAvailable()
+          && Robot.globalUltraSensors.getDistanceCoral()
+              < SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
         // turn left if the coral is to the left of the camera and right if its to the right
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
@@ -163,7 +168,9 @@ public class FlexAutoSubsystem implements Pathfinder {
 
       // stop gap while we wait for the coral and algae sensor
       // creates a direct path between the current position and the goal position
-      if (isNewPathAvailable()) { // TODO: and we have an algae (use algae sensor)
+      if (isNewPathAvailable()
+          && Robot.globalUltraSensors.getDistanceCoral()
+              > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
           GoToPoints.remove(0);
@@ -171,8 +178,9 @@ public class FlexAutoSubsystem implements Pathfinder {
         setStartPosition(new Translation2d(temp.getX(), temp.getY()));
         setGoalPosition(getProcessorLocationInFieldSpace());
       }
-      // TODO: when we don't have a coral (use coral sensor)
-      if (isNewPathAvailable() && false) {
+      if (isNewPathAvailable()
+          && Robot.globalUltraSensors.getDistanceAlgae()
+              > SmartDashboard.getNumber("Ultrasonics Algae", 50)) {
 
         // turn left if the coral is to the left of the camera and right if its to the right
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
