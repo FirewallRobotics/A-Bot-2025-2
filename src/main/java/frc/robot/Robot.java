@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.UltrasonicSensor;
@@ -37,8 +38,7 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
     m_chooser.addOption("Default Drop F", "Default Drop F");
-    m_chooser.addOption("CoralDouble C", "CoralDouble C");
-    m_chooser.addOption("CoralDouble M", "CoralDouble M");
+    SmartDashboard.putData(m_chooser);
   }
 
   public static Robot getInstance() {
@@ -106,14 +106,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-
-    if (m_autoSelected.equals("vis")) {
-      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    } else {
-      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    }
-    m_robotContainer.setMotorBrake(true);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {

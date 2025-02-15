@@ -108,7 +108,6 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-    elevatorSubsystem = new ElevatorSubsystem();
 
     new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
     new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel1(elevatorSubsystem));
@@ -198,9 +197,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand(String pathString) {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+    return drivebase.getAutonomousCommand(pathString);
   }
 
   public void setMotorBrake(boolean brake) {
