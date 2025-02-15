@@ -27,9 +27,11 @@ public class FlexAutoSubsystem implements Pathfinder {
   double[] ProcLocation;
   Pose2d RobotFieldSpace;
 
+  // create a selector for flex auto modes
   private final SendableChooser<String> m_AutoObjChooser = new SendableChooser<>();
 
   public FlexAutoSubsystem() {
+    // add selections for flex auto to smartdashboard
     m_AutoObjChooser.setDefaultOption("Coral", "coral");
     m_AutoObjChooser.addOption("Algae", "algae");
     SmartDashboard.putData("Auto  Obj choices", m_AutoObjChooser);
@@ -56,37 +58,61 @@ public class FlexAutoSubsystem implements Pathfinder {
   }
 
   public Translation2d getReefLocationInFieldSpace() {
+
+    // get reef location in robot space
     ReefLocation = VisionSubsystem.getReefLocation();
+
+    // if we dont have the reefs location find it by spinning slowly
     if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(null, null, scanspeed);
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed);
     } else {
-      RobotContainer.drivebase.driveCommand(null, null, null);
+      // if we do have the reefs location then convert it
+      // first zero the drivecommand so the math stays right
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
+
+      // get the robots location in field space
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
+
+      // do the math to find the location of the reef by adding together the values
       double xActual = ReefLocation[0] + RobotFieldSpace.getX();
       double yActual = ReefLocation[1] + RobotFieldSpace.getY();
+
+      // return the values
       return new Translation2d(xActual, yActual);
     }
     return null;
   }
 
   public Translation2d getProcessorLocationInFieldSpace() {
+
+    // get Processor location in robot space
     ProcLocation = VisionSubsystem.getProcessorLocation();
+
+    // if we dont have its location find it by spinning slowly
     if (ProcLocation[0] == -1 && ProcLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
       RobotContainer.drivebase.driveCommand(null, null, scanspeed);
     } else {
+      // if we do have its location then convert it
+      // first zero the drivecommand so the math stays right
       RobotContainer.drivebase.driveCommand(null, null, null);
+
+      // get the robots location in field space
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
+
+      // do the math to find the location of it by adding together the values
       double xActual = ProcLocation[0] + RobotFieldSpace.getX();
       double yActual = ProcLocation[1] + RobotFieldSpace.getY();
+
+      // return the values
       return new Translation2d(xActual, yActual);
     }
     return null;
   }
 
   /**
-   * Get the most recently calculated path
+   * Use the inputed goalState to make a new path
    *
    * @param constraints The path constraints to use when creating the path
    * @param goalEndState The goal end state to use when creating the path
@@ -94,7 +120,12 @@ public class FlexAutoSubsystem implements Pathfinder {
    */
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
+
+    // if we are looking for coral
     if (m_AutoObjChooser.getSelected().equals("coral")) {
+
+      // stop gap while we wait for the coral and algae sensor
+      // creates a direct path between the current position and the goal position
       if (isNewPathAvailable()) { // TODO: and we have a coral (use coral sensor)
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
@@ -103,8 +134,10 @@ public class FlexAutoSubsystem implements Pathfinder {
         setStartPosition(new Translation2d(temp.getX(), temp.getY()));
         setGoalPosition(getReefLocationInFieldSpace());
       }
+
       // TODO: when we don't have a coral (use coral sensor)
       if (isNewPathAvailable() && false) {
+        // turn left if the coral is to the left of the camera and right if its to the right
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           RobotContainer.drivebase.driveCommand(null, null, rotspeed);
@@ -113,6 +146,9 @@ public class FlexAutoSubsystem implements Pathfinder {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
+
+        // we are now aligned with the coral
+        // drive towards it
         if (VisionSubsystem.getCoralLocationCamera()[0] == 0
             && SmartDashboard.getBoolean("AutoCanMove", false)) {
           while (VisionSubsystem.getCoralLocationCamera() != null) {
@@ -121,7 +157,12 @@ public class FlexAutoSubsystem implements Pathfinder {
           }
         }
       }
+
+      // if we are looking for algae
     } else {
+
+      // stop gap while we wait for the coral and algae sensor
+      // creates a direct path between the current position and the goal position
       if (isNewPathAvailable()) { // TODO: and we have an algae (use algae sensor)
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
         while (GoToPoints.size() != 0) {
@@ -132,6 +173,8 @@ public class FlexAutoSubsystem implements Pathfinder {
       }
       // TODO: when we don't have a coral (use coral sensor)
       if (isNewPathAvailable() && false) {
+
+        // turn left if the coral is to the left of the camera and right if its to the right
         while (VisionSubsystem.getCoralLocationCamera()[0] > 0) {
           DoubleSupplier rotspeed = () -> SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           RobotContainer.drivebase.driveCommand(null, null, rotspeed);
@@ -140,6 +183,9 @@ public class FlexAutoSubsystem implements Pathfinder {
           DoubleSupplier rotspeed = () -> -SmartDashboard.getNumber("AutoRotateSpeed", 1.0);
           RobotContainer.drivebase.driveCommand(null, null, rotspeed);
         }
+
+        // we are now aligned with the coral
+        // drive towards it
         if (VisionSubsystem.getCoralLocationCamera()[0] == 0
             && SmartDashboard.getBoolean("AutoCanMove", false)) {
           while (VisionSubsystem.getCoralLocationCamera() != null) {
@@ -149,6 +195,8 @@ public class FlexAutoSubsystem implements Pathfinder {
         }
       }
     }
+
+    // put the path together
     for (int i = 0; i < GoToPoints.size(); i++) {
       if (i == 0) {
         waypoints.add(new Waypoint(GoToPoints.get(i), GoToPoints.get(i), GoToPoints.get(i + 1)));
