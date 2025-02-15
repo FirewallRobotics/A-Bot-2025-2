@@ -2,15 +2,12 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CoralHoldSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
 
 public class CoralIntakeCommand extends Command {
   public final CoralHoldSubsystem m_Coral;
-  public final ElevatorSubsystem m_ElevatorSubsystem;
 
-  public CoralIntakeCommand(CoralHoldSubsystem c_Subsystem, ElevatorSubsystem c_ElevatorSubsystem) {
+  public CoralIntakeCommand(CoralHoldSubsystem c_Subsystem) {
     m_Coral = c_Subsystem;
-    m_ElevatorSubsystem = c_ElevatorSubsystem;
   }
 
   // Called when the command is first scheduled
@@ -20,7 +17,6 @@ public class CoralIntakeCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_ElevatorSubsystem.setLevel(0);
     m_Coral.intake();
   }
 
