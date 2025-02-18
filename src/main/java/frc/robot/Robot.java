@@ -34,6 +34,7 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     // Pathfinding.setPathfinder(new FlexAutoSubsystem());
+    SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
@@ -108,8 +109,10 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null) {
+    // schedule the autonomous command
+    if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
+      m_autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
+    } else {
       m_autonomousCommand.schedule();
     }
   }

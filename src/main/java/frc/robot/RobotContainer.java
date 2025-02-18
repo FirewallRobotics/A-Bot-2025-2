@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -200,6 +201,15 @@ public class RobotContainer {
   public Command getAutonomousCommand(String pathString) {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand(pathString);
+  }
+
+  public Command getCoralPathCommand() {
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.get() == Alliance.Blue) {
+      return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(65)));
+    } else {
+      return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(-45)));
+    }
   }
 
   public void setMotorBrake(boolean brake) {

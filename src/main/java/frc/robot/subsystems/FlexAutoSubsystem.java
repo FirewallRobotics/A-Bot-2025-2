@@ -1,15 +1,24 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.pathfinding.Pathfinder;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
@@ -22,6 +31,7 @@ public class FlexAutoSubsystem implements Pathfinder {
 
   List<Waypoint> waypoints;
   List<Translation2d> GoToPoints;
+  List<Pose2d> poseway;
   double[] RobotSpaceCoralLocation;
   double[] RobotSpaceAlgaeLocation;
   double[] ReefLocation;
@@ -214,6 +224,7 @@ public class FlexAutoSubsystem implements Pathfinder {
         waypoints.add(
             new Waypoint(GoToPoints.get(i - 1), GoToPoints.get(i), GoToPoints.get(i + 1)));
       }
+      poseway.add(new Pose2d(GoToPoints.get(i), null));
     }
     PathPlannerPath path =
         new PathPlannerPath(
@@ -227,6 +238,18 @@ public class FlexAutoSubsystem implements Pathfinder {
                     -90)) // Goal end state. You can set a holonomic rotation here. If using a
             // differential drivetrain, the rotation will have no effect.
             );
+    // Create and push Field2d to SmartDashboard.
+
+    Field2d m_field = new Field2d();
+
+    m_field = (Field2d) SmartDashboard.getData("Field");
+
+
+    // Push the trajectory to Field2d.
+    if(poseway != null){
+      Trajectory m_trajectory = TrajectoryGenerator.generateTrajectory(poseway, new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0)));
+      m_field.getObject("traj").setTrajectory(m_trajectory);
+    }
     return path;
   }
 
