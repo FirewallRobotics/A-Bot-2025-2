@@ -39,6 +39,8 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
     m_chooser.addOption("Default Drop F", "Default Drop F");
+    m_chooser.addOption("FWD 10 feet", "FWD10");
+    m_chooser.addOption("FWD 5 feet", "FWD5");
     SmartDashboard.putData(m_chooser);
   }
 
