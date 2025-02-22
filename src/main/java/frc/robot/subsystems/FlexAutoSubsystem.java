@@ -271,7 +271,7 @@ public class FlexAutoSubsystem implements Pathfinder {
     // Create and push Field2d to SmartDashboard.
 
     @SuppressWarnings("resource")
-    //complains as it thinks that field will not be closed but it in fact IS
+    // complains as it thinks that field will not be closed but it in fact IS
     Field2d m_field = new Field2d();
 
     m_field = (Field2d) SmartDashboard.getData("Field");
