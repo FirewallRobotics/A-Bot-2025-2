@@ -65,6 +65,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     moveToPosition(levels[level]);
   }
 
+  public void setSpeed(double speed) {
+    leftMotor.set(speed);
+    rightMotor.set(-speed);
+  }
+
   public double getPosition() {
     if (Robot.isSimulation()) {
       return levels[(int) SmartDashboard.getNumber("ElevatorPos", 0)];

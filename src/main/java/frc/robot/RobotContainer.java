@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -29,6 +28,8 @@ import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorBWD;
+import frc.robot.commands.ElevatorFWD;
 import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
@@ -160,13 +161,18 @@ public class RobotContainer {
     Command driveSetpointGenKeyboard =
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
-    if (RobotBase.isSimulation()) {
-      drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
-    } else {
-      drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
-    }
+    drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.x().onTrue(Commands.none());
+
+    if (DriverStation.isTest()) {
+      driverXbox
+          .leftTrigger()
+          .whileTrue(new ElevatorFWD(elevatorSubsystem, driverXbox.getLeftTriggerAxis()));
+      driverXbox
+          .rightTrigger()
+          .whileTrue(new ElevatorBWD(elevatorSubsystem, driverXbox.getRightTriggerAxis()));
+    }
 
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.isPresent()) {
