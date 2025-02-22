@@ -166,12 +166,11 @@ public class RobotContainer {
     driverXbox.x().onTrue(Commands.none());
 
     if (DriverStation.isTest()) {
-      driverXbox
-          .leftTrigger()
-          .whileTrue(new ElevatorFWD(elevatorSubsystem, driverXbox.getLeftTriggerAxis()));
-      driverXbox
-          .rightTrigger()
-          .whileTrue(new ElevatorBWD(elevatorSubsystem, driverXbox.getRightTriggerAxis()));
+      new ElevatorFWD(elevatorSubsystem, driverXbox.getLeftTriggerAxis());
+      new ElevatorBWD(elevatorSubsystem, driverXbox.getRightTriggerAxis());
+    } else {
+      driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
+      driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
     }
 
     Optional<Alliance> ally = DriverStation.getAlliance();
@@ -192,8 +191,6 @@ public class RobotContainer {
     }
     driverXbox.start().whileTrue(Commands.none());
     driverXbox.back().whileTrue(Commands.none());
-    driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
     driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));

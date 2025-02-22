@@ -14,6 +14,8 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,6 +23,7 @@ import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 public class FlexAutoSubsystem implements Pathfinder {
@@ -42,6 +45,10 @@ public class FlexAutoSubsystem implements Pathfinder {
     m_AutoObjChooser.setDefaultOption("Coral", "coral");
     m_AutoObjChooser.addOption("Algae", "algae");
     SmartDashboard.putData("Auto  Obj choices", m_AutoObjChooser);
+    SmartDashboard.putNumber("AutoScanSpeed", 1.0);
+    SmartDashboard.putNumber("Ultrasonics Coral", 50);
+    SmartDashboard.putNumber("AutoMoveSpeed", 1.0);
+    SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
   }
 
   /**
@@ -129,21 +136,48 @@ public class FlexAutoSubsystem implements Pathfinder {
   @Override
   public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goalEndState) {
 
+    if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
+      if (m_AutoObjChooser.getSelected().equals("coral")) {
+        if (isNewPathAvailable()
+            && Robot.globalUltraSensors.getDistanceCoral()
+                > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
+          Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+          while (GoToPoints.size() != 0) {
+            GoToPoints.remove(0);
+          }
+          setStartPosition(new Translation2d(temp.getX(), temp.getY()));
+          Optional<Alliance> ally = DriverStation.getAlliance();
+          if (ally.isPresent()) {
+            if (ally.get() == Alliance.Blue) {
+              setGoalPosition(new Translation2d(4, 4));
+            }
+            if (ally.get() == Alliance.Red) {
+              setGoalPosition(new Translation2d(13, 4));
+            }
+          }
+        }
+      }
+    } else {
+      // if we are looking for coral
+      if (m_AutoObjChooser.getSelected().equals("coral")) {
+
+        // stop gap while we wait for the coral and algae sensor
+        // creates a direct path between the current position and the goal position
+        if (isNewPathAvailable()
+            && Robot.globalUltraSensors.getDistanceCoral()
+                > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
+          Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
+          while (GoToPoints.size() != 0) {
+            GoToPoints.remove(0);
+          }
+          setStartPosition(new Translation2d(temp.getX(), temp.getY()));
+          setGoalPosition(getReefLocationInFieldSpace());
+        }
+      }
+    }
+
     // if we are looking for coral
     if (m_AutoObjChooser.getSelected().equals("coral")) {
-
-      // stop gap while we wait for the coral and algae sensor
-      // creates a direct path between the current position and the goal position
-      if (isNewPathAvailable()
-          && Robot.globalUltraSensors.getDistanceCoral()
-              > SmartDashboard.getNumber("Ultrasonics Coral", 50)) {
-        Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-        while (GoToPoints.size() != 0) {
-          GoToPoints.remove(0);
-        }
-        setStartPosition(new Translation2d(temp.getX(), temp.getY()));
-        setGoalPosition(getReefLocationInFieldSpace());
-      }
 
       if (isNewPathAvailable()
           && Robot.globalUltraSensors.getDistanceCoral()
@@ -236,6 +270,8 @@ public class FlexAutoSubsystem implements Pathfinder {
             );
     // Create and push Field2d to SmartDashboard.
 
+    @SuppressWarnings("resource")
+    //complains as it thinks that field will not be closed but it in fact IS
     Field2d m_field = new Field2d();
 
     m_field = (Field2d) SmartDashboard.getData("Field");
@@ -247,6 +283,7 @@ public class FlexAutoSubsystem implements Pathfinder {
               poseway, new TrajectoryConfig(Units.feetToMeters(3.0), Units.feetToMeters(3.0)));
       m_field.getObject("traj").setTrajectory(m_trajectory);
     }
+    m_field.close();
     return path;
   }
 
