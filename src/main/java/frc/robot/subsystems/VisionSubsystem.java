@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
-import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
@@ -18,8 +17,6 @@ public class VisionSubsystem extends SubsystemBase {
 
   // pipeline layout:
   // 0 - april tags
-  // 1 - Coral / white mask
-  // 2 - Algae / Circlular Green mask
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
@@ -70,76 +67,6 @@ public class VisionSubsystem extends SubsystemBase {
     } else {
       return null;
     }
-  }
-
-  public static double[] getCoralLocation() {
-    LimelightHelpers.setPipelineIndex("", 1);
-    return LimelightHelpers.getTargetPose_RobotSpace("");
-  }
-
-  public static double[] getAlgaeLocation() {
-    LimelightHelpers.setPipelineIndex("", 2);
-    return LimelightHelpers.getTargetPose_RobotSpace("");
-  }
-
-  public static double[] getCoralLocationCamera() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
-
-    // change the pipeline to the game object AI
-    LimelightHelpers.setPipelineIndex("", 1);
-
-    // get the results from the AI
-    LimelightResults results = LimelightHelpers.getLatestResults("");
-
-    // if it has results then loop through them
-    if (results.targets_Detector.length > 0) {
-      for (int i = 0; i < results.targets_Detector.length; i++) {
-        LimelightTarget_Detector detection = results.targets_Detector[i];
-
-        // if this result is a coral then return its location
-        if (detection.className.equals("coral")) {
-
-          // set pipeline to the what it was before
-          LimelightHelpers.setPipelineIndex("", pipelineTempdex);
-          return new double[] {detection.tx, detection.ty};
-        }
-      }
-    }
-
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
-    return null;
-  }
-
-  public static double[] getAlgaeLocationCamera() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
-
-    // change the pipeline to the game object AI
-    LimelightHelpers.setPipelineIndex("", 1);
-
-    // get the results from the AI
-    LimelightResults results = LimelightHelpers.getLatestResults("");
-
-    // if it has results then loop through them
-    if (results.targets_Detector.length > 0) {
-      for (int i = 0; i < results.targets_Detector.length; i++) {
-        LimelightTarget_Detector detection = results.targets_Detector[i];
-
-        // set pipeline to the what it was before
-        if (detection.className.equals("algae")) {
-
-          // set pipeline to the what it was before
-          LimelightHelpers.setPipelineIndex("", pipelineTempdex);
-          return new double[] {detection.tx, detection.ty};
-        }
-      }
-    }
-
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
-    return null;
   }
 
   public static double[] getReefLocation() {

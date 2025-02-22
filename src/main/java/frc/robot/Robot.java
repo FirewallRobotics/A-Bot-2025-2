@@ -33,8 +33,8 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
-    // Pathfinding.setPathfinder(new FlexAutoSubsystem());
     SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
+    SmartDashboard.putBoolean("FlexAuto", false);
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
@@ -61,7 +61,6 @@ public class Robot extends TimedRobot {
     // stop
     // immediately when disabled, but then also let it be pushed more
     disabledTimer = new Timer();
-
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -120,7 +119,11 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    if(RobotContainer.flexAutoSubsystem.isNewPathAvailable() && SmartDashboard.getBoolean("FlexAuto", false)){
+      m_robotContainer.driveFlexAuto();
+    }
+  }
 
   @Override
   public void teleopInit() {

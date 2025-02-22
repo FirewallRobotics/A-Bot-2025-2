@@ -5,9 +5,14 @@
 package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -36,8 +41,10 @@ import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import swervelib.SwerveInputStream;
 
@@ -58,6 +65,9 @@ public class RobotContainer {
 
   private MechanismLigament2d m_elevator;
   private MechanismLigament2d m_wrist;
+
+  public static PathConstraints Pathconstraints;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -108,6 +118,13 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    flexAutoSubsystem = new FlexAutoSubsystem();
+    Pathconstraints =
+        new PathConstraints(
+            drivebase.getMaximumChassisVelocity(),
+            4.0,
+            drivebase.getMaximumChassisAngularVelocity(),
+            Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
 
@@ -194,6 +211,15 @@ public class RobotContainer {
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
     driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
+  }
+  SequentialCommandGroup m_autonomousCommand;
+
+  public void driveFlexAuto(){
+    List<Pose2d> path = flexAutoSubsystem.CreatePath(RobotContainer.Pathconstraints);
+    for(int i = 0; i < path.size(); i++){
+      m_autonomousCommand.addCommands(drivebase.driveToPose(path.get(i)));
+    }
+    m_autonomousCommand.schedule();
   }
 
   /**
