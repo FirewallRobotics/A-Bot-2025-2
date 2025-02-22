@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -40,7 +39,6 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import java.util.Optional;
 import swervelib.SwerveInputStream;
-import frc.robot.subsystems.FlexAutoSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
