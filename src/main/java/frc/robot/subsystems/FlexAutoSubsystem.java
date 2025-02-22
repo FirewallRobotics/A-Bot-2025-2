@@ -119,7 +119,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
 
         // set the start position to our current location
-        returnPose2ds.add(new Pose2d(temp.getX(),temp.getY(),null));
+        returnPose2ds.add(new Pose2d(temp.getX(), temp.getY(), null));
 
         // get our Alliance
         Optional<Alliance> ally = DriverStation.getAlliance();
@@ -128,14 +128,14 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
             // if we are on blue then go to the blue coral station and reef
             Translation2d temp2 = getReefLocationInFieldSpace();
-            returnPose2ds.add(new Pose2d(temp2.getX(),temp2.getY(),null));
+            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
             returnPose2ds.add(new Pose2d(4, 4, new Rotation2d(45)));
           }
           if (ally.get() == Alliance.Red) {
 
             // if we are red go to the red coral station and reef
             Translation2d temp2 = getReefLocationInFieldSpace();
-            returnPose2ds.add(new Pose2d(temp2.getX(),temp2.getY(),null));
+            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
             returnPose2ds.add(new Pose2d(13, 4, new Rotation2d(135)));
           }
         }
@@ -150,19 +150,18 @@ public class FlexAutoSubsystem extends SubsystemBase {
         Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
 
         // set the start position to our location
-        returnPose2ds.add(new Pose2d(temp.getX(), temp.getY(),null));
+        returnPose2ds.add(new Pose2d(temp.getX(), temp.getY(), null));
 
         // go to the reef
         Translation2d temp2 = getReefLocationInFieldSpace();
-        returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(),null));
+        returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
 
         // set our goal to the processor
-        Translation2d temp3 =getProcessorLocationInFieldSpace();
-        returnPose2ds.add(new Pose2d(temp3.getX(),temp3.getY(),null));
+        Translation2d temp3 = getProcessorLocationInFieldSpace();
+        returnPose2ds.add(new Pose2d(temp3.getX(), temp3.getY(), null));
       }
     }
 
-    
     return returnPose2ds;
   }
 }

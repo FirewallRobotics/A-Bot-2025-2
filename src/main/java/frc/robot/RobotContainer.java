@@ -6,9 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -212,11 +209,12 @@ public class RobotContainer {
     driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
     driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
   }
+
   SequentialCommandGroup m_autonomousCommand;
 
-  public void driveFlexAuto(){
+  public void driveFlexAuto() {
     List<Pose2d> path = flexAutoSubsystem.CreatePath(RobotContainer.Pathconstraints);
-    for(int i = 0; i < path.size(); i++){
+    for (int i = 0; i < path.size(); i++) {
       m_autonomousCommand.addCommands(drivebase.driveToPose(path.get(i)));
     }
     m_autonomousCommand.schedule();

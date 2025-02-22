@@ -209,11 +209,11 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
-  public double getMaximumChassisVelocity(){
+  public double getMaximumChassisVelocity() {
     return swerveDrive.getMaximumChassisVelocity();
   }
 
-  public double getMaximumChassisAngularVelocity(){
+  public double getMaximumChassisAngularVelocity() {
     return swerveDrive.getMaximumChassisAngularVelocity();
   }
 

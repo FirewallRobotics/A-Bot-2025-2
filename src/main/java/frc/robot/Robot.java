@@ -120,7 +120,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    if(RobotContainer.flexAutoSubsystem.isNewPathAvailable() && SmartDashboard.getBoolean("FlexAuto", false)){
+    if (RobotContainer.flexAutoSubsystem.isNewPathAvailable()
+        && SmartDashboard.getBoolean("FlexAuto", false)) {
       m_robotContainer.driveFlexAuto();
     }
   }
