@@ -6,9 +6,9 @@ name: Java Robo-Build Test
 # events but only for the main branch.
 on:
   push:
-    branches: [ master ]
+    branches: [ master, MasterDevTest ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, MasterDevTest ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

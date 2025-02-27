@@ -7,8 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.UltrasonicSensor;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -22,11 +25,23 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  public static UltrasonicSensor globalUltraSensors;
 
   private Timer disabledTimer;
 
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   public Robot() {
+    // Pathfinding.setPathfinder(new FlexAutoSubsystem());
+    SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
     instance = this;
+    m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
+    m_chooser.addOption("Default Drop M", "Default Drop M");
+    m_chooser.addOption("Default Drop F", "Default Drop F");
+    m_chooser.addOption("FWD 10 feet", "FWD10");
+    m_chooser.addOption("FWD 5 feet", "FWD5");
+    SmartDashboard.putData(m_chooser);
   }
 
   public static Robot getInstance() {
@@ -67,6 +82,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    if (!DriverStation.isDisabled()) {
+      m_robotContainer.Periodic();
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -88,11 +106,15 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_robotContainer.setMotorBrake(true);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_robotContainer.init();
+    m_autoSelected = m_chooser.getSelected();
+    System.out.println("Auto selected: " + m_autoSelected);
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null) {
+    // schedule the autonomous command
+    if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
+      m_autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
+    } else {
       m_autonomousCommand.schedule();
     }
   }
@@ -107,6 +129,7 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    m_robotContainer.init();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     } else {
@@ -120,6 +143,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    m_robotContainer.init();
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
   }

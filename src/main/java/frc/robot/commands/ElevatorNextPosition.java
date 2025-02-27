@@ -16,8 +16,7 @@ public class ElevatorNextPosition extends Command {
 
   @Override
   public void initialize() {
-    if (m_subsystem.levels[m_subsystem.levels.length - 1]
-        == SmartDashboard.getNumber("ElevatorPos", 0)) {
+    if (ElevatorSubsystem.levels.length - 1 == SmartDashboard.getNumber("ElevatorPos", 0)) {
       m_subsystem.setLevel(0);
     } else {
       m_subsystem.setLevel((int) SmartDashboard.getNumber("ElevatorPos", 0) + 1);

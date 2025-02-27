@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C Path"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "DropCoral"
+            "pathName": "FWD 5 feet"
           }
         }
       ]

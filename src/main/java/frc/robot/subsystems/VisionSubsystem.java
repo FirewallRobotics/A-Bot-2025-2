@@ -1,6 +1,10 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
@@ -8,16 +12,15 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
+import frc.robot.Robot;
 
 public class VisionSubsystem extends SubsystemBase {
 
   // pipeline layout:
   // 0 - april tags
-  // 1 - Neural network coral/algae
-  // 2 - align with Coral elevator via april tag
-  // 3 - align with Algae elevator via april tag
+  // 1 - Coral / white mask
+  // 2 - Algae / Circlular Green mask
 
-  // The tags for the reef, coralStation, Processor, and barge
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
   private static int[] processorTags = {3, 16};
@@ -37,31 +40,46 @@ public class VisionSubsystem extends SubsystemBase {
 
     // send targets to drivers
     SmartDashboard.putNumber("AprilTags Found:", LimelightHelpers.getTargetCount(getName()));
+
+    // First, tell Limelight your robot's current orientation
+    // double robotYaw = m_gyro.getYaw(); todo: when movement code works add gyro
+    // LimelightHelpers.SetRobotOrientation("", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+    final Field2d m_field = new Field2d();
+    // Do this in either robot or subsystem init
+    SmartDashboard.putData("Field", m_field);
+    // Do this in either robot periodic or subsystem periodic
+    LimelightResults results = LimelightHelpers.getLatestResults("");
+    LimelightTarget_Fiducial tag = results.targets_Fiducials[0];
+    Pose3d temp = tag.getRobotPose_FieldSpace();
+    Translation2d tempTrans = new Translation2d(temp.getX(), temp.getY());
+    Rotation2d temprot = new Rotation2d(temp.getRotation().getX(), temp.getRotation().getY());
+    m_field.setRobotPose(new Pose2d(tempTrans, temprot));
+    SmartDashboard.putData("Field", m_field);
   }
 
   public static Pose3d getRobotPoseInFieldSpace() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
-
-    // change the pipeline to apriltags
-    LimelightHelpers.setPipelineIndex("", 0);
-
-    // get all results
-    LimelightResults results = LimelightHelpers.getLatestResults("");
-
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults("");
+    if (!Robot.isSimulation()) {
+      LimelightHelpers.setPipelineIndex("", 0);
+      LimelightResults results = LimelightHelpers.getLatestResults("");
+      // if the limelights intel is good look for reef tag
+      while (!results.valid) {
+        results = LimelightHelpers.getLatestResults("");
+      }
+      LimelightTarget_Fiducial tag = results.targets_Fiducials[0];
+      return tag.getRobotPose_FieldSpace();
+    } else {
+      return null;
     }
+  }
 
-    // get the first tag we see
-    LimelightTarget_Fiducial tag = results.targets_Fiducials[0];
+  public static double[] getCoralLocation() {
+    LimelightHelpers.setPipelineIndex("", 1);
+    return LimelightHelpers.getTargetPose_RobotSpace("");
+  }
 
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
-
-    // return the our location by getting its relative positive given that tag
-    return tag.getRobotPose_FieldSpace();
+  public static double[] getAlgaeLocation() {
+    LimelightHelpers.setPipelineIndex("", 2);
+    return LimelightHelpers.getTargetPose_RobotSpace("");
   }
 
   public static double[] getCoralLocationCamera() {
