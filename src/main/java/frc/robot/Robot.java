@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,7 +14,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
+import java.util.List;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -26,6 +31,7 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
   public static UltrasonicSensor globalUltraSensors;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   private Timer disabledTimer;
 
@@ -33,7 +39,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
-    // Pathfinding.setPathfinder(new FlexAutoSubsystem());
+    SmartDashboard.putBoolean("FlexAuto", false);
     SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
@@ -57,6 +63,8 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    flexAutoSubsystem = new FlexAutoSubsystem();
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot
     // stop
@@ -119,9 +127,36 @@ public class Robot extends TimedRobot {
     }
   }
 
+  List<Pose2d> points;
+
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
+    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
+
+      // if we don't have a list of points to follow
+      if (points.isEmpty()) {
+
+        // create robots constraints
+        PathConstraints constraints =
+            new PathConstraints(
+                RobotContainer.drivebase.getMaximumChassisVelocity(),
+                4.0,
+                RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+                Units.degreesToRadians(720));
+
+        // have flex create points to follow
+        points = flexAutoSubsystem.CreatePath(constraints);
+      }
+
+      // follow the first point
+      RobotContainer.drivebase.driveToPose(points.get(0));
+
+      // delete point to follow path
+      points.remove(0);
+    }
+  }
 
   @Override
   public void teleopInit() {

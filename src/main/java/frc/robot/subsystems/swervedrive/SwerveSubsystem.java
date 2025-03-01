@@ -209,6 +209,14 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
+  public double getMaximumChassisVelocity() {
+    return swerveDrive.getMaximumChassisVelocity();
+  }
+
+  public double getMaximumChassisAngularVelocity() {
+    return swerveDrive.getMaximumChassisAngularVelocity();
+  }
+
   /**
    * Use PathPlanner Path finding to go to a point on the field.
    *
