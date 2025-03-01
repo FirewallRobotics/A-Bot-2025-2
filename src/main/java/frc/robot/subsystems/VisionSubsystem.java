@@ -186,6 +186,50 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
+  public static double[] getCoralStationLocation() {
+    // get the pipeline used before and save it for after we have finished our work
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");
+
+    // change the pipeline to apriltags
+    LimelightHelpers.setPipelineIndex("", 0);
+
+    // get the results
+    LimelightResults results = LimelightHelpers.getLatestResults("");
+    Pose3d tagPoseRobot = null;
+
+    // if the limelights intel is good look for reef tag
+    while (!results.valid) {
+      results = LimelightHelpers.getLatestResults("");
+    }
+
+    // loop through all tags in the view of limelight
+    for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
+
+      // find out if any of the tags we have are those of the reef
+      for (int coraltag : coralTags) {
+        if (tag.fiducialID == coraltag) {
+
+          // if we have found a reef tag break out
+          tagPoseRobot = tag.getTargetPose_RobotSpace();
+          break;
+        }
+      }
+      if (tagPoseRobot != null) {
+
+        // continue to break out if we have a reef tag
+        break;
+      }
+    }
+    // if the view of the limelight has no reef tags in return -1, -1 so that auto can scan
+    // set pipeline to the what it was before
+    LimelightHelpers.setPipelineIndex("", pipelineTempdex);
+    if (tagPoseRobot != null) {
+      return new double[] {tagPoseRobot.getX(), tagPoseRobot.getY()};
+    } else {
+      return new double[] {-1.0, -1.0};
+    }
+  }
+
   public static double[] getProcessorLocation() {
     // get the pipeline used before and save it for after we have finished our work
     int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex("");

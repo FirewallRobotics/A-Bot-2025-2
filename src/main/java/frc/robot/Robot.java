@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -27,7 +28,7 @@ import java.util.List;
 public class Robot extends TimedRobot {
 
   private static Robot instance;
-  private Command m_autonomousCommand;
+  public static Command autonomousCommand;
 
   private RobotContainer m_robotContainer;
   public static UltrasonicSensor globalUltraSensors;
@@ -117,13 +118,13 @@ public class Robot extends TimedRobot {
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
+    autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
     // schedule the autonomous command
     if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
-      m_autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
+      autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
     } else {
-      m_autonomousCommand.schedule();
+      autonomousCommand.schedule();
     }
   }
 
@@ -133,7 +134,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
-    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
+    if (SmartDashboard.getBoolean("FlexAuto", false)
+        && flexAutoSubsystem.isNewPathAvailable()
+        && autonomousCommand.isFinished()) {
 
       // if we don't have a list of points to follow
       if (points.isEmpty()) {
@@ -149,12 +152,13 @@ public class Robot extends TimedRobot {
         // have flex create points to follow
         points = flexAutoSubsystem.CreatePath(constraints);
       }
+      if (!points.isEmpty()) {
+        // follow the first point
+        RobotContainer.drivebase.driveToPose(points.get(0));
 
-      // follow the first point
-      RobotContainer.drivebase.driveToPose(points.get(0));
-
-      // delete point to follow path
-      points.remove(0);
+        // delete point to follow path
+        points.remove(0);
+      }
     }
   }
 
@@ -165,8 +169,9 @@ public class Robot extends TimedRobot {
     // continue until interrupted by another command, remove
     // this line or comment it out.
     m_robotContainer.init();
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    if (autonomousCommand != null) {
+      autonomousCommand.cancel();
+      RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
     } else {
       CommandScheduler.getInstance().cancelAll();
     }

@@ -42,8 +42,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   public boolean isNewPathAvailable() {
     // new path is avaliable if we are not moving
-    if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 1
-        || RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 1) {
+    if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.2
+        && RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 0.2) {
       return true;
     }
     return false;
@@ -53,6 +53,33 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
     // get reef location in robot space
     ReefLocation = VisionSubsystem.getReefLocation();
+
+    // if we dont have the reefs location find it by spinning slowly
+    if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
+      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed);
+    } else {
+      // if we do have the reefs location then convert it
+      // first zero the drivecommand so the math stays right
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
+
+      // get the robots location in field space
+      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
+
+      // do the math to find the location of the reef by adding together the values
+      double xActual = ReefLocation[0] + RobotFieldSpace.getX();
+      double yActual = ReefLocation[1] + RobotFieldSpace.getY();
+
+      // return the values
+      return new Translation2d(xActual, yActual);
+    }
+    return null;
+  }
+
+  public Translation2d getCoralStationLocationInFieldSpace() {
+
+    // get reef location in robot space
+    ReefLocation = VisionSubsystem.getCoralStationLocation();
 
     // if we dont have the reefs location find it by spinning slowly
     if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
@@ -128,15 +155,29 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
             // if we are on blue then go to the blue coral station and reef
             Translation2d temp2 = getReefLocationInFieldSpace();
+            if (temp2 == null) {
+              return null;
+            }
             returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
-            returnPose2ds.add(new Pose2d(4, 4, new Rotation2d(45)));
+            temp2 = getCoralStationLocationInFieldSpace();
+            if (temp2 == null) {
+              return null;
+            }
+            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135)));
           }
           if (ally.get() == Alliance.Red) {
 
             // if we are red go to the red coral station and reef
             Translation2d temp2 = getReefLocationInFieldSpace();
+            if (temp2 == null) {
+              return null;
+            }
             returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
-            returnPose2ds.add(new Pose2d(13, 4, new Rotation2d(135)));
+            temp2 = getCoralStationLocationInFieldSpace();
+            if (temp2 == null) {
+              return null;
+            }
+            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135)));
           }
         }
       }
