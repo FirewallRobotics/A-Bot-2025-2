@@ -50,7 +50,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     leftMotorConfig.idleMode(IdleMode.kBrake);
     rightMotorConfig.idleMode(IdleMode.kBrake);
     rightMotorConfig.inverted(true);
-    rightMotorConfig.follow(leftMotor);
+    rightMotorConfig.follow(leftMotor, true);
     leftMotor.configure(
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
@@ -63,6 +63,10 @@ public class ElevatorSubsystem extends SubsystemBase {
       return;
     }
     moveToPosition(levels[level]);
+  }
+
+  public void setSpeed(double speed) {
+    leftMotor.set(speed);
   }
 
   public double getPosition() {
@@ -83,6 +87,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void stop() {
     leftMotor.set(0);
+  }
+
+  public double getPositionEncoder() {
+    return leftMotor.getEncoder().getPosition();
   }
 
   public boolean isFinished(int position) {

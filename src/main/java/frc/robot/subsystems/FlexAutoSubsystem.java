@@ -5,15 +5,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 public class FlexAutoSubsystem extends SubsystemBase {
@@ -130,7 +130,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
     return null;
   }
 
-  public List<Pose2d> CreatePath(PathConstraints constraints) {
+  public void CreatePath(PathConstraints constraints) {
 
     // goals: Auto can do 2 things
     // 1) drop off preloaded coral and do cycles between coral station and reef
@@ -142,47 +142,26 @@ public class FlexAutoSubsystem extends SubsystemBase {
       // if a new path is available AKA we are not moving
       if (isNewPathAvailable()) {
 
-        // get the robots location in field space
-        Pose3d temp = VisionSubsystem.getRobotPoseInFieldSpace();
-
-        // set the start position to our current location
-        returnPose2ds.add(new Pose2d(temp.getX(), temp.getY(), null));
-
-        // get our Alliance
-        Optional<Alliance> ally = DriverStation.getAlliance();
-        if (ally.isPresent()) {
-          if (ally.get() == Alliance.Blue) {
-
-            // if we are on blue then go to the blue coral station and reef
-            Translation2d temp2 = getReefLocationInFieldSpace();
-            if (temp2 == null) {
-              return null;
-            }
-            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
-            temp2 = getCoralStationLocationInFieldSpace();
-            if (temp2 == null) {
-              return null;
-            }
-            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135)));
-          }
-          if (ally.get() == Alliance.Red) {
-
-            // if we are red go to the red coral station and reef
-            Translation2d temp2 = getReefLocationInFieldSpace();
-            if (temp2 == null) {
-              return null;
-            }
-            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), null));
-            temp2 = getCoralStationLocationInFieldSpace();
-            if (temp2 == null) {
-              return null;
-            }
-            returnPose2ds.add(new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135)));
-          }
+        Translation2d temp2 = getReefLocationInFieldSpace();
+        if (temp2 == null) {
+          return;
         }
+        Robot.autonomousCommand.andThen(
+            RobotContainer.drivebase.driveToPose(new Pose2d(temp2.getX(), temp2.getY(), null)),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+        temp2 = getCoralStationLocationInFieldSpace();
+        if (temp2 == null) {
+          return;
+        }
+        Robot.autonomousCommand.andThen(
+            RobotContainer.drivebase.driveToPose(
+                new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))),
+            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
       }
       // if we are not going to go to the coral station then we are doing algae cycles
     } else {
+
+      // TODO: make this not need an external drive command
 
       // if a new path is available AKA we are not moving
       if (isNewPathAvailable()) {
@@ -202,7 +181,5 @@ public class FlexAutoSubsystem extends SubsystemBase {
         returnPose2ds.add(new Pose2d(temp3.getX(), temp3.getY(), null));
       }
     }
-
-    return returnPose2ds;
   }
 }

@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
 import frc.robot.commands.CoralIntakeCommand;
@@ -32,9 +33,13 @@ import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
+import frc.robot.commands.ElevatorStop;
+import frc.robot.commands.FastMode;
+import frc.robot.commands.SlowMode;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import java.util.Optional;
@@ -79,9 +84,10 @@ public class RobotContainer {
           .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
 
-  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  private ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  private CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
+  public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
+  public static VisionSubsystem visionSubsystem = new VisionSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -166,7 +172,7 @@ public class RobotContainer {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.x().onTrue(Commands.none());
+    driverXbox.x().whileTrue(new AlignWithNearest(visionSubsystem));
 
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.isPresent()) {
@@ -187,10 +193,14 @@ public class RobotContainer {
     driverXbox.start().whileTrue(Commands.none());
     driverXbox.back().whileTrue(Commands.none());
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
+    driverXbox.leftBumper().onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
+    driverXbox.rightBumper().onFalse(new ElevatorStop(elevatorSubsystem));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
-    driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
+    driverXbox.povDown().whileTrue((new ArmLower(climberSubsystem)));
+    driverXbox.povUp().whileTrue((new ArmRaise(climberSubsystem)));
+    driverXbox.y().onTrue(new SlowMode());
+    driverXbox.y().onFalse(new FastMode());
   }
 
   /**

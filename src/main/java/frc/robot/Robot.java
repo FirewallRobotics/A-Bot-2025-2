@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.AlignWithNearest;
 import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
 import java.util.List;
@@ -42,6 +43,9 @@ public class Robot extends TimedRobot {
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
     SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
+    SmartDashboard.putNumber("AssistMinDistance", 40);
+    SmartDashboard.putNumber("AutoMoveSpeed", 5);
+    SmartDashboard.putNumber("AutoScanSpeed", 5);
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
@@ -94,6 +98,10 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
+
+    // to set the levels
+    // SmartDashboard.putNumber("ElevEncoder:",
+    // RobotContainer.elevatorSubsystem.getPositionEncoder());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -115,17 +123,27 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    RobotContainer.drivebase.zeroGyro();
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
     autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
 
+    // if (m_autoSelected.contains("Drop")) {
+    //  autonomousCommand.andThen(
+    //      new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(1));
+    // }
+
     // schedule the autonomous command
     if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
-      autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
-    } else {
-      autonomousCommand.schedule();
+      autonomousCommand.andThen(m_robotContainer.getCoralPathCommand());
+      if (SmartDashboard.getBoolean("FlexAuto", false)) {
+        autonomousCommand.andThen(new AlignWithNearest(RobotContainer.visionSubsystem));
+        // new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+        // new WaitCommand(1));
+      }
     }
+    autonomousCommand.schedule();
   }
 
   List<Pose2d> points;
@@ -137,33 +155,22 @@ public class Robot extends TimedRobot {
     if (SmartDashboard.getBoolean("FlexAuto", false)
         && flexAutoSubsystem.isNewPathAvailable()
         && autonomousCommand.isFinished()) {
+      // create robots constraints
+      PathConstraints constraints =
+          new PathConstraints(
+              RobotContainer.drivebase.getMaximumChassisVelocity(),
+              4.0,
+              RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+              Units.degreesToRadians(720));
 
-      // if we don't have a list of points to follow
-      if (points.isEmpty()) {
-
-        // create robots constraints
-        PathConstraints constraints =
-            new PathConstraints(
-                RobotContainer.drivebase.getMaximumChassisVelocity(),
-                4.0,
-                RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
-                Units.degreesToRadians(720));
-
-        // have flex create points to follow
-        points = flexAutoSubsystem.CreatePath(constraints);
-      }
-      if (!points.isEmpty()) {
-        // follow the first point
-        RobotContainer.drivebase.driveToPose(points.get(0));
-
-        // delete point to follow path
-        points.remove(0);
-      }
+      // have flex create points to follow
+      flexAutoSubsystem.CreatePath(constraints);
     }
   }
 
   @Override
   public void teleopInit() {
+    // RobotContainer.drivebase.zeroGyro();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

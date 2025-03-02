@@ -57,7 +57,9 @@ public final class Constants {
     public static final int CLIMBER_RIGHT_MOTOR_ID = 14;
   }
 
-  public static class FlexAutoSubsystemConstants {}
+  public static class VisionSubsystemConstants {
+    public static final String limelightName = "limelight-cyclops";
+  }
 
   public static class OperatorConstants {
 
