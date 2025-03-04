@@ -569,6 +569,10 @@ public class SwerveSubsystem extends SubsystemBase {
     return getPose().getRotation();
   }
 
+  public Pose2d getPose2d() {
+    return getPose();
+  }
+
   /**
    * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which
    * direction. The other for the angle of the robot.
@@ -662,9 +666,8 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /** Add a fake vision reading for testing purposes. */
-  public void addFakeVisionReading() {
-    swerveDrive.addVisionMeasurement(
-        new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
+  public void addVisionReading(Pose2d pose2d, double timer) {
+    swerveDrive.addVisionMeasurement(pose2d, timer);
   }
 
   /**

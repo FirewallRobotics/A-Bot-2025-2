@@ -36,7 +36,9 @@ import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.FastMode;
 import frc.robot.commands.SlowMode;
+import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -62,6 +64,7 @@ public class RobotContainer {
 
   private MechanismLigament2d m_elevator;
   private MechanismLigament2d m_wrist;
+  private MechanismLigament2d m_wrist2;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -88,6 +91,8 @@ public class RobotContainer {
   public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
+  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
+  public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -135,13 +140,17 @@ public class RobotContainer {
         root.append(new MechanismLigament2d("elevator", ElevatorSubsystem.levels.length, 90));
     m_wrist =
         m_elevator.append(
-            new MechanismLigament2d("wrist", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+            new MechanismLigament2d("Coral", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+    m_wrist2 =
+        m_elevator.append(
+            new MechanismLigament2d("Algae", 0.25, 90, 3, new Color8Bit(Color.kBlue)));
     SmartDashboard.putData("Mech2d", mech);
   }
 
   public void Periodic() {
-    m_elevator.setLength(0.25 + (SmartDashboard.getNumber("ElevatorPos", 0) / 3));
-    m_wrist.setAngle(90);
+    m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    m_wrist2.setAngle(climberSubsystem.getEncoder());
   }
 
   /**
@@ -172,7 +181,7 @@ public class RobotContainer {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.x().whileTrue(new AlignWithNearest(visionSubsystem));
+    driverXbox.x().whileTrue(new AlignWithNearest());
 
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.isPresent()) {

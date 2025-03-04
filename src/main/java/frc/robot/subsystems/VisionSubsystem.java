@@ -8,6 +8,7 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -15,19 +16,67 @@ public class VisionSubsystem extends SubsystemBase {
 
   // pipeline layout:
   // 0 - april tags
-  // 1 - Coral / white mask
-  // 2 - Algae / Circlular Green mask
+  // 1 - Reef Target
+  // 2 - Coral Station Target
+  // 3 - secondary camera for algae finding
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
   private static int[] processorTags = {3, 16};
   private static int[] bargeTags = {4, 5, 14, 15};
+  boolean doRejectUpdate;
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("ReefDistance", VisionSubsystem.DistanceToReef());
     SmartDashboard.putNumber("CoralStationDistance", VisionSubsystem.DistanceToCoralStation());
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
+
+    LimelightHelpers.SetRobotOrientation(
+        name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
+    if (mt2 != null) {
+      if (mt2.tagCount == 0) {
+        doRejectUpdate = true;
+      } else {
+        doRejectUpdate = false;
+      }
+      if (!doRejectUpdate) {
+        RobotContainer.drivebase.addVisionReading(mt2.pose, mt2.timestampSeconds);
+      }
+    }
+  }
+
+  public static int[] getTags() {
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex(name);
+    LimelightHelpers.setPipelineIndex(name, 0);
+    LimelightResults results = LimelightHelpers.getLatestResults(name);
+    while (!results.valid) {
+      results = LimelightHelpers.getLatestResults(name);
+    }
+    int[] temp = new int[results.targets_Fiducials.length];
+    for (int i = 0; i < results.targets_Fiducials.length; i++) {
+      temp[i] = (int) results.targets_Fiducials[i].fiducialID;
+    }
+    LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
+    return temp;
+  }
+
+  public static boolean CanSeeTag(int tag) {
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex(name);
+    LimelightHelpers.setPipelineIndex(name, 0);
+    LimelightResults results = LimelightHelpers.getLatestResults(name);
+    while (!results.valid) {
+      results = LimelightHelpers.getLatestResults(name);
+    }
+    for (LimelightTarget_Fiducial SeenTag : results.targets_Fiducials) {
+      if (SeenTag.fiducialID == tag) {
+        LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
+        return true;
+      }
+    }
+    LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
+    return false;
   }
 
   public static Pose3d getRobotPoseInFieldSpace() {
@@ -43,6 +92,20 @@ public class VisionSubsystem extends SubsystemBase {
     } else {
       return null;
     }
+  }
+
+  public static boolean CanSeeAlgae() {
+    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex(name);
+    LimelightHelpers.setPipelineIndex(
+        frc.robot.Constants.VisionSubsystemConstants.limelightName, 3);
+    if (LimelightHelpers.getTargetColor(name)[0] != -1) {
+      LimelightHelpers.setPipelineIndex(
+          frc.robot.Constants.VisionSubsystemConstants.limelightName, pipelineTempdex);
+      return true;
+    }
+    LimelightHelpers.setPipelineIndex(
+        frc.robot.Constants.VisionSubsystemConstants.limelightName, pipelineTempdex);
+    return false;
   }
 
   public static double[] getReefLocation() {

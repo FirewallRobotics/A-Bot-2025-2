@@ -5,7 +5,8 @@ import frc.robot.subsystems.ElevatorSubsystem;
 
 public class ElevatorNextPosition extends Command {
   private ElevatorSubsystem m_subsystem;
-  private int position;
+
+  // private int position;
 
   public ElevatorNextPosition(ElevatorSubsystem subsystem) {
     m_subsystem = subsystem;

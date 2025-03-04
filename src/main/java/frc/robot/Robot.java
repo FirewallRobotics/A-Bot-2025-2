@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.AlignWithNearest;
 import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
@@ -138,7 +139,7 @@ public class Robot extends TimedRobot {
     if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
       autonomousCommand.andThen(m_robotContainer.getCoralPathCommand());
       if (SmartDashboard.getBoolean("FlexAuto", false)) {
-        autonomousCommand.andThen(new AlignWithNearest(RobotContainer.visionSubsystem));
+        autonomousCommand.andThen(new AlignWithNearest());
         // new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
         // new WaitCommand(1));
       }
@@ -165,6 +166,9 @@ public class Robot extends TimedRobot {
 
       // have flex create points to follow
       flexAutoSubsystem.CreatePath(constraints);
+    }
+    if (autonomousCommand.isFinished()) {
+      autonomousCommand = Commands.none();
     }
   }
 
