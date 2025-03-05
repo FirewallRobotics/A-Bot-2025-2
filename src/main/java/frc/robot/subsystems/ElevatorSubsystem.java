@@ -57,6 +57,16 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+  // Update PIDF
+  public void Periodic() {
+    leftMotorConfig.closedLoop.pidf(
+        SmartDashboard.getNumber("Elevator-P", 0),
+        SmartDashboard.getNumber("Elevator-I", 0),
+        SmartDashboard.getNumber("Elevator-D", 0),
+        SmartDashboard.getNumber("Elevator-F", 0),
+        ClosedLoopSlot.kSlot0);
+  }
+
   public void setLevel(int level) {
     if (level < 0 || level >= levels.length) {
       System.out.println("Invalid level: " + level);

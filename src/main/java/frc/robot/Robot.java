@@ -47,6 +47,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("AssistMinDistance", 40);
     SmartDashboard.putNumber("AutoMoveSpeed", 5);
     SmartDashboard.putNumber("AutoScanSpeed", 5);
+    SmartDashboard.putNumber("Elevator-P", 0);
+    SmartDashboard.putNumber("Elevator-I", 0);
+    SmartDashboard.putNumber("Elevator-D", 0);
+    SmartDashboard.putNumber("Elevator-F", 0);
+
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
@@ -99,6 +104,7 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
+    RobotContainer.elevatorSubsystem.Periodic();
 
     // to set the levels
     // SmartDashboard.putNumber("ElevEncoder:",
