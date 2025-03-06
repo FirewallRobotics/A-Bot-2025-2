@@ -15,7 +15,9 @@ public class AlgaeSubsystem extends SubsystemBase {
   // private final Encoder encoder;
 
   public AlgaeSubsystem() {
-    motor = new SparkFlex(2, MotorType.kBrushless);
+    motor =
+        new SparkFlex(
+            frc.robot.Constants.AlgaeSubsystemConstants.ALGAE_MOTOR_ID, MotorType.kBrushless);
     motorConfig = new SparkFlexConfig();
 
     // encoder = new Encoder(1, 1);
