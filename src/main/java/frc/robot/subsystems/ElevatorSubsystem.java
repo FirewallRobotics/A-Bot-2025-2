@@ -29,7 +29,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   // Elevator levels in encoder ticks
   public static final double[] levels = {0, 1000, 2000, 3000, 4000};
-  public static final double[] Angles = {0, 0, 0, 0};
+  public static final double[] Angles = {0, 0, 0, 0, 0};
 
   public ElevatorSubsystem() {
     leftMotor =
