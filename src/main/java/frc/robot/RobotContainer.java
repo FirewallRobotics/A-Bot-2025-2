@@ -40,7 +40,6 @@ import frc.robot.commands.SlowMode;
 import frc.robot.commands.WristDown;
 import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
-import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
@@ -194,10 +193,10 @@ public class RobotContainer {
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.x().whileTrue(new AlignWithNearest());
-    driverXbox.b().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
-    driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));
-    driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
-    driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
+    driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    // driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
+    // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
     driverXbox.rightTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
@@ -213,10 +212,10 @@ public class RobotContainer {
     driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));
 
-    driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem));
-    driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem));
+    driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
+    driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
     driverXbox.povLeft().onFalse(new algaeStopIntake(algaeSubsystem));
-    driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    // driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());
   }
 

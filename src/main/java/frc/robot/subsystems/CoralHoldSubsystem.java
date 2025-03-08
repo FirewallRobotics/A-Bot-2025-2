@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
@@ -46,22 +44,24 @@ public class CoralHoldSubsystem extends SubsystemBase {
 
   // When we want to shoot coral from the intake, has to have a coral in the lift
   public void shoot() {
-    if (limitSwitch.get()) {
-      motorConfig.inverted(false);
-      motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // if (limitSwitch.get()) {
+    // motorConfig.inverted(false);
+    // motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-      motor.set(setSpeed());
-    }
+    motor.set(setSpeed());
+    // }
   }
 
   // Intakes coral. Lift has to be empty
   public void intake() {
 
     if (limitSwitch.get() == false) {
-      motorConfig.inverted(true);
-      motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      // motorConfig.inverted(true);
+      // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
+      // PersistMode.kPersistParameters);
 
-      motor.set(setSpeed()); // Reverses the motor- Check if to make sure this won't break the motor
+      motor.set(
+          -setSpeed()); // Reverses the motor- Check if to make sure this won't break the motor
     } else {
       stop();
     }
