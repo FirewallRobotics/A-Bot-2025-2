@@ -27,8 +27,6 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
-import frc.robot.commands.ArmLower;
-import frc.robot.commands.ArmRaise;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -38,6 +36,8 @@ import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
 import frc.robot.commands.SlowMode;
+import frc.robot.commands.WristDown;
+import frc.robot.commands.WristUp;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
@@ -93,8 +93,8 @@ public class RobotContainer {
   public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
-  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
+  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -199,8 +199,9 @@ public class RobotContainer {
         .rightTrigger(0.35)
         .whileTrue(new ElevatorDown(elevatorSubsystem, driverXbox.getLeftTriggerAxis()));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.povDown().whileTrue((new ArmLower(climberSubsystem)));
-    driverXbox.povUp().whileTrue((new ArmRaise(climberSubsystem)));
+    driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
+    driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));
+
     driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem));
     driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());
