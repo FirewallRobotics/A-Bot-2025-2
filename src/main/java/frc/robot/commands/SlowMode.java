@@ -8,7 +8,11 @@ public class SlowMode extends Command {
 
   @Override
   public void initialize() {
-    RobotContainer.drivebase.setMaxSpeed(1);
+    if (RobotContainer.drivebase.getMaximumChassisVelocity() == 1) {
+      RobotContainer.drivebase.setMaxSpeed(5);
+    } else {
+      RobotContainer.drivebase.setMaxSpeed(1);
+    }
     SmartDashboard.putBoolean("SlowMode", true);
   }
 

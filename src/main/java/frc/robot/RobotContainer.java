@@ -7,11 +7,11 @@ package frc.robot;
 import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -23,18 +23,22 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
-import frc.robot.commands.FastMode;
+import frc.robot.commands.ElevatorUp;
 import frc.robot.commands.SlowMode;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -182,34 +186,29 @@ public class RobotContainer {
     }
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.x().whileTrue(new AlignWithNearest());
+    driverXbox.b().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
 
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    if (ally.isPresent()) {
-      if (ally.get() == Alliance.Blue) {
-        driverXbox
-            .b()
-            .whileTrue(
-                drivebase.driveToPose(new Pose2d(new Translation2d(4, 4), drivebase.getHeading())));
-      }
-      if (ally.get() == Alliance.Red) {
-        driverXbox
-            .b()
-            .whileTrue(
-                drivebase.driveToPose(
-                    new Pose2d(new Translation2d(13, 4), drivebase.getHeading())));
-      }
-    }
     driverXbox.start().whileTrue(Commands.none());
-    driverXbox.back().whileTrue(Commands.none());
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.leftBumper().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.rightTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.rightBumper().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox
+        .leftTrigger(0.35)
+        .whileTrue(new ElevatorUp(elevatorSubsystem, driverXbox.getLeftTriggerAxis()));
+    driverXbox
+        .rightTrigger(0.35)
+        .whileTrue(new ElevatorDown(elevatorSubsystem, driverXbox.getLeftTriggerAxis()));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povDown().whileTrue((new ArmLower(climberSubsystem)));
     driverXbox.povUp().whileTrue((new ArmRaise(climberSubsystem)));
-    driverXbox.y().onTrue(new SlowMode());
-    driverXbox.y().onFalse(new FastMode());
+    driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem));
+    driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem));
+    XboxController exampleController = new XboxController(0);
+    new JoystickButton(exampleController, XboxController.Button.kLeftStick.value)
+        .onTrue(new SlowMode()); // Creates a new JoystickButton object for the `Y` button on
+    // exampleController
   }
 
   /**

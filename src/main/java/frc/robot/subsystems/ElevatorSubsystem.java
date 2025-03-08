@@ -59,6 +59,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   // Update PIDF
   public void Periodic() {
+    SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
+
     leftMotorConfig.closedLoop.pidf(
         SmartDashboard.getNumber("Elevator-P", 0),
         SmartDashboard.getNumber("Elevator-I", 0),
