@@ -62,6 +62,8 @@ public class CoralHoldSubsystem extends SubsystemBase {
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
       motor.set(setSpeed()); // Reverses the motor- Check if to make sure this won't break the motor
+    } else {
+      stop();
     }
   }
 
