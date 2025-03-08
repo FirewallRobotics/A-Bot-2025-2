@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -23,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
@@ -205,10 +203,7 @@ public class RobotContainer {
     driverXbox.povUp().whileTrue((new ArmRaise(climberSubsystem)));
     driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem));
     driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem));
-    XboxController exampleController = new XboxController(0);
-    new JoystickButton(exampleController, XboxController.Button.kLeftStick.value)
-        .onTrue(new SlowMode()); // Creates a new JoystickButton object for the `Y` button on
-    // exampleController
+    driverXbox.start().onTrue(new SlowMode());
   }
 
   /**
