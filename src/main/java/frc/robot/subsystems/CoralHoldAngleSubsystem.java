@@ -39,6 +39,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
             MotorType.kBrushless); // Assign motor controller port
     motorConfig = new SparkFlexConfig();
     controller = motor.getClosedLoopController();
+    encoder = motor.getEncoder();
 
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
