@@ -93,6 +93,19 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   }
 
+  public void holdUp(double wantedPos) {
+    // Calculate the feedforward from the sepoint
+    // double feedforward = m_feedforward.calculate(wantedPos, encoder.getVelocity());
+
+    // motorConfig.closedLoop.velocityFF(feedforward);
+    controller.setReference(wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot1);
+    // Add the feedforward to the PID output to get the motor output
+    /*maxPid.setReference(
+    wantedPos, // - ArmConstants.kArmOffsetRads, 0, feedforward
+    ControlType.kPosition);*/
+
+  }
+
   // When you release a button, this is called to stop the tilt.
   public void stopTilt() {
     motor.set(0);
