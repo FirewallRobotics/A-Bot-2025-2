@@ -6,7 +6,6 @@ import frc.robot.subsystems.ElevatorSubsystem;
 
 public class ElevatorPrevPosition extends Command {
   private ElevatorSubsystem m_subsystem;
-  private int position;
 
   public ElevatorPrevPosition(ElevatorSubsystem subsystem) {
     m_subsystem = subsystem;
@@ -25,6 +24,6 @@ public class ElevatorPrevPosition extends Command {
 
   @Override
   public boolean isFinished() {
-    return m_subsystem.isFinished(position);
+    return true;
   }
 }

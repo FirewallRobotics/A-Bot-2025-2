@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,7 +15,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.AlignWithNearest;
+import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
+import java.util.List;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -22,10 +30,11 @@ import frc.robot.subsystems.UltrasonicSensor;
 public class Robot extends TimedRobot {
 
   private static Robot instance;
-  private Command m_autonomousCommand;
+  public static Command autonomousCommand;
 
   private RobotContainer m_robotContainer;
   public static UltrasonicSensor globalUltraSensors;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   private Timer disabledTimer;
 
@@ -33,13 +42,23 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Robot() {
-    SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
     SmartDashboard.putBoolean("FlexAuto", false);
+    SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
+    SmartDashboard.putNumber("AssistMinDistance", 40);
+    SmartDashboard.putNumber("AutoMoveSpeed", 5);
+    SmartDashboard.putNumber("AutoScanSpeed", 5);
+    SmartDashboard.putNumber("Elevator-P", 0);
+    SmartDashboard.putNumber("Elevator-I", 0);
+    SmartDashboard.putNumber("Elevator-D", 0);
+    SmartDashboard.putNumber("Elevator-F", 0);
+
     instance = this;
     m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
     m_chooser.addOption("Default Drop M", "Default Drop M");
     m_chooser.addOption("Default Drop F", "Default Drop F");
     m_chooser.addOption("Box-9", "Box-9");
+    m_chooser.addOption("FWD 10 feet", "FWD10");
+    m_chooser.addOption("FWD 5 feet", "FWD5");
     SmartDashboard.putData(m_chooser);
   }
 
@@ -56,6 +75,8 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    flexAutoSubsystem = new FlexAutoSubsystem();
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot
     // stop
@@ -83,6 +104,11 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
+    RobotContainer.elevatorSubsystem.Periodic();
+
+    // to set the levels
+    // SmartDashboard.putNumber("ElevEncoder:",
+    // RobotContainer.elevatorSubsystem.getPositionEncoder());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -104,37 +130,65 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    RobotContainer.drivebase.zeroGyro();
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
+    autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
+
+    // if (m_autoSelected.contains("Drop")) {
+    //  autonomousCommand.andThen(
+    //      new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(1));
+    // }
 
     // schedule the autonomous command
     if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
-      m_autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
-    } else {
-      m_autonomousCommand.schedule();
+      autonomousCommand.andThen(m_robotContainer.getCoralPathCommand());
+      if (SmartDashboard.getBoolean("FlexAuto", false)) {
+        autonomousCommand.andThen(new AlignWithNearest());
+        // new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+        // new WaitCommand(1));
+      }
     }
+    autonomousCommand.schedule();
   }
+
+  List<Pose2d> points;
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    if (RobotContainer.flexAutoSubsystem.isNewPathAvailable()
-        && SmartDashboard.getBoolean("FlexAuto", false)) {
-      m_robotContainer.driveFlexAuto();
+    // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
+    if (SmartDashboard.getBoolean("FlexAuto", false)
+        && flexAutoSubsystem.isNewPathAvailable()
+        && autonomousCommand.isFinished()) {
+      // create robots constraints
+      PathConstraints constraints =
+          new PathConstraints(
+              RobotContainer.drivebase.getMaximumChassisVelocity(),
+              4.0,
+              RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+              Units.degreesToRadians(720));
+
+      // have flex create points to follow
+      flexAutoSubsystem.CreatePath(constraints);
+    }
+    if (autonomousCommand.isFinished()) {
+      autonomousCommand = Commands.none();
     }
   }
 
   @Override
   public void teleopInit() {
+    // RobotContainer.drivebase.zeroGyro();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
     m_robotContainer.init();
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    if (autonomousCommand != null) {
+      autonomousCommand.cancel();
+      RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
     } else {
       CommandScheduler.getInstance().cancelAll();
     }

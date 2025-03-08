@@ -49,12 +49,24 @@ public class ElevatorSubsystem extends SubsystemBase {
     rightMotorConfig.smartCurrentLimit(50);
     leftMotorConfig.idleMode(IdleMode.kBrake);
     rightMotorConfig.idleMode(IdleMode.kBrake);
-    rightMotorConfig.inverted(true);
-    rightMotorConfig.follow(leftMotor);
+    rightMotorConfig.inverted(false);
+    rightMotorConfig.follow(leftMotor, true);
     leftMotor.configure(
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
+
+  // Update PIDF
+  public void Periodic() {
+    SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
+
+    leftMotorConfig.closedLoop.pidf(
+        SmartDashboard.getNumber("Elevator-P", 0),
+        SmartDashboard.getNumber("Elevator-I", 0),
+        SmartDashboard.getNumber("Elevator-D", 0),
+        SmartDashboard.getNumber("Elevator-F", 0),
+        ClosedLoopSlot.kSlot0);
   }
 
   public void setLevel(int level) {
@@ -67,10 +79,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void setSpeed(double speed) {
     leftMotor.set(speed);
-    rightMotor.set(-speed);
   }
 
-  public double getPosition() {
+  public double getLevel() {
     if (Robot.isSimulation()) {
       return levels[(int) SmartDashboard.getNumber("ElevatorPos", 0)];
     }
@@ -88,6 +99,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void stop() {
     leftMotor.set(0);
+  }
+
+  public double getPositionEncoder() {
+    return leftMotor.getEncoder().getPosition();
   }
 
   public boolean isFinished(int position) {

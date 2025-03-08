@@ -49,6 +49,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     motor.set(setSpeed());
   }
 
+  public double getEncoder() {
+    return motor.getEncoder().getPosition();
+  }
+
   // When you release a button, this is called to stop the tilt.
   public void stopTilt() {
     motor.set(0);

@@ -1,99 +1,137 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.LimelightHelpers;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import java.io.File;
-import java.util.function.DoubleSupplier;
+import java.util.Optional;
 
 public class AlignWithNearest extends Command {
 
-  // setup swerve
-  private final SwerveSubsystem drivebase =
-      new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+  public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
+  double distance;
+  double rotation;
+
+  public static Pose2d[] TagPos = {
+    new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712)),
+    new Pose2d(16.296, 7.007, new Rotation2d(0.9075712)),
+    new Pose2d(11.434, 7.398, new Rotation2d(1.570796)),
+    new Pose2d(0, 0, new Rotation2d(0)),
+    new Pose2d(0, 0, new Rotation2d(0)),
+    new Pose2d(13.787, 2.811, new Rotation2d(2.094395)),
+    new Pose2d(14.538, 3.969, new Rotation2d(3.141593)),
+    new Pose2d(13.840, 5.217, new Rotation2d(-2.111848)),
+    new Pose2d(12.365, 5.165, new Rotation2d(-1.012291)),
+    new Pose2d(11.638, 4.007, new Rotation2d(0)),
+    new Pose2d(12.390, 2.790, new Rotation2d(1.012291)),
+    new Pose2d(1.161, 1.048, new Rotation2d(-2.216568)),
+    new Pose2d(1.131, 6.950, new Rotation2d(2.181662)),
+    new Pose2d(0, 0, new Rotation2d(0)),
+    new Pose2d(0, 0, new Rotation2d(0)),
+    new Pose2d(6.364, 0.550, new Rotation2d(-1.570796)),
+    new Pose2d(3.390, 2.790, new Rotation2d(1.012291)),
+    new Pose2d(2.638, 4.007, new Rotation2d(0)),
+    new Pose2d(3.365, 5.165, new Rotation2d(-1.012291)),
+    new Pose2d(4.840, 5.217, new Rotation2d(-2.111848)),
+    new Pose2d(5.538, 3.969, new Rotation2d(3.141593)),
+    new Pose2d(4.787, 2.811, new Rotation2d(2.094395))
+  };
+
+  public static Pose2d Tag13 = new Pose2d(1.131, 6.950, new Rotation2d(2.181662));
+  public static Pose2d Tag12 = new Pose2d(1.161, 1.048, new Rotation2d(-2.216568));
+  public static Pose2d Tag2 = new Pose2d(16.296, 7.007, new Rotation2d(0.9075712));
+  public static Pose2d Tag1 = new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712));
+
+  public static Pose2d Tag3 = new Pose2d(11.434, 7.398, new Rotation2d(1.570796));
+  public static Pose2d Tag16 = new Pose2d(6.364, 0.550, new Rotation2d(-1.570796));
+
+  public static Pose2d Tag17 = new Pose2d(3.390, 2.790, new Rotation2d(1.012291));
+  public static Pose2d Tag18 = new Pose2d(2.638, 4.007, new Rotation2d(0));
+  public static Pose2d Tag19 = new Pose2d(3.365, 5.165, new Rotation2d(-1.012291));
+  public static Pose2d Tag20 = new Pose2d(4.840, 5.217, new Rotation2d(-2.111848));
+  public static Pose2d Tag21 = new Pose2d(5.538, 3.969, new Rotation2d(3.141593));
+  public static Pose2d Tag22 = new Pose2d(4.787, 2.811, new Rotation2d(2.094395));
+
+  public static Pose2d Tag6 = new Pose2d(13.787, 2.811, new Rotation2d(2.094395));
+  public static Pose2d Tag7 = new Pose2d(14.538, 3.969, new Rotation2d(3.141593));
+  public static Pose2d Tag8 = new Pose2d(13.840, 5.217, new Rotation2d(-2.111848));
+  public static Pose2d Tag9 = new Pose2d(12.365, 5.165, new Rotation2d(-1.012291));
+  public static Pose2d Tag10 = new Pose2d(11.638, 4.007, new Rotation2d(0));
+  public static Pose2d Tag11 = new Pose2d(12.390, 2.790, new Rotation2d(1.012291));
 
   // add vision as a requirement to run
-  public AlignWithNearest(VisionSubsystem visionSubsystem) {
-    addRequirements(visionSubsystem);
-  }
+  public AlignWithNearest() {}
 
   @Override
   public void initialize() {
-
-    // drive commands take doubleSuppliers
-    DoubleSupplier zero = () -> 0.0;
-
-    // if we are close enough to the reef
-    if (VisionSubsystem.DistanceToReef() < SmartDashboard.getNumber("AssistMinDistance", 10)) {
-      // switch to the pipeline with the right crosshair position for the coral side of the elevator
-      LimelightHelpers.setPipelineIndex("", 2);
-
-      // if we are to much too the right move left
-      while (LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)) {
-        DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(zero, movespeed, null);
+    if (VisionSubsystem.DistanceToCoralStation() != -1
+        || VisionSubsystem.DistanceToProcessor() != -1
+        || VisionSubsystem.DistanceToReef() != -1) {
+      Optional<Alliance> ally = DriverStation.getAlliance();
+      if (ally.isPresent()) {
+        if (ally.get() == Alliance.Blue) {
+          if (VisionSubsystem.DistanceToCoralStation() != -1) {
+            if (VisionSubsystem.CanSeeTag(13)) {
+              RobotContainer.drivebase.driveToPose(Tag13);
+            } else {
+              RobotContainer.drivebase.driveToPose(Tag12);
+            }
+          }
+          if (VisionSubsystem.DistanceToReef() != -1) {
+            if (VisionSubsystem.CanSeeTag(17)) {
+              RobotContainer.drivebase.driveToPose(Tag17);
+            } else if (VisionSubsystem.CanSeeTag(18)) {
+              RobotContainer.drivebase.driveToPose(Tag18);
+            } else if (VisionSubsystem.CanSeeTag(19)) {
+              RobotContainer.drivebase.driveToPose(Tag19);
+            } else if (VisionSubsystem.CanSeeTag(20)) {
+              RobotContainer.drivebase.driveToPose(Tag20);
+            } else if (VisionSubsystem.CanSeeTag(21)) {
+              RobotContainer.drivebase.driveToPose(Tag21);
+            } else {
+              RobotContainer.drivebase.driveToPose(Tag22);
+            }
+          }
+          if (VisionSubsystem.DistanceToProcessor() != -1) {
+            RobotContainer.drivebase.driveToPose(Tag3);
+          }
+        }
+        if (ally.get() == Alliance.Red) {
+          if (VisionSubsystem.DistanceToCoralStation() != -1) {
+            if (VisionSubsystem.CanSeeTag(2)) {
+              RobotContainer.drivebase.driveToPose(Tag2);
+            } else {
+              RobotContainer.drivebase.driveToPose(Tag1);
+            }
+          }
+          if (VisionSubsystem.DistanceToReef() != -1) {
+            if (VisionSubsystem.CanSeeTag(6)) {
+              RobotContainer.drivebase.driveToPose(Tag6);
+            } else if (VisionSubsystem.CanSeeTag(7)) {
+              RobotContainer.drivebase.driveToPose(Tag7);
+            } else if (VisionSubsystem.CanSeeTag(8)) {
+              RobotContainer.drivebase.driveToPose(Tag8);
+            } else if (VisionSubsystem.CanSeeTag(9)) {
+              RobotContainer.drivebase.driveToPose(Tag9);
+            } else if (VisionSubsystem.CanSeeTag(10)) {
+              RobotContainer.drivebase.driveToPose(Tag10);
+            } else {
+              RobotContainer.drivebase.driveToPose(Tag11);
+            }
+          }
+          if (VisionSubsystem.DistanceToProcessor() != -1) {
+            RobotContainer.drivebase.driveToPose(Tag16);
+          }
+        }
       }
-
-      // if we are too much to the left move right
-      while (LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)) {
-        DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(zero, movespeed, null);
-      }
-
-      // if we are too far from the tag move forward
-      while (VisionSubsystem.DistanceToReef()
-          > SmartDashboard.getNumber("AssistReefDistance", 1.0)) {
-        DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(movespeed, zero, null);
-      }
-
-      // we are now on target and can stop!
-      drivebase.driveCommand(zero, zero, null);
-    }
-
-    // if we are close enough to the processor
-    if (VisionSubsystem.DistanceToProcessor() < SmartDashboard.getNumber("AssistMinDistance", 10)) {
-      // switch to the pipeline with the right crosshair position for the algae side of the elevator
-      LimelightHelpers.setPipelineIndex("", 3);
-
-      // if we are to much too the right move left
-      while (LimelightHelpers.getTX("") > SmartDashboard.getNumber("AssistLossRange", 1.0)) {
-        DoubleSupplier movespeed = () -> SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(zero, movespeed, null);
-      }
-
-      // if we are too much to the left move right
-      while (LimelightHelpers.getTX("") < -SmartDashboard.getNumber("AssistLossRange", 1.0)) {
-        DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(zero, movespeed, null);
-      }
-
-      // if we are too far from the tag move forward
-      while (VisionSubsystem.DistanceToProcessor()
-          > SmartDashboard.getNumber("AssistProcessorDistance", 1.0)) {
-        DoubleSupplier movespeed = () -> -SmartDashboard.getNumber("AutoMoveSpeed", 1.0);
-        drivebase.driveCommand(movespeed, zero, null);
-      }
-
-      // we are now on target and can stop!
-      drivebase.driveCommand(zero, zero, null);
     }
   }
 
   @Override
   public boolean isFinished() {
-
-    // we are done if:
-    // - we are within the range created by lossRange
-    // - we are within the distance set by ReefDistance OR ProcessorDistance
-    double temp = LimelightHelpers.getTX("");
-    return temp < SmartDashboard.getNumber("AssistLossRange", 1.0)
-        && temp > -SmartDashboard.getNumber("AssistLossRange", 1.0)
-        && (VisionSubsystem.DistanceToReef() > SmartDashboard.getNumber("AssistReefDistance", 1.0)
-            || VisionSubsystem.DistanceToProcessor()
-                > SmartDashboard.getNumber("AssistProcessorDistance", 1.0));
+    return true;
   }
 }
