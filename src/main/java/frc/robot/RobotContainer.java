@@ -187,7 +187,6 @@ public class RobotContainer {
     driverXbox.b().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
 
-    driverXbox.start().whileTrue(Commands.none());
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
     driverXbox.rightTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
