@@ -5,12 +5,14 @@
 package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -44,8 +46,10 @@ import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import swervelib.SwerveInputStream;
 
@@ -67,6 +71,9 @@ public class RobotContainer {
   private MechanismLigament2d m_elevator;
   private MechanismLigament2d m_wrist;
   private MechanismLigament2d m_wrist2;
+
+  public static PathConstraints Pathconstraints;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -120,6 +127,13 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    flexAutoSubsystem = new FlexAutoSubsystem();
+    Pathconstraints =
+        new PathConstraints(
+            drivebase.getMaximumChassisVelocity(),
+            4.0,
+            drivebase.getMaximumChassisAngularVelocity(),
+            Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
 
@@ -177,11 +191,7 @@ public class RobotContainer {
     Command driveSetpointGenKeyboard =
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
-    if (RobotBase.isSimulation()) {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    } else {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    }
+    drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.x().whileTrue(new AlignWithNearest());
     driverXbox.b().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
@@ -203,6 +213,16 @@ public class RobotContainer {
     driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem));
     driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());
+  }
+
+  SequentialCommandGroup m_autonomousCommand;
+
+  public void driveFlexAuto() {
+    List<Pose2d> path = flexAutoSubsystem.CreatePath(RobotContainer.Pathconstraints);
+    for (int i = 0; i < path.size(); i++) {
+      m_autonomousCommand.addCommands(drivebase.driveToPose(path.get(i)));
+    }
+    m_autonomousCommand.schedule();
   }
 
   /**
