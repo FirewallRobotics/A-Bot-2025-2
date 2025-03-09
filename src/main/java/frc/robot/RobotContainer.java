@@ -32,6 +32,7 @@ import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
+import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
@@ -137,13 +138,14 @@ public class RobotContainer {
     DriverStation.silenceJoystickConnectionWarning(true);
 
     new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
-    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel1(elevatorSubsystem));
+    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel4(elevatorSubsystem));
     new EventTrigger("GrabCoral")
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel1(elevatorSubsystem),
                 new WaitCommand(1),
-                new CoralIntakeCommand(coralHoldSubsystem)));
+                new CoralIntakeCommand(coralHoldSubsystem),
+                new WaitCommand(2)));
   }
 
   public void init() {
@@ -229,12 +231,20 @@ public class RobotContainer {
     return drivebase.getAutonomousCommand(pathString);
   }
 
-  public Command getCoralPathCommand() {
+  public Command getCoralPathCommand(String chooser) {
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.get() == Alliance.Blue) {
-      return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(65)));
+      if (chooser.equals("left")) {
+        return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(Math.toRadians(65))));
+      } else {
+        return drivebase.driveToPose(new Pose2d(1.2f, 1f, new Rotation2d(Math.toRadians(-125))));
+      }
     } else {
-      return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(-45)));
+      if (chooser.equals("left")) {
+        return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(Math.toRadians(-54))));
+      } else {
+        return drivebase.driveToPose(new Pose2d(16.3f, 7f, new Rotation2d(Math.toRadians(52))));
+      }
     }
   }
 

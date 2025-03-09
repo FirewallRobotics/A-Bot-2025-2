@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
@@ -64,11 +64,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
     // if we dont have the reefs location find it by spinning slowly
     if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed);
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
     } else {
       // if we do have the reefs location then convert it
       // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0).schedule();
 
       // get the robots location in field space
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
@@ -158,7 +158,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
         }
 
         // add driving to the reef and dropping a coral to the command stack
-        Robot.autonomousCommand.andThen(
+        Robot.autonomousCommand.addCommands(
             RobotContainer.drivebase.driveToPose(new Pose2d(temp2.getX(), temp2.getY(), null)),
             new CoralShootCommand(RobotContainer.coralHoldSubsystem));
 
@@ -170,12 +170,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
         // add driving to the coral station and getting a coral to the stack then schedule all
         // commands to run
-        Robot.autonomousCommand
-            .andThen(
-                RobotContainer.drivebase.driveToPose(
-                    new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))),
-                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem))
-            .schedule();
+        Robot.autonomousCommand.addCommands(
+            RobotContainer.drivebase.driveToPose(
+                new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))),
+            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
+        Robot.autonomousCommand.schedule();
       }
       // if we are not going to go to the coral station then we are doing algae cycles
     } else {
@@ -188,34 +187,31 @@ public class FlexAutoSubsystem extends SubsystemBase {
         if (VisionSubsystem.CanSeeAlgae()) {
 
           // grab an algae and wait a second to the commands stack
-          Robot.autonomousCommand.andThen(
+          Robot.autonomousCommand.addCommands(
               new AlgaeIntakeCommand(RobotContainer.algaeSubsystem), new WaitCommand(1));
 
           // get our Alliance
           Optional<Alliance> ally = DriverStation.getAlliance();
           if (ally.get() == Alliance.Blue) {
             // drive to blue processor if blue
-            Robot.autonomousCommand.andThen(
+            Robot.autonomousCommand.addCommands(
                 RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[3]));
           } else {
             // drive to red processor if red
-            Robot.autonomousCommand.andThen(
+            Robot.autonomousCommand.addCommands(
                 RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[16]));
           }
 
           // then shoot that algae and wait a second
           // finally schedule the thing
-          Robot.autonomousCommand
-              .andThen(new AlgaeShootCommand(RobotContainer.algaeSubsystem), new WaitCommand(1))
-              .schedule();
+          Robot.autonomousCommand.addCommands(
+              new AlgaeShootCommand(RobotContainer.algaeSubsystem), new WaitCommand(1));
+          Robot.autonomousCommand.schedule();
 
           // wait for the command to finish running
           while (!Robot.autonomousCommand.isFinished()) {
             System.out.println("Running our Course");
           }
-
-          // Zero the auto command stack just in case
-          Robot.autonomousCommand = Commands.none();
 
           // turn around to find the reef
           RobotContainer.drivebase.drive(new Translation2d(0, 0), 180, false);
@@ -229,9 +225,10 @@ public class FlexAutoSubsystem extends SubsystemBase {
           }
 
           // drive to the reef if we can see it
-          Robot.autonomousCommand.andThen(
-              RobotContainer.drivebase.driveToPose(
-                  new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))));
+          Robot.autonomousCommand =
+              new SequentialCommandGroup(
+                  RobotContainer.drivebase.driveToPose(
+                      new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))));
 
           // if we can't see an algae
         } else {
@@ -269,16 +266,13 @@ public class FlexAutoSubsystem extends SubsystemBase {
             // then move to the corresponding position given to us via the grace of me hardcoding
             // values into Drive Assistance
             // also schedule the entire movement
-            Robot.autonomousCommand
-                .andThen(RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[tag]))
-                .schedule();
+            Robot.autonomousCommand.addCommands(
+                RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[tag]));
+            Robot.autonomousCommand.schedule();
             // wait for movement to be done
             while (!Robot.autonomousCommand.isFinished()) {
               System.out.println("Waiting for movement");
             }
-
-            // zero the stack
-            Robot.autonomousCommand = Commands.none();
             elevatorSearch = 0;
           }
         }
