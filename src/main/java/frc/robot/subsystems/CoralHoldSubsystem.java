@@ -10,8 +10,6 @@ import frc.robot.Constants.CoralHoldSubsystemConstants;
 public class CoralHoldSubsystem extends SubsystemBase {
 
   private final SparkMax motor;
-  private final SparkFlexConfig motorConfig;
-
   DigitalInput limitSwitch = new DigitalInput(0);
 
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
@@ -23,7 +21,7 @@ public class CoralHoldSubsystem extends SubsystemBase {
         new SparkMax(
             CoralHoldSubsystemConstants.CORAL_HOLD_MOTOR_ID,
             MotorType.kBrushless); // Assign motor controller port
-    motorConfig = new SparkFlexConfig();
+    new SparkFlexConfig();
 
     // encoder = new Encoder(1, 1); // Assign encoder ports
   }
