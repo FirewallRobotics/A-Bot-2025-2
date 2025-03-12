@@ -201,11 +201,11 @@ public class RobotContainer {
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.rightTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.leftTrigger(0.3).onFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger(0.35).whileTrue(new ElevatorUp(elevatorSubsystem, 1));
-    driverXbox.rightTrigger(0.35).whileTrue(new ElevatorDown(elevatorSubsystem, 1));
+    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
+    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));

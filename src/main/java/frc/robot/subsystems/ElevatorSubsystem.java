@@ -62,8 +62,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   // Update PIDF
   public void Periodic() {
     SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
+    SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
 
-    /*
     if (SmartDashboard.getNumber("Elevator-P", 0) != 0
         || SmartDashboard.getNumber("Elevator-I", 0) != 0
         || SmartDashboard.getNumber("Elevator-D", 0) != 0
@@ -75,7 +75,10 @@ public class ElevatorSubsystem extends SubsystemBase {
           SmartDashboard.getNumber("Elevator-F", 0),
           ClosedLoopSlot.kSlot0);
     }
-          */
+  }
+
+  public double getSpeed() {
+    return leftMotor.get();
   }
 
   public void setLevel(int level) {
@@ -89,7 +92,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void setSpeed(double speed) {
     leftMotor.set(speed);
-    closedLoopController.setReference(speed, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   public double getLevel() {
