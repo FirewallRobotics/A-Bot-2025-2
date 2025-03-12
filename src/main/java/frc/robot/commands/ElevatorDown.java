@@ -17,7 +17,7 @@ public class ElevatorDown extends Command {
 
   @Override
   public void initialize() {
-    m_subsystem.setSpeed(0.6 * position);
+    m_subsystem.setSpeed(0.6);
   }
 
   @Override

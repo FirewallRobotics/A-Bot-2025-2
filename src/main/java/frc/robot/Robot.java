@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AlignWithNearest;
 import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
 import java.util.List;
@@ -143,7 +142,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-    SequentialCommandGroup autonomousCommand =
+    autonomousCommand =
         new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
 
     // if (m_autoSelected.contains("Drop")) {
@@ -155,11 +154,6 @@ public class Robot extends TimedRobot {
     if (!m_CoralStationChooser.getSelected().equals("stop")) {
       autonomousCommand.addCommands(
           m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
-      if (SmartDashboard.getBoolean("FlexAuto", false)) {
-        autonomousCommand.addCommands(new AlignWithNearest());
-        // new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-        // new WaitCommand(1));
-      }
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     autonomousCommand.schedule();
@@ -171,9 +165,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
-    if (SmartDashboard.getBoolean("FlexAuto", false)
-        && flexAutoSubsystem.isNewPathAvailable()
-        && autonomousCommand.isFinished()) {
+    SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
+    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
       // create robots constraints
       PathConstraints constraints =
           new PathConstraints(
@@ -183,7 +176,7 @@ public class Robot extends TimedRobot {
               Units.degreesToRadians(720));
 
       // have flex create points to follow
-      flexAutoSubsystem.CreatePath(constraints);
+      flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
     }
   }
 

@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -10,15 +9,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
-import frc.robot.Robot;
+import frc.robot.commands.*;
 import frc.robot.RobotContainer;
-import frc.robot.commands.AlgaeIntakeCommand;
-import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
-import frc.robot.commands.CoralIntakeCommand;
-import frc.robot.commands.CoralShootCommand;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
@@ -34,8 +28,10 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   // create a selector for flex auto modes
   private final SendableChooser<String> m_AutoObjChooser = new SendableChooser<>();
+  private int counter = 0;
 
   public FlexAutoSubsystem() {
+    SmartDashboard.putNumber("FlexCounter", counter);
     // add selections for flex auto to smartdashboard
     m_AutoObjChooser.setDefaultOption("Coral", "coral");
     m_AutoObjChooser.addOption("Algae", "algae");
@@ -49,10 +45,14 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   public boolean isNewPathAvailable() {
     // new path is avaliable if we are not moving
-    if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.2
-        && RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 0.2) {
+    if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.05
+        && RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 0.05
+        && counter >= 275) {
+      counter = 0;
       return true;
     }
+    SmartDashboard.putNumber("FlexCounter", counter);
+    counter += 1;
     return false;
   }
 
@@ -139,45 +139,43 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   int elevatorSearch = 0;
 
-  public void CreatePath(PathConstraints constraints) {
+  public void CreatePath(PathConstraints constraints, String CoralStationChoose) {
 
     // goals: Auto can do 2 things
     // 1) drop off preloaded coral and do cycles between coral station and reef
     // 2) drop off preloaded coral and do cycles between reef(algae) and processor
 
     // if our plan is to go to the coral station then were doing coral station cycles
-    if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
+    if (!CoralStationChoose.equals("stop")) {
 
-      // if a new path is available AKA we are not moving
-      if (isNewPathAvailable()) {
-
-        // get the reef location
-        Translation2d temp2 = getReefLocationInFieldSpace();
-        if (temp2 == null) {
-          return;
-        }
-
-        // add driving to the reef and dropping a coral to the command stack
-        Robot.autonomousCommand.addCommands(
-            RobotContainer.drivebase.driveToPose(new Pose2d(temp2.getX(), temp2.getY(), null)),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem));
-
-        // get the coral station location
-        temp2 = getCoralStationLocationInFieldSpace();
-        if (temp2 == null) {
-          return;
-        }
-
-        // add driving to the coral station and getting a coral to the stack then schedule all
-        // commands to run
-        Robot.autonomousCommand.addCommands(
-            RobotContainer.drivebase.driveToPose(
-                new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))),
-            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
-        Robot.autonomousCommand.schedule();
+      Optional<Alliance> ally = DriverStation.getAlliance();
+      if (ally.get() == Alliance.Blue) {
+        SequentialCommandGroup autonomousCommand =
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel4(RobotContainer.elevatorSubsystem),
+                RobotContainer.drivebase.driveToPose(
+                    AlignWithNearest.TagPos[17 + ((int) Math.random() * 3)]),
+                // new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+                new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
+                RobotContainer.drivebase.driveToPose(
+                    AlignWithNearest.TagPos[12 + ((int) Math.random())]));
+        autonomousCommand.schedule();
+      } else {
+        SequentialCommandGroup autonomousCommand =
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel4(RobotContainer.elevatorSubsystem),
+                RobotContainer.drivebase.driveToPose(
+                    AlignWithNearest.TagPos[6 + ((int) Math.random() * 3)]),
+                // new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+                new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
+                RobotContainer.drivebase.driveToPose(
+                    AlignWithNearest.TagPos[1 + ((int) Math.random())]));
+        autonomousCommand.schedule();
       }
       // if we are not going to go to the coral station then we are doing algae cycles
-    } else {
+    }
+    /*
+    else {
 
       // if a new path is available AKA we are not moving
       if (isNewPathAvailable()) {
@@ -278,5 +276,6 @@ public class FlexAutoSubsystem extends SubsystemBase {
         }
       }
     }
+      */
   }
 }
