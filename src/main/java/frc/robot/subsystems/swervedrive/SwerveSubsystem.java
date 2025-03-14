@@ -86,6 +86,7 @@ public class SwerveSubsystem extends SubsystemBase {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    swerveDrive.setAutoCenteringModules(true);
     swerveDrive.setHeadingCorrection(
         false); // Heading correction should only be used while controlling the robot via angle.
     swerveDrive.setCosineCompensator(
@@ -98,13 +99,17 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.setModuleEncoderAutoSynchronize(
         false, 1); // Enable if you want to resynchronize your absolute encoders and motor encoders
     // periodically when they are not moving.
-    //    swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the
+    // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the
     // internal encoder and push the offsets onto it. Throws warning if not possible
     if (visionDriveTest) {
       // Stop the odometry thread if we are using vision that way we can synchronize updates better.
       swerveDrive.stopOdometryThread();
     }
     setupPathPlanner();
+  }
+
+  public void setMaxSpeed(double speed) {
+    swerveDrive.setMaximumAllowableSpeeds(speed, getMaximumChassisAngularVelocity());
   }
 
   /**
@@ -209,6 +214,14 @@ public class SwerveSubsystem extends SubsystemBase {
     return new PathPlannerAuto(pathName);
   }
 
+  public double getMaximumChassisVelocity() {
+    return swerveDrive.getMaximumChassisVelocity();
+  }
+
+  public double getMaximumChassisAngularVelocity() {
+    return swerveDrive.getMaximumChassisAngularVelocity();
+  }
+
   /**
    * Use PathPlanner Path finding to go to a point on the field.
    *
@@ -219,10 +232,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // Create the constraints to use while pathfinding
     PathConstraints constraints =
         new PathConstraints(
-            swerveDrive.getMaximumChassisVelocity(),
-            4.0,
-            swerveDrive.getMaximumChassisAngularVelocity(),
-            Units.degreesToRadians(720));
+            5, 4.0, swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return AutoBuilder.pathfindToPose(
@@ -560,6 +570,10 @@ public class SwerveSubsystem extends SubsystemBase {
     return getPose().getRotation();
   }
 
+  public Pose2d getPose2d() {
+    return getPose();
+  }
+
   /**
    * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which
    * direction. The other for the angle of the robot.
@@ -653,9 +667,8 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /** Add a fake vision reading for testing purposes. */
-  public void addFakeVisionReading() {
-    swerveDrive.addVisionMeasurement(
-        new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
+  public void addVisionReading(Pose2d pose2d, double timer) {
+    swerveDrive.addVisionMeasurement(pose2d, timer);
   }
 
   /**

@@ -4,14 +4,20 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
+import java.util.List;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -22,26 +28,46 @@ import frc.robot.subsystems.UltrasonicSensor;
 public class Robot extends TimedRobot {
 
   private static Robot instance;
-  private Command m_autonomousCommand;
+  public static SequentialCommandGroup autonomousCommand;
 
   private RobotContainer m_robotContainer;
   public static UltrasonicSensor globalUltraSensors;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   private Timer disabledTimer;
 
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
 
   public Robot() {
-    // Pathfinding.setPathfinder(new FlexAutoSubsystem());
-    SmartDashboard.putBoolean("AutoThenGoToCoralStation", false);
+    SmartDashboard.putBoolean("FlexAuto", false);
+    SmartDashboard.putBoolean("", false);
+    SmartDashboard.putBoolean("", false);
+    SmartDashboard.putNumber("AssistMinDistance", 40);
+    SmartDashboard.putNumber("AutoMoveSpeed", 5);
+    SmartDashboard.putNumber("AutoScanSpeed", 5);
+    SmartDashboard.putNumber("Elevator-P", 0);
+    SmartDashboard.putNumber("Elevator-I", 0);
+    SmartDashboard.putNumber("Elevator-D", 0);
+    SmartDashboard.putNumber("Elevator-F", 0);
+
     instance = this;
-    m_chooser.setDefaultOption("Default Drop C", "Default Drop C");
-    m_chooser.addOption("Default Drop M", "Default Drop M");
-    m_chooser.addOption("Default Drop F", "Default Drop F");
+    m_chooser.setDefaultOption("Our Cage 1", "Default Drop C");
+    m_chooser.addOption("Our Cage 2", "Default Drop M");
+    m_chooser.addOption("Our Cage 3", "Default Drop F");
+    m_chooser.addOption("Their Cage 1", "Other Drop C");
+    m_chooser.addOption("Their Cage 2", "Other Drop M");
+    m_chooser.addOption("Their Cage 3", "Other Drop F");
+    m_chooser.addOption("Box-9", "Box-9");
     m_chooser.addOption("FWD 10 feet", "FWD10");
     m_chooser.addOption("FWD 5 feet", "FWD5");
     SmartDashboard.putData(m_chooser);
+
+    m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
+    m_CoralStationChooser.addOption("RightCoralStation", "right");
+    m_CoralStationChooser.addOption("Stop", "stop");
+    SmartDashboard.putData(m_CoralStationChooser);
   }
 
   public static Robot getInstance() {
@@ -58,11 +84,12 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
+    flexAutoSubsystem = new FlexAutoSubsystem();
+
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot
     // stop
     // immediately when disabled, but then also let it be pushed more
     disabledTimer = new Timer();
-
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -85,6 +112,11 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
+    RobotContainer.elevatorSubsystem.Periodic();
+
+    // to set the levels
+    // SmartDashboard.putNumber("ElevEncoder:",
+    // RobotContainer.elevatorSubsystem.getPositionEncoder());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -106,32 +138,59 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    RobotContainer.drivebase.zeroGyro();
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(m_autoSelected);
+    autonomousCommand =
+        new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
+
+    // if (m_autoSelected.contains("Drop")) {
+    //  autonomousCommand.andThen(
+    //      new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(1));
+    // }
 
     // schedule the autonomous command
-    if (SmartDashboard.getBoolean("AutoThenGoToCoralStation", false)) {
-      m_autonomousCommand.andThen(m_robotContainer.getCoralPathCommand()).schedule();
-    } else {
-      m_autonomousCommand.schedule();
+    if (!m_CoralStationChooser.getSelected().equals("stop")) {
+      autonomousCommand.addCommands(
+          m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
     }
+    // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
+    autonomousCommand.schedule();
   }
+
+  List<Pose2d> points;
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
+    SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
+    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
+      // create robots constraints
+      PathConstraints constraints =
+          new PathConstraints(
+              RobotContainer.drivebase.getMaximumChassisVelocity(),
+              4.0,
+              RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+              Units.degreesToRadians(720));
+
+      // have flex create points to follow
+      flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
+    }
+  }
 
   @Override
   public void teleopInit() {
+    // RobotContainer.drivebase.zeroGyro();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
     m_robotContainer.init();
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    if (autonomousCommand != null) {
+      autonomousCommand.cancel();
+      RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
     } else {
       CommandScheduler.getInstance().cancelAll();
     }

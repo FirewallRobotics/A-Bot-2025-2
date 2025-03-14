@@ -5,13 +5,13 @@
 package frc.robot;
 
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -25,16 +25,29 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.ArmLower;
-import frc.robot.commands.ArmRaise;
+import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.AlgaeShootCommand;
+import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
+import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
+import frc.robot.commands.ElevatorStop;
+import frc.robot.commands.ElevatorUp;
+import frc.robot.commands.SlowMode;
+import frc.robot.commands.WristDown;
+import frc.robot.commands.WristUp;
+import frc.robot.commands.algaeStopIntake;
+import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.FlexAutoSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import java.util.Optional;
@@ -57,6 +70,10 @@ public class RobotContainer {
 
   private MechanismLigament2d m_elevator;
   private MechanismLigament2d m_wrist;
+  private MechanismLigament2d m_wrist2;
+
+  public static PathConstraints Pathconstraints;
+  public static FlexAutoSubsystem flexAutoSubsystem;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -79,9 +96,12 @@ public class RobotContainer {
           .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
 
-  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  private ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  private CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
+  public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
+  public static VisionSubsystem visionSubsystem = new VisionSubsystem();
+  public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
+  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -107,17 +127,25 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    flexAutoSubsystem = new FlexAutoSubsystem();
+    Pathconstraints =
+        new PathConstraints(
+            drivebase.getMaximumChassisVelocity(),
+            4.0,
+            drivebase.getMaximumChassisAngularVelocity(),
+            Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
 
     new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
-    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel1(elevatorSubsystem));
+    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel4(elevatorSubsystem));
     new EventTrigger("GrabCoral")
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel1(elevatorSubsystem),
                 new WaitCommand(1),
-                new CoralIntakeCommand(coralHoldSubsystem)));
+                new CoralIntakeCommand(coralHoldSubsystem),
+                new WaitCommand(2)));
   }
 
   public void init() {
@@ -129,13 +157,17 @@ public class RobotContainer {
         root.append(new MechanismLigament2d("elevator", ElevatorSubsystem.levels.length, 90));
     m_wrist =
         m_elevator.append(
-            new MechanismLigament2d("wrist", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+            new MechanismLigament2d("Coral", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
+    m_wrist2 =
+        m_elevator.append(
+            new MechanismLigament2d("Algae", 0.25, 90, 3, new Color8Bit(Color.kBlue)));
     SmartDashboard.putData("Mech2d", mech);
   }
 
   public void Periodic() {
-    m_elevator.setLength(0.25 + (SmartDashboard.getNumber("ElevatorPos", 0) / 3));
-    m_wrist.setAngle(90);
+    m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    m_wrist2.setAngle(climberSubsystem.getEncoder());
   }
 
   /**
@@ -160,37 +192,29 @@ public class RobotContainer {
     Command driveSetpointGenKeyboard =
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
-    if (RobotBase.isSimulation()) {
-      drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
-    } else {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    }
+    drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.x().onTrue(Commands.none());
+    driverXbox.x().whileTrue(new AlignWithNearest());
+    driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    // driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
+    // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    if (ally.isPresent()) {
-      if (ally.get() == Alliance.Blue) {
-        driverXbox
-            .b()
-            .whileTrue(
-                drivebase.driveToPose(new Pose2d(new Translation2d(4, 4), drivebase.getHeading())));
-      }
-      if (ally.get() == Alliance.Red) {
-        driverXbox
-            .b()
-            .whileTrue(
-                drivebase.driveToPose(
-                    new Pose2d(new Translation2d(13, 4), drivebase.getHeading())));
-      }
-    }
-    driverXbox.start().whileTrue(Commands.none());
-    driverXbox.back().whileTrue(Commands.none());
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
+    driverXbox.rightTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
+    driverXbox.leftTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
+    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.y().whileTrue((new ArmLower(climberSubsystem)));
-    driverXbox.x().whileTrue((new ArmRaise(climberSubsystem)));
+    driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
+    driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));
+
+    driverXbox.povLeft().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
+    driverXbox.povRight().whileTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
+    driverXbox.povLeft().onFalse(new algaeStopIntake(algaeSubsystem));
+    // driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    driverXbox.start().onTrue(new SlowMode());
   }
 
   /**
@@ -203,12 +227,20 @@ public class RobotContainer {
     return drivebase.getAutonomousCommand(pathString);
   }
 
-  public Command getCoralPathCommand() {
+  public Command getCoralPathCommand(String chooser) {
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.get() == Alliance.Blue) {
-      return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(65)));
+      if (chooser.equals("left")) {
+        return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(Math.toRadians(65))));
+      } else {
+        return drivebase.driveToPose(new Pose2d(1.2f, 1f, new Rotation2d(Math.toRadians(-125))));
+      }
     } else {
-      return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(-45)));
+      if (chooser.equals("left")) {
+        return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(Math.toRadians(-54))));
+      } else {
+        return drivebase.driveToPose(new Pose2d(16.3f, 7f, new Rotation2d(Math.toRadians(52))));
+      }
     }
   }
 

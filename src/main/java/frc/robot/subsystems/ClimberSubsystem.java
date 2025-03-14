@@ -56,8 +56,13 @@ public class ClimberSubsystem extends SubsystemBase {
     m_lowerClimber.stopMotor();
   }
 
+  public double getEncoder() {
+    return m_leftEncoder.getPosition();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
   }
 }

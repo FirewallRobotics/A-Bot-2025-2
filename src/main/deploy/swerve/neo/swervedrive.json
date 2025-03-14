@@ -1,11 +1,11 @@
 {
   "$schema": "https://broncbotz3481.github.io/YAGSL-Example/schemas/swervedrive_schema.json",
   "imu": {
-    "type": "adis16470",
-    "id": null,
+    "type": "pigeon2",
+    "id": 20,
     "canbus": null
   },
-  "invertedIMU": true,
+  "invertedIMU": false,
   "modules": [
     "frontleft.json",
     "frontright.json",

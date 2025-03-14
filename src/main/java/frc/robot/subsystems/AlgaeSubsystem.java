@@ -15,7 +15,9 @@ public class AlgaeSubsystem extends SubsystemBase {
   // private final Encoder encoder;
 
   public AlgaeSubsystem() {
-    motor = new SparkFlex(2, MotorType.kBrushless);
+    motor =
+        new SparkFlex(
+            frc.robot.Constants.AlgaeSubsystemConstants.ALGAE_MOTOR_ID, MotorType.kBrushless);
     motorConfig = new SparkFlexConfig();
 
     // encoder = new Encoder(1, 1);
@@ -26,7 +28,7 @@ public class AlgaeSubsystem extends SubsystemBase {
    * later on.
    */
   private double setSpeed() {
-    double kP = 0.1; // Tweak as necessary.
+    double kP = 0.3; // Tweak as necessary.
     return kP * 1; // Currently a placeholder for speed calculation
   }
 
@@ -40,7 +42,7 @@ public class AlgaeSubsystem extends SubsystemBase {
   public void shoot() {
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    motor.set(setSpeed()); // Run motor forward to shoot the ball (algae)
+    motor.set(-setSpeed()); // Run motor forward to shoot the ball (algae)
   }
 
   // Intakes the ball (algae). The claw motor runs in the reverse direction.

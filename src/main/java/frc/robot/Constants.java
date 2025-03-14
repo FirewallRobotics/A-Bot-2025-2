@@ -47,6 +47,10 @@ public final class Constants {
     public static final int CORAL_HOLD_MOTOR_ID = 10;
   }
 
+  public static class AlgaeSubsystemConstants {
+    public static final int ALGAE_MOTOR_ID = 15;
+  }
+
   public static class ElevatorSubsystemConstants {
     public static final int ELEVATOR_LEFT_MOTOR_ID = 11;
     public static final int ELEVATOR_RIGHT_MOTOR_ID = 12;
@@ -57,7 +61,9 @@ public final class Constants {
     public static final int CLIMBER_RIGHT_MOTOR_ID = 14;
   }
 
-  public static class FlexAutoSubsystemConstants {}
+  public static class VisionSubsystemConstants {
+    public static final String limelightName = "limelight-cyclops";
+  }
 
   public static class OperatorConstants {
 
@@ -68,5 +74,13 @@ public final class Constants {
     public static final double RIGHT_X_DEADBAND = 0.1;
     public static final double TURN_CONSTANT = 6;
     public static final double LEFT_Y_DEconfigureBindingsADBAND = 0;
+  }
+
+  public static class ArmConstants {
+
+    public static final double kSVolts = 0.11356;
+    public static final double kGVolts = 0.29175;
+    public static final double kVVoltSecondPerRad = 1.5928;
+    public static final double kAVoltSecondSquaredPerRad = 0.030171;
   }
 }
