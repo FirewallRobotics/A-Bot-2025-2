@@ -23,11 +23,6 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   private boolean buttonPressed;
 
-  /*private final ArmFeedforward m_feedforward =
-  new ArmFeedforward(
-      ArmConstants.kSVolts, ArmConstants.kGVolts,
-      ArmConstants.kVVoltSecondPerRad, ArmConstants.kAVoltSecondSquaredPerRad);*/
-
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
   private RelativeEncoder encoder;
@@ -48,12 +43,12 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     if (buttonPressed == false) {
-      holdUp();
+      holdUp(wantedPos);
     }
   }
 
   private double setSpeed() {
-    double kP = 0.01;
+    double kP = 0.1;
     return kP * 1; // Based around elevator's 'calculate speed.' Will be adjusted later on.
   }
 
@@ -81,7 +76,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     return motor.getEncoder().getPosition();
   }
 
-  public void holdUp() {
+  /*public void holdUp() {
     // Calculate the feedforward from the sepoint
     // double feedforward = m_feedforward.calculate(wantedPos, encoder.getVelocity());
 
@@ -90,14 +85,11 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     // Add the feedforward to the PID output to get the motor output
     /*maxPid.setReference(
     wantedPos, // - ArmConstants.kArmOffsetRads, 0, feedforward
-    ControlType.kPosition);*/
+    ControlType.kPosition);
 
-  }
+  } */
 
   public void holdUp(double wantedPos) {
-    // Calculate the feedforward from the sepoint
-    // double feedforward = m_feedforward.calculate(wantedPos, encoder.getVelocity());
-
     // motorConfig.closedLoop.velocityFF(feedforward);
     controller.setReference(wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot1);
     // Add the feedforward to the PID output to get the motor output

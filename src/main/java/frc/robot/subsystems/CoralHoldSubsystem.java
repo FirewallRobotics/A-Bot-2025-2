@@ -27,7 +27,7 @@ public class CoralHoldSubsystem extends SubsystemBase {
   }
 
   private double setSpeed() {
-    double kP = 0.01;
+    double kP = 0.2;
     return kP * 1; // Based around elevator's 'calculate speed.' Will be adjusted later on.
   }
 
@@ -46,23 +46,14 @@ public class CoralHoldSubsystem extends SubsystemBase {
     // motorConfig.inverted(false);
     // motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    motor.set(setSpeed());
+    motor.set(-setSpeed() * 1.25);
     // }
   }
 
   // Intakes coral. Lift has to be empty
   public void intake() {
 
-    if (limitSwitch.get() == false) {
-      // motorConfig.inverted(true);
-      // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
-      // PersistMode.kPersistParameters);
-
-      motor.set(
-          -setSpeed()); // Reverses the motor- Check if to make sure this won't break the motor
-    } else {
-      stop();
-    }
+    motor.set(setSpeed());
   }
 
   // Makes the motor stop. Can shut down both functions.

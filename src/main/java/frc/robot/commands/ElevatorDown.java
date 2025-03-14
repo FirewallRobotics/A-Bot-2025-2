@@ -7,7 +7,6 @@ public class ElevatorDown extends Command {
   private ElevatorSubsystem m_subsystem;
 
   private double position;
-  private int divider;
 
   public ElevatorDown(ElevatorSubsystem subsystem, double position) {
     m_subsystem = subsystem;
@@ -18,22 +17,14 @@ public class ElevatorDown extends Command {
 
   @Override
   public void initialize() {
-    divider = 20;
+    m_subsystem.setSpeed(position);
   }
 
   @Override
-  public void execute() {
-    if (position != 0) {
-      m_subsystem.setSpeed((position / divider));
-      divider -= 1;
-    } else {
-      m_subsystem.setSpeed((m_subsystem.getSpeed() / 2));
-      divider -= 1;
-    }
-  }
+  public void execute() {}
 
   @Override
   public boolean isFinished() {
-    return divider == 0;
+    return true;
   }
 }

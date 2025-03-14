@@ -2,12 +2,9 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
-import java.util.Optional;
 
 public class AlignWithNearest extends Command {
 
@@ -67,65 +64,68 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void initialize() {
-    if (VisionSubsystem.DistanceToCoralStation() != -1
-        || VisionSubsystem.DistanceToProcessor() != -1
-        || VisionSubsystem.DistanceToReef() != -1) {
-      Optional<Alliance> ally = DriverStation.getAlliance();
-      if (ally.isPresent()) {
-        if (ally.get() == Alliance.Blue) {
-          if (VisionSubsystem.DistanceToCoralStation() != -1) {
-            if (VisionSubsystem.CanSeeTag(13)) {
-              RobotContainer.drivebase.driveToPose(Tag13);
-            } else {
-              RobotContainer.drivebase.driveToPose(Tag12);
-            }
-          }
-          if (VisionSubsystem.DistanceToReef() != -1) {
-            if (VisionSubsystem.CanSeeTag(17)) {
-              RobotContainer.drivebase.driveToPose(Tag17);
-            } else if (VisionSubsystem.CanSeeTag(18)) {
-              RobotContainer.drivebase.driveToPose(Tag18);
-            } else if (VisionSubsystem.CanSeeTag(19)) {
-              RobotContainer.drivebase.driveToPose(Tag19);
-            } else if (VisionSubsystem.CanSeeTag(20)) {
-              RobotContainer.drivebase.driveToPose(Tag20);
-            } else if (VisionSubsystem.CanSeeTag(21)) {
-              RobotContainer.drivebase.driveToPose(Tag21);
-            } else {
-              RobotContainer.drivebase.driveToPose(Tag22);
-            }
-          }
-          if (VisionSubsystem.DistanceToProcessor() != -1) {
-            RobotContainer.drivebase.driveToPose(Tag3);
+    /*
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.isPresent()) {
+      if (ally.get() == Alliance.Blue) {
+        if (VisionSubsystem.DistanceToCoralStation() != -1) {
+          if (VisionSubsystem.CanSeeTag(13)) {
+            RobotContainer.drivebase.driveToPose(Tag13);
+          } else {
+            RobotContainer.drivebase.driveToPose(Tag12);
           }
         }
-        if (ally.get() == Alliance.Red) {
-          if (VisionSubsystem.DistanceToCoralStation() != -1) {
-            if (VisionSubsystem.CanSeeTag(2)) {
-              RobotContainer.drivebase.driveToPose(Tag2);
-            } else {
-              RobotContainer.drivebase.driveToPose(Tag1);
-            }
-          }
-          if (VisionSubsystem.DistanceToReef() != -1) {
-            if (VisionSubsystem.CanSeeTag(6)) {
-              RobotContainer.drivebase.driveToPose(Tag6);
-            } else if (VisionSubsystem.CanSeeTag(7)) {
-              RobotContainer.drivebase.driveToPose(Tag7);
-            } else if (VisionSubsystem.CanSeeTag(8)) {
-              RobotContainer.drivebase.driveToPose(Tag8);
-            } else if (VisionSubsystem.CanSeeTag(9)) {
-              RobotContainer.drivebase.driveToPose(Tag9);
-            } else if (VisionSubsystem.CanSeeTag(10)) {
-              RobotContainer.drivebase.driveToPose(Tag10);
-            } else {
-              RobotContainer.drivebase.driveToPose(Tag11);
-            }
-          }
-          if (VisionSubsystem.DistanceToProcessor() != -1) {
-            RobotContainer.drivebase.driveToPose(Tag16);
+        if (VisionSubsystem.DistanceToReef() != -1) {
+          if (VisionSubsystem.CanSeeTag(17)) {
+            RobotContainer.drivebase.driveToPose(Tag17);
+          } else if (VisionSubsystem.CanSeeTag(18)) {
+            RobotContainer.drivebase.driveToPose(Tag18);
+          } else if (VisionSubsystem.CanSeeTag(19)) {
+            RobotContainer.drivebase.driveToPose(Tag19);
+          } else if (VisionSubsystem.CanSeeTag(20)) {
+            RobotContainer.drivebase.driveToPose(Tag20);
+          } else if (VisionSubsystem.CanSeeTag(21)) {
+            RobotContainer.drivebase.driveToPose(Tag21);
+          } else {
+            RobotContainer.drivebase.driveToPose(Tag22);
           }
         }
+        if (VisionSubsystem.DistanceToProcessor() != -1) {
+          RobotContainer.drivebase.driveToPose(Tag3);
+        }
+      }
+      if (ally.get() == Alliance.Red) {
+        if (VisionSubsystem.DistanceToCoralStation() != -1) {
+          if (VisionSubsystem.CanSeeTag(2)) {
+            RobotContainer.drivebase.driveToPose(Tag2);
+          } else {
+            RobotContainer.drivebase.driveToPose(Tag1);
+          }
+        }
+        if (VisionSubsystem.DistanceToReef() != -1) {
+          if (VisionSubsystem.CanSeeTag(6)) {
+            RobotContainer.drivebase.driveToPose(Tag6);
+          } else if (VisionSubsystem.CanSeeTag(7)) {
+            RobotContainer.drivebase.driveToPose(Tag7);
+          } else if (VisionSubsystem.CanSeeTag(8)) {
+            RobotContainer.drivebase.driveToPose(Tag8);
+          } else if (VisionSubsystem.CanSeeTag(9)) {
+            RobotContainer.drivebase.driveToPose(Tag9);
+          } else if (VisionSubsystem.CanSeeTag(10)) {
+            RobotContainer.drivebase.driveToPose(Tag10);
+          } else {
+            RobotContainer.drivebase.driveToPose(Tag11);
+          }
+        }
+        if (VisionSubsystem.DistanceToProcessor() != -1) {
+          RobotContainer.drivebase.driveToPose(Tag16);
+        }
+      }
+    }
+      */
+    for (int i = 0; i < TagPos.length; i++) {
+      if (VisionSubsystem.CanSeeTag(i)) {
+        RobotContainer.drivebase.driveToPose(TagPos[i]);
       }
     }
   }

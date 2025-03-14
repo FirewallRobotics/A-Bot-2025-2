@@ -201,17 +201,17 @@ public class RobotContainer {
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
     driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.rightTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
     driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));
 
-    driverXbox.povLeft().onTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
-    driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
+    driverXbox.povLeft().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
+    driverXbox.povRight().whileTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
     driverXbox.povLeft().onFalse(new algaeStopIntake(algaeSubsystem));
     // driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());

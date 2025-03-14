@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -28,8 +27,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   private SparkClosedLoopController closedLoopController;
 
   // Elevator levels in encoder ticks
-  public static final double[] levels = {0, 1000, 2000, 3000, 4000};
-  public static final double[] Angles = {0, 0, 0, 0, 0};
+  public static final double[] levels = {0, -18, -22, -46, -50};
+
+  // public static final double[] Angles = {0, 0, 0, 0, 0};
 
   public ElevatorSubsystem() {
     leftMotor =
@@ -87,11 +87,17 @@ public class ElevatorSubsystem extends SubsystemBase {
       return;
     }
     moveToPosition(levels[level]);
-    RobotContainer.coralHoldAngleSubsystem.holdUp(Angles[level]);
+    // RobotContainer.coralHoldAngleSubsystem.holdUp(Angles[level]);
   }
 
   public void setSpeed(double speed) {
-    leftMotor.set(speed);
+    if (getPositionEncoder() >= 0 && speed > 0) {
+      leftMotor.set(0);
+    } else if (getPositionEncoder() <= -50.1 && speed < 0) {
+      leftMotor.set(0);
+    } else {
+      leftMotor.set(speed);
+    }
   }
 
   public double getLevel() {
