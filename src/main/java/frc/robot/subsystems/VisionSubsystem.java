@@ -8,7 +8,6 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -32,6 +31,7 @@ public class VisionSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("CoralStationDistance", VisionSubsystem.DistanceToCoralStation());
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
 
+    /*
     LimelightHelpers.SetRobotOrientation(
         name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);
     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
@@ -45,6 +45,7 @@ public class VisionSubsystem extends SubsystemBase {
         RobotContainer.drivebase.addVisionReading(mt2.pose, mt2.timestampSeconds);
       }
     }
+    */
   }
 
   public static int[] getTags() {

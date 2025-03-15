@@ -32,7 +32,6 @@ import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
-import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
@@ -137,7 +136,12 @@ public class RobotContainer {
     DriverStation.silenceJoystickConnectionWarning(true);
 
     new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
-    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel4(elevatorSubsystem));
+    new EventTrigger("ElevatorLvl1")
+        .onTrue(
+            new SequentialCommandGroup(
+                new ElevatorUp(elevatorSubsystem, 0.65),
+                new WaitCommand(0.5),
+                new ElevatorStop(elevatorSubsystem)));
     new EventTrigger("GrabCoral")
         .onTrue(
             new SequentialCommandGroup(
