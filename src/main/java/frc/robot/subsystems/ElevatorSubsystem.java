@@ -57,24 +57,13 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
         rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    leftMotorConfig.closedLoop.pidf(0.001f, 0.1f, 0.25f, 0.6f, ClosedLoopSlot.kSlot0);
   }
 
   // Update PIDF
   public void Periodic() {
     SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
     SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
-
-    if (SmartDashboard.getNumber("Elevator-P", 0) != 0
-        || SmartDashboard.getNumber("Elevator-I", 0) != 0
-        || SmartDashboard.getNumber("Elevator-D", 0) != 0
-        || SmartDashboard.getNumber("Elevator-F", 0) != 0) {
-      leftMotorConfig.closedLoop.pidf(
-          SmartDashboard.getNumber("Elevator-P", 0),
-          SmartDashboard.getNumber("Elevator-I", 0),
-          SmartDashboard.getNumber("Elevator-D", 0),
-          SmartDashboard.getNumber("Elevator-F", 0),
-          ClosedLoopSlot.kSlot0);
-    }
   }
 
   public double getSpeed() {
@@ -93,8 +82,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void setSpeed(double speed) {
     if (getPositionEncoder() >= 0 && speed > 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     } else if (getPositionEncoder() <= -50.1 && speed < 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     } else {
       leftMotor.set(speed);
     }
@@ -118,6 +109,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void stop() {
     leftMotor.set(0);
+    closedLoopController.setReference(
+        getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   public double getPositionEncoder() {

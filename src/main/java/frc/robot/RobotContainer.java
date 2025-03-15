@@ -42,7 +42,6 @@ import frc.robot.commands.WristDown;
 import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -97,7 +96,7 @@ public class RobotContainer {
           .headingWhile(true);
 
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
@@ -167,7 +166,7 @@ public class RobotContainer {
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
-    m_wrist2.setAngle(climberSubsystem.getEncoder());
+    // m_wrist2.setAngle(climberSubsystem.getEncoder());
   }
 
   /**
@@ -204,8 +203,8 @@ public class RobotContainer {
     driverXbox.rightTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
     driverXbox.leftTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
-    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.75));
+    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));

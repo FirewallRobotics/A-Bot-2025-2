@@ -42,18 +42,22 @@ public class CoralHoldSubsystem extends SubsystemBase {
 
   // When we want to shoot coral from the intake, has to have a coral in the lift
   public void shoot() {
-    // if (limitSwitch.get()) {
-    // motorConfig.inverted(false);
-    // motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    if (!limitSwitch.get()) {
+      // motorConfig.inverted(false);
+      // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
+      // PersistMode.kPersistParameters);
 
-    motor.set(-setSpeed() * 1.25);
-    // }
+      motor.set(-setSpeed() * 1.25);
+    }
   }
 
   // Intakes coral. Lift has to be empty
   public void intake() {
-
-    motor.set(setSpeed());
+    if (limitSwitch.get()) {
+      motor.set(setSpeed());
+    } else {
+      motor.set(0);
+    }
   }
 
   // Makes the motor stop. Can shut down both functions.

@@ -8,7 +8,9 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CoralHoldAngleSubsystemConstants;
 
@@ -36,15 +38,16 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     controller = motor.getClosedLoopController();
     encoder = motor.getEncoder();
 
+    motorConfig.idleMode(IdleMode.kBrake);
+    motorConfig.closedLoop.pidf(0.5f, 0.5f, 0.5f, 0.5f, ClosedLoopSlot.kSlot0);
+
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
   }
 
   @Override
   public void periodic() {
-    if (buttonPressed == false) {
-      holdUp(wantedPos);
-    }
+    SmartDashboard.putNumber("CoralEncoder:", encoder.getPosition());
   }
 
   private double setSpeed() {
@@ -58,8 +61,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     motorConfig.inverted(true);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    wantedPos -= 0.05;
 
-    motor.set(setSpeed()); // reverses the motor. Might break it.
+    controller.setReference(
+      wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   // Free hand tilt up. Just hold a button and go. Need an if statement
@@ -68,8 +73,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    wantedPos += 0.1;
 
-    motor.set(setSpeed());
+    controller.setReference(
+      wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   public double getEncoder() {
@@ -91,7 +98,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   public void holdUp(double wantedPos) {
     // motorConfig.closedLoop.velocityFF(feedforward);
-    controller.setReference(wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot1);
+    controller.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
     // Add the feedforward to the PID output to get the motor output
     /*maxPid.setReference(
     wantedPos, // - ArmConstants.kArmOffsetRads, 0, feedforward
@@ -103,6 +110,5 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public void stopTilt() {
     motor.set(0);
     buttonPressed = false;
-    wantedPos = encoder.getPosition();
   }
 }
