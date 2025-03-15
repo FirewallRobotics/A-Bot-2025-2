@@ -1,10 +1,9 @@
 package frc.robot.commands;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ElevatorUp extends Command {
   private ElevatorSubsystem m_subsystem;

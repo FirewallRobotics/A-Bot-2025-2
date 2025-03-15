@@ -10,8 +10,12 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.CoralHoldAngleSubsystemConstants;
 
 public class CoralHoldAngleSubsystem extends SubsystemBase {
@@ -24,6 +28,15 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   SparkClosedLoopController controller;
 
   private boolean buttonPressed;
+
+  private TrapezoidProfile.State state;
+
+  private ArmFeedforward feedforward =
+      new ArmFeedforward(
+          ArmConstants.kSVolts,
+          ArmConstants.kGVolts,
+          ArmConstants.kVVoltSecondPerRad,
+          ArmConstants.kAVoltSecondSquaredPerRad);
 
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
@@ -39,15 +52,22 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     encoder = motor.getEncoder();
 
     motorConfig.idleMode(IdleMode.kBrake);
-    motorConfig.closedLoop.pidf(0.5f, 0.5f, 0.5f, 0.5f, ClosedLoopSlot.kSlot0);
+    motorConfig.closedLoop.pidf(0f, 0f, 0f, 0.05f, ClosedLoopSlot.kSlot0);
 
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
+    state = new State(wantedPos, 0);
   }
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("CoralEncoder:", encoder.getPosition());
+
+    if (!buttonPressed) {
+      wantedPos = encoder.getPosition();
+      state = new State(wantedPos, 0);
+      holdUp(state);
+    }
   }
 
   private double setSpeed() {
@@ -61,10 +81,8 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     motorConfig.inverted(true);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    wantedPos -= 0.05;
 
-    controller.setReference(
-      wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    motor.set(setSpeed());
   }
 
   // Free hand tilt up. Just hold a button and go. Need an if statement
@@ -73,10 +91,8 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    wantedPos += 0.1;
 
-    controller.setReference(
-      wantedPos, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    motor.set(setSpeed());
   }
 
   public double getEncoder() {
@@ -96,9 +112,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   } */
 
-  public void holdUp(double wantedPos) {
+  public void holdUp(TrapezoidProfile.State setpoint) {
     // motorConfig.closedLoop.velocityFF(feedforward);
-    controller.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
+    controller.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
     // Add the feedforward to the PID output to get the motor output
     /*maxPid.setReference(
     wantedPos, // - ArmConstants.kArmOffsetRads, 0, feedforward
