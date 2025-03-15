@@ -8,6 +8,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -68,6 +69,8 @@ public class Robot extends TimedRobot {
     m_CoralStationChooser.addOption("RightCoralStation", "right");
     m_CoralStationChooser.addOption("Stop", "stop");
     SmartDashboard.putData(m_CoralStationChooser);
+
+    DataLogManager.start();
   }
 
   public static Robot getInstance() {

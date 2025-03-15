@@ -52,11 +52,13 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     encoder = motor.getEncoder();
 
     motorConfig.idleMode(IdleMode.kBrake);
-    motorConfig.closedLoop.pidf(0f, 0f, 0f, 0.05f, ClosedLoopSlot.kSlot0);
+    motorConfig.closedLoop.pidf(0f, 0f, 0f, 0f, ClosedLoopSlot.kSlot0);
 
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
     state = new State(wantedPos, 0);
+    // 0.73 L2-L3
+    // 0.90 Recieve
   }
 
   @Override
@@ -83,6 +85,27 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     motor.set(setSpeed());
+  }
+
+  public void IntakePosition() {
+    double setPoint = 0.9;
+    if (setPoint + 0.1 < encoder.getPosition()) {
+      motorConfig.inverted(false);
+      motor.set(setSpeed());
+    } else if (setPoint - 0.1 > encoder.getPosition()) {
+      motorConfig.inverted(true);
+      motor.set(setSpeed());
+    } else {
+      wantedPos = encoder.getPosition();
+      state = new State(wantedPos, 0);
+      holdUp(state);
+    }
+  }
+
+  public void LPosition() {
+    State setpoint = new State(0.73, 0);
+    double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
+    controller.setReference(0.73, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
   }
 
   // Free hand tilt up. Just hold a button and go. Need an if statement
