@@ -19,12 +19,12 @@ public class ElevatorMoveLevel3 extends Command {
   }
 
   @Override
-  public void initialize() {
-    m_subsystem.setLevel(3);
+  public void execute() {
+    m_subsystem.goToL3();
   }
 
   @Override
   public boolean isFinished() {
-    return m_subsystem.isFinished(3);
+    return -16 - 1 >= m_subsystem.getPositionEncoder() && -16 + 1 <= m_subsystem.getPositionEncoder();
   }
 }

@@ -28,7 +28,7 @@ public class AlgaeSubsystem extends SubsystemBase {
    * later on.
    */
   private double setSpeed() {
-    double kP = 0.45; // Tweak as necessary.
+    double kP = 0.4; // Tweak as necessary.
     return kP * 1; // Currently a placeholder for speed calculation
   }
 

@@ -9,12 +9,6 @@
           "data": {
             "pathName": "F Path"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "DropCoral"
-          }
         }
       ]
     }

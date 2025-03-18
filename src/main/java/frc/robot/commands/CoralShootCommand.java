@@ -1,18 +1,28 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.CoralHoldSubsystem;
 
 public class CoralShootCommand extends Command {
   public final CoralHoldSubsystem m_Coral;
+  private RobotContainer robotContainer;
 
   public CoralShootCommand(CoralHoldSubsystem c_Subsystem) {
     m_Coral = c_Subsystem;
   }
 
+  public CoralShootCommand(CoralHoldSubsystem c_Subsystem, RobotContainer robotContainer) {
+    m_Coral = c_Subsystem;
+    this.robotContainer = robotContainer;
+  }
+
   // Called when the command is first scheduled
   @Override
   public void initialize() {
+    if (robotContainer != null) {
+      robotContainer.repeatWristDown.cancel();
+    }
     // RobotContainer.coralHoldAngleSubsystem.LPosition();
   }
 
