@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
 import frc.robot.Robot;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -54,27 +56,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     rightMotorConfig.inverted(false);
     rightMotorConfig.follow(leftMotor, true);
     leftMotor.configure(
-        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
-        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    leftMotorConfig.closedLoop.pidf(0f, 0f, 0f, 0.63f, ClosedLoopSlot.kSlot0);
   }
 
   // Update PIDF
   public void Periodic() {
     SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
     SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
-
-    if (SmartDashboard.getNumber("Elevator-P", 0) != 0
-        || SmartDashboard.getNumber("Elevator-I", 0) != 0
-        || SmartDashboard.getNumber("Elevator-D", 0) != 0
-        || SmartDashboard.getNumber("Elevator-F", 0) != 0) {
-      leftMotorConfig.closedLoop.pidf(
-          SmartDashboard.getNumber("Elevator-P", 0),
-          SmartDashboard.getNumber("Elevator-I", 0),
-          SmartDashboard.getNumber("Elevator-D", 0),
-          SmartDashboard.getNumber("Elevator-F", 0),
-          ClosedLoopSlot.kSlot0);
-    }
   }
 
   public double getSpeed() {
@@ -93,12 +84,35 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void setSpeed(double speed) {
     if (getPositionEncoder() >= 0 && speed > 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
     } else if (getPositionEncoder() <= -50.1 && speed < 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
     } else {
       leftMotor.set(speed);
     }
   }
+
+  public void goToL3() {
+    double setPoint = -39;
+    if (setPoint + 1 >= getPositionEncoder()) {
+      leftMotor.set(0.15);
+      Logger.getGlobal().log(Level.INFO, "Going Down");
+    }
+    if (setPoint - 1 <= getPositionEncoder()) {
+      leftMotor.set(-0.3);
+      Logger.getGlobal().log(Level.INFO, "Going Up");
+    }
+    if (setPoint - 2 >= getPositionEncoder() && setPoint + 2 <= getPositionEncoder()) {
+      Logger.getGlobal().log(Level.INFO, "Found L3");
+      leftMotor.set(0);
+      closedLoopController.setReference(
+          getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
+    }
+  }
+
+  // -35
+  // -16
 
   public double getLevel() {
     if (Robot.isSimulation()) {
@@ -117,7 +131,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    leftMotor.set(0);
+    // leftMotor.set(0);
+    closedLoopController.setReference(
+        getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
   }
 
   public double getPositionEncoder() {

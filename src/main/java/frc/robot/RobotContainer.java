@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -32,8 +33,7 @@ import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
-import frc.robot.commands.ElevatorMoveLevel4;
-import frc.robot.commands.ElevatorNextPosition;
+import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
@@ -42,7 +42,6 @@ import frc.robot.commands.WristDown;
 import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -74,6 +73,7 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
+  public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular
@@ -97,7 +97,7 @@ public class RobotContainer {
           .headingWhile(true);
 
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
@@ -137,8 +137,21 @@ public class RobotContainer {
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    new EventTrigger("DropCoral").onTrue(new CoralShootCommand(coralHoldSubsystem));
-    new EventTrigger("ElevatorLvl1").onTrue(new ElevatorMoveLevel4(elevatorSubsystem));
+    new EventTrigger("DropCoral")
+        .onTrue(
+            new SequentialCommandGroup(
+                new ElevatorUp(elevatorSubsystem, 0.5),
+                new WaitCommand(0.1),
+                new ElevatorStop(elevatorSubsystem),
+                repeatWristDown,
+                new WaitCommand(0.5),
+                new CoralShootCommand(coralHoldSubsystem, this)));
+    new EventTrigger("ElevatorLvl1")
+        .onTrue(
+            new SequentialCommandGroup(
+                new ElevatorUp(elevatorSubsystem, 0.65),
+                new WaitCommand(0.5),
+                new ElevatorStop(elevatorSubsystem)));
     new EventTrigger("GrabCoral")
         .onTrue(
             new SequentialCommandGroup(
@@ -167,7 +180,7 @@ public class RobotContainer {
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
-    m_wrist2.setAngle(climberSubsystem.getEncoder());
+    // m_wrist2.setAngle(climberSubsystem.getEncoder());
   }
 
   /**
@@ -194,18 +207,18 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.x().whileTrue(new AlignWithNearest());
+    driverXbox.x().onTrue(new AlignWithNearest());
     driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     // driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
-    driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.rightTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
+    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.leftTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
-    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
+    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.65));
+    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().whileTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().whileTrue(new WristDown(coralHoldAngleSubsystem));

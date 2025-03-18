@@ -8,11 +8,11 @@ public class ElevatorDown extends Command {
 
   private double position;
 
-  public ElevatorDown(ElevatorSubsystem subsystem, double position) {
+  public ElevatorDown(ElevatorSubsystem subsystem, double speed) {
     m_subsystem = subsystem;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
-    this.position = position;
+    this.position = speed;
   }
 
   @Override
