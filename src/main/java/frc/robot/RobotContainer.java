@@ -34,7 +34,6 @@ import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorMoveLevel3;
-import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;

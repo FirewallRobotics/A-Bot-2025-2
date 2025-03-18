@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -17,6 +14,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
 import frc.robot.Robot;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlex leftMotor;
@@ -103,7 +102,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     if (setPoint - 1 <= getPositionEncoder()) {
       leftMotor.set(-0.3);
       Logger.getGlobal().log(Level.INFO, "Going Up");
-    } 
+    }
     if (setPoint - 2 >= getPositionEncoder() && setPoint + 2 <= getPositionEncoder()) {
       Logger.getGlobal().log(Level.INFO, "Found L3");
       leftMotor.set(0);

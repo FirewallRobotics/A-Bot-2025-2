@@ -25,6 +25,7 @@ public class ElevatorMoveLevel3 extends Command {
 
   @Override
   public boolean isFinished() {
-    return -16 - 1 >= m_subsystem.getPositionEncoder() && -16 + 1 <= m_subsystem.getPositionEncoder();
+    return -16 - 1 >= m_subsystem.getPositionEncoder()
+        && -16 + 1 <= m_subsystem.getPositionEncoder();
   }
 }
