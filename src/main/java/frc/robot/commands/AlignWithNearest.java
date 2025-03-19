@@ -2,7 +2,10 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.LimelightHelpers;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
 
@@ -63,75 +66,74 @@ public class AlignWithNearest extends Command {
   public AlignWithNearest() {}
 
   @Override
-  public void initialize() {
-    /*
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    if (ally.isPresent()) {
-      if (ally.get() == Alliance.Blue) {
-        if (VisionSubsystem.DistanceToCoralStation() != -1) {
-          if (VisionSubsystem.CanSeeTag(13)) {
-            RobotContainer.drivebase.driveToPose(Tag13);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag12);
-          }
-        }
-        if (VisionSubsystem.DistanceToReef() != -1) {
-          if (VisionSubsystem.CanSeeTag(17)) {
-            RobotContainer.drivebase.driveToPose(Tag17);
-          } else if (VisionSubsystem.CanSeeTag(18)) {
-            RobotContainer.drivebase.driveToPose(Tag18);
-          } else if (VisionSubsystem.CanSeeTag(19)) {
-            RobotContainer.drivebase.driveToPose(Tag19);
-          } else if (VisionSubsystem.CanSeeTag(20)) {
-            RobotContainer.drivebase.driveToPose(Tag20);
-          } else if (VisionSubsystem.CanSeeTag(21)) {
-            RobotContainer.drivebase.driveToPose(Tag21);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag22);
-          }
-        }
-        if (VisionSubsystem.DistanceToProcessor() != -1) {
-          RobotContainer.drivebase.driveToPose(Tag3);
-        }
+  public void execute() {
+
+    // if we are close enough to the reef
+    if (VisionSubsystem.DistanceToReef() != -1
+        || VisionSubsystem.DistanceToProcessor() != -1
+        || VisionSubsystem.DistanceToCoralStation() != -1) {
+
+      LimelightHelpers.setPipelineIndex(name, 1);
+      // if we are to much too the right move left
+      if (LimelightHelpers.getTY(name) > 1) {
+        RobotContainer.drivebase.drive(
+            new Translation2d(0, SmartDashboard.getNumber("AutoMoveSpeed", 5)), 0, false);
       }
-      if (ally.get() == Alliance.Red) {
-        if (VisionSubsystem.DistanceToCoralStation() != -1) {
-          if (VisionSubsystem.CanSeeTag(2)) {
-            RobotContainer.drivebase.driveToPose(Tag2);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag1);
-          }
-        }
-        if (VisionSubsystem.DistanceToReef() != -1) {
-          if (VisionSubsystem.CanSeeTag(6)) {
-            RobotContainer.drivebase.driveToPose(Tag6);
-          } else if (VisionSubsystem.CanSeeTag(7)) {
-            RobotContainer.drivebase.driveToPose(Tag7);
-          } else if (VisionSubsystem.CanSeeTag(8)) {
-            RobotContainer.drivebase.driveToPose(Tag8);
-          } else if (VisionSubsystem.CanSeeTag(9)) {
-            RobotContainer.drivebase.driveToPose(Tag9);
-          } else if (VisionSubsystem.CanSeeTag(10)) {
-            RobotContainer.drivebase.driveToPose(Tag10);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag11);
-          }
-        }
-        if (VisionSubsystem.DistanceToProcessor() != -1) {
-          RobotContainer.drivebase.driveToPose(Tag16);
-        }
+      // if we are too much to the left move right
+      else if (LimelightHelpers.getTY(name) < -1) {
+        RobotContainer.drivebase.drive(
+            new Translation2d(0, -SmartDashboard.getNumber("AutoMoveSpeed", 5)), 0, false);
       }
-    }
-      */
-    for (int i = 0; i < TagPos.length; i++) {
-      if (VisionSubsystem.CanSeeTag(i)) {
-        RobotContainer.drivebase.driveToPose(TagPos[i]);
+      // if we are too far from the tag move forward
+      if (VisionSubsystem.DistanceToReef() > 0
+          || VisionSubsystem.DistanceToProcessor() > 0
+          || VisionSubsystem.DistanceToCoralStation() > 0) {
+        LimelightHelpers.setPipelineIndex(name, 0);
+        if (VisionSubsystem.DistanceToReef() != -1) {
+          distance = VisionSubsystem.DistanceToReef();
+          if (VisionSubsystem.getReefLocationPose3d().getRotation().getY() > 0.5) {
+            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else if (VisionSubsystem.getReefLocationPose3d().getRotation().getY() < -0.5) {
+            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else {
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
+          }
+        } else if (VisionSubsystem.DistanceToProcessor() != -1) {
+          distance = VisionSubsystem.DistanceToProcessor();
+          if (VisionSubsystem.getProcessorLocationPose3d().getRotation().getY() > 0.5) {
+            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else if (VisionSubsystem.getProcessorLocationPose3d().getRotation().getY() < -0.5) {
+            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else {
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
+          }
+        } else if (VisionSubsystem.DistanceToCoralStation() != -1) {
+          distance = VisionSubsystem.DistanceToCoralStation();
+          if (VisionSubsystem.getCoralStationLocationPose3d().getRotation().getY() > 0.5) {
+            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else if (VisionSubsystem.getCoralStationLocationPose3d().getRotation().getY() < -0.5) {
+            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
+          } else {
+            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
+          }
+        } else {
+          distance = SmartDashboard.getNumber("AutoMoveSpeed", 5);
+          RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
+        }
       }
     }
   }
 
   @Override
   public boolean isFinished() {
-    return true;
+    return (VisionSubsystem.DistanceToReef() == -1)
+        && (VisionSubsystem.DistanceToCoralStation() == -1)
+        && (VisionSubsystem.DistanceToProcessor() == -1);
   }
 }

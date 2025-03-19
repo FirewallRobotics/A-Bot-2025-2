@@ -374,15 +374,6 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToReef() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex =
-        (int)
-            LimelightHelpers.getCurrentPipelineIndex(
-                frc.robot.Constants.VisionSubsystemConstants.limelightName);
-
-    // change the pipeline to apriltags
-    LimelightHelpers.setPipelineIndex(
-        frc.robot.Constants.VisionSubsystemConstants.limelightName, 0);
 
     // get the results
     RawFiducial[] fiducials =
@@ -407,9 +398,6 @@ public class VisionSubsystem extends SubsystemBase {
       }
     }
 
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
-
     // if the shortest has not changed then return -1 else return the shortest distance
     if (shortest != Double.MAX_VALUE) {
       return shortest;
@@ -419,11 +407,6 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToCoralStation() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex(name);
-
-    // change the pipeline to apriltags
-    LimelightHelpers.setPipelineIndex(name, 0);
 
     // get the results
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(name);
@@ -445,8 +428,6 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
 
     // if the shortest has not changed then return -1 else return the shortest distance
     if (shortest != Double.MAX_VALUE) {
@@ -457,11 +438,6 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToProcessor() {
-    // get the pipeline used before and save it for after we have finished our work
-    int pipelineTempdex = (int) LimelightHelpers.getCurrentPipelineIndex(name);
-
-    // change the pipeline to apriltags
-    LimelightHelpers.setPipelineIndex(name, 0);
 
     // get the results
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(name);
@@ -483,8 +459,6 @@ public class VisionSubsystem extends SubsystemBase {
         }
       }
     }
-    // set pipeline to the what it was before
-    LimelightHelpers.setPipelineIndex(name, pipelineTempdex);
 
     // if the shortest has not changed then return -1 else return the shortest distance
     if (shortest != Double.MAX_VALUE) {
