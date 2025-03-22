@@ -19,9 +19,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -32,17 +29,13 @@ import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
 import frc.robot.commands.ElevatorDown;
-import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorMoveLevel3;
-import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
 import frc.robot.commands.SlowMode;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.CoralHoldAngleSubsystem;
-import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlexAutoSubsystem;
@@ -74,7 +67,8 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
-  public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
+
+  // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
   // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 

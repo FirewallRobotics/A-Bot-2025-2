@@ -21,7 +21,7 @@ public class CoralShootCommand extends Command {
   @Override
   public void initialize() {
     if (robotContainer != null) {
-      robotContainer.repeatWristDown.cancel();
+      // robotContainer.repeatWristDown.cancel();
     }
     // RobotContainer.coralHoldAngleSubsystem.LPosition();
   }
