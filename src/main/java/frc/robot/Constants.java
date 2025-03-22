@@ -4,8 +4,21 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+import java.util.ArrayList;
+import java.util.Arrays;
 import swervelib.math.Matter;
 
 /**
@@ -63,6 +76,78 @@ public final class Constants {
 
   public static class VisionSubsystemConstants {
     public static final String limelightName = "limelight-cyclops";
+  }
+
+  public static class VisionConstants {
+
+    // Cam names set using Arducam serial number utility. On DS PC.
+    public static final String upperCameraName = "Bcam9782";
+    public static final String lowerCameraName = "Acam9782";
+
+    public static final Transform3d upperCameraToRobot =
+        new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(6.75),
+                Units.inchesToMeters(8.25),
+                Units.inchesToMeters(38.875)),
+            new Rotation3d(0, Units.degreesToRadians(-24), Units.degreesToRadians(0)));
+
+    public static final Transform3d lowerCameraToRobot =
+        new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(14), Units.inchesToMeters(0), Units.inchesToMeters(10.5)),
+            new Rotation3d(0, 0, 0));
+
+    /*
+     * Tags of each reef side.
+     * Starts at the side closest to the driver station
+     * Goes clockwise (relative to driver station)
+     */
+    public static final ArrayList<Integer> redReefTags =
+        new ArrayList<>(Arrays.asList(7, 6, 11, 10, 9, 8));
+    public static final ArrayList<Integer> blueReefTags =
+        new ArrayList<>(Arrays.asList(18, 19, 20, 21, 22, 17));
+    public static ArrayList<Integer> reefTags = new ArrayList<>();
+
+    // Tags of human player stations
+    // Starts at left human player station from driver POV
+    public static final ArrayList<Integer> redHPTags = new ArrayList<>(Arrays.asList(1, 2));
+    public static final ArrayList<Integer> blueHPTags = new ArrayList<>(Arrays.asList(13, 12));
+    public static ArrayList<Integer> HPTags = new ArrayList<>();
+
+    // Standard deviations below are from Team Spectrum 3847’s X-Ray robot
+
+    /**
+     * Standard deviations of model states. Increase these numbers to trust your model's state
+     * estimates less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians,
+     * then meters.
+     */
+    public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 10);
+
+    /**
+     * Standard deviations of the vision measurements. Increase these numbers to trust global
+     * measurements from vision less. This matrix is in the form [x, y, theta]ᵀ, with units in
+     * meters and radians.
+     */
+    public static final Matrix<N3, N1> measurementStdDevs = VecBuilder.fill(5, 5, 500);
+
+    // The standard deviations of our vision estimated poses, which affect correction rate
+    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(2, 2, 8);
+    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+    public static final AprilTagFieldLayout aprilTagFieldLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+
+    public static final Distance reefAlignFrontOffset = Inches.of(18);
+    public static final Distance reefAlignLeftStrafeOffset = Inches.of(-4);
+    public static final Distance reefAlignRightStrafeOffset = Inches.of(4);
+
+    public static final double reefXOffsetInches = 15;
+    public static final double reefYRightOffsetInches = 5;
+    public static final double reefYLeftOffsetInches = -7;
+
+    public static final double hpXOffsetInches = 15;
+    public static final double hpYOffsetInches = 0;
   }
 
   public static class OperatorConstants {

@@ -1,14 +1,16 @@
 package frc.robot.commands;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
+
+import java.util.function.DoubleSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,65 +67,47 @@ public class AlignWithNearest extends Command {
   public static Pose2d Tag10 = new Pose2d(11.638, 4.007, new Rotation2d(0));
   public static Pose2d Tag11 = new Pose2d(12.390, 2.790, new Rotation2d(1.012291));
 
+  public Pose2d getReefLocationInFieldSpace() {
+
+    // get reef location in robot space
+    Pose2d ReefLocation = VisionSubsystem.getReefLocationPose2d();
+
+    // if we dont have the reefs location find it by spinning slowly
+    if (ReefLocation.getX() == -1 && ReefLocation.getY() == -1) {
+      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
+    } else {
+      // if we do have the reefs location then convert it
+      // first zero the drivecommand so the math stays right
+      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0).schedule();
+
+      // get the robots location in field space
+      Pose2d RobotFieldSpace = RobotContainer.drivebase.getPose2d();
+
+      // do the math to find the location of the reef by adding together the values
+      double xActual = ReefLocation.getX() + RobotFieldSpace.getX();
+      double yActual = ReefLocation.getY() + RobotFieldSpace.getY();
+
+      // return the values
+      return new Pose2d(new Translation2d(xActual, yActual), ReefLocation.getRotation());
+    }
+    return new Pose2d(new Translation2d(-1, -1), ReefLocation.getRotation());
+  }
+
   // add vision as a requirement to run
   public AlignWithNearest() {}
 
   @Override
-  public void initialize() {
+  public void execute() {
+    if (getReefLocationInFieldSpace().getTranslation().getX() != -1) {
 
-    // if we can see the coral station go to it
-    if (VisionSubsystem.DistanceToCoralStation() != -1) {
-
-      // get the pose of the coral station in robot orientation
-      Pose3d coralstation = VisionSubsystem.getCoralStationLocationPose3d();
-
-      // drive to that pose
-      RobotContainer.drivebase
-          .driveCommand(
-              () -> coralstation.getX() - 0.5,
-              () -> coralstation.getY(),
-              () -> coralstation.getRotation().getX())
-          .schedule();
-
-      // log where we went/are going
-      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Coral Station");
-
-      // if we can see the processor go to it
-    } else if (VisionSubsystem.DistanceToProcessor() != -1) {
-
-      // get the pose of the processor in robot orientation
-      Pose3d processor = VisionSubsystem.getProcessorLocationPose3d();
-
-      // drive to that pose
-      RobotContainer.drivebase
-          .driveCommand(
-              () -> processor.getX() - 0.5,
-              () -> processor.getY(),
-              () -> processor.getRotation().getX())
-          .schedule();
-
-      // log where we went/are going
-      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Processor");
-
-      // if we can see the reef go to it
-    } else if (VisionSubsystem.DistanceToReef() != -1) {
-
-      // get the reefs pose in robot orientation
-      Pose2d reef = VisionSubsystem.getReefLocationPose2d();
-      // RobotContainer.drivebase.drive(new Translation2d(reef.getX(), reef.getY()),
-      // reef.getRotation().getRadians(), false);
-      // RobotContainer.drivebase.driveToPose(reef).schedule();
-      AutoBuilder.pathfindToPose(
-              reef,
-              new PathConstraints(
-                  5.0,
-                  4.0,
-                  RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
-                  Units.degreesToRadians(720)))
-          .schedule();
-
-      // log where we went/are going
-      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Reef");
+      if(VisionSubsystem.getReefLocation()[0] >= 0.1 || VisionSubsystem.getReefLocation()[0] <= -0.1){
+        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left/Right");
+        RobotContainer.drivebase.drive(new Translation2d(VisionSubsystem.getReefLocation()[0], 0), 0, false);
+      }else{
+        Logger.getGlobal().log(Level.INFO, "Driver Assist Going FWD To Reef");
+        RobotContainer.drivebase.driveToDistanceCommand(VisionSubsystem.DistanceToReef(), 1.5);
+      }
     } else {
 
       // log that we cannot see anything to goto
@@ -133,6 +117,6 @@ public class AlignWithNearest extends Command {
 
   @Override
   public boolean isFinished() {
-    return true;
+    return VisionSubsystem.DistanceToReef() == -1;
   }
 }

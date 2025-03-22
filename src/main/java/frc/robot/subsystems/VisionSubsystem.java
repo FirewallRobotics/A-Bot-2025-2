@@ -120,7 +120,7 @@ public class VisionSubsystem extends SubsystemBase {
         if (tag.fiducialID == reeftag) {
 
           // if we have found a reef tag break out
-          tagPoseRobot = tag.getTargetPose_RobotSpace();
+          tagPoseRobot = tag.getTargetPose_CameraSpace();
           break;
         }
       }
