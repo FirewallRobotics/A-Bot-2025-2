@@ -1,13 +1,15 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.LimelightHelpers;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
@@ -68,65 +70,60 @@ public class AlignWithNearest extends Command {
   @Override
   public void execute() {
 
-    // if we are close enough to the reef
-    if (VisionSubsystem.DistanceToReef() != -1
-        || VisionSubsystem.DistanceToProcessor() != -1
-        || VisionSubsystem.DistanceToCoralStation() != -1) {
+    // if we can see the coral station go to it
+    if (VisionSubsystem.DistanceToCoralStation() != -1) {
 
-      LimelightHelpers.setPipelineIndex(name, 1);
-      // if we are to much too the right move left
-      if (LimelightHelpers.getTY(name) > 1) {
-        RobotContainer.drivebase.drive(
-            new Translation2d(0, SmartDashboard.getNumber("AutoMoveSpeed", 5)), 0, false);
-      }
-      // if we are too much to the left move right
-      else if (LimelightHelpers.getTY(name) < -1) {
-        RobotContainer.drivebase.drive(
-            new Translation2d(0, -SmartDashboard.getNumber("AutoMoveSpeed", 5)), 0, false);
-      }
-      // if we are too far from the tag move forward
-      if (VisionSubsystem.DistanceToReef() > 0
-          || VisionSubsystem.DistanceToProcessor() > 0
-          || VisionSubsystem.DistanceToCoralStation() > 0) {
-        LimelightHelpers.setPipelineIndex(name, 0);
-        if (VisionSubsystem.DistanceToReef() != -1) {
-          distance = VisionSubsystem.DistanceToReef();
-          if (VisionSubsystem.getReefLocationPose3d().getRotation().getY() > 0.5) {
-            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else if (VisionSubsystem.getReefLocationPose3d().getRotation().getY() < -0.5) {
-            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else {
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
-          }
-        } else if (VisionSubsystem.DistanceToProcessor() != -1) {
-          distance = VisionSubsystem.DistanceToProcessor();
-          if (VisionSubsystem.getProcessorLocationPose3d().getRotation().getY() > 0.5) {
-            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else if (VisionSubsystem.getProcessorLocationPose3d().getRotation().getY() < -0.5) {
-            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else {
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
-          }
-        } else if (VisionSubsystem.DistanceToCoralStation() != -1) {
-          distance = VisionSubsystem.DistanceToCoralStation();
-          if (VisionSubsystem.getCoralStationLocationPose3d().getRotation().getY() > 0.5) {
-            rotation = -SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else if (VisionSubsystem.getCoralStationLocationPose3d().getRotation().getY() < -0.5) {
-            rotation = SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), rotation, false);
-          } else {
-            RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
-          }
-        } else {
-          distance = SmartDashboard.getNumber("AutoMoveSpeed", 5);
-          RobotContainer.drivebase.drive(new Translation2d(distance, 0), 0, false);
-        }
-      }
+      // get the pose of the coral station in robot orientation
+      Pose3d coralstation = VisionSubsystem.getCoralStationLocationPose3d();
+
+      // drive to that pose
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> coralstation.getX() - 0.5,
+              () -> coralstation.getY(),
+              () -> coralstation.getRotation().getX())
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Coral Station");
+
+      // if we can see the processor go to it
+    } else if (VisionSubsystem.DistanceToProcessor() != -1) {
+
+      // get the pose of the processor in robot orientation
+      Pose3d processor = VisionSubsystem.getProcessorLocationPose3d();
+
+      // drive to that pose
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> processor.getX() - 0.5,
+              () -> processor.getY(),
+              () -> processor.getRotation().getX())
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Processor");
+
+      // if we can see the reef go to it
+    } else if (VisionSubsystem.DistanceToReef() != -1) {
+
+      // get the reefs pose in robot orientation
+      Pose3d reef = VisionSubsystem.getReefLocationPose3d();
+
+      new SequentialCommandGroup(
+              RobotContainer.drivebase.driveCommand(
+                  () -> 0, () -> 0, () -> reef.getRotation().getX()),
+              new WaitCommand(1),
+              RobotContainer.drivebase.driveCommand(
+                  () -> reef.getX(), () -> reef.getY() - 1, () -> 0))
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Reef");
+    } else {
+
+      // log that we cannot see anything to goto
+      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target!");
     }
   }
 

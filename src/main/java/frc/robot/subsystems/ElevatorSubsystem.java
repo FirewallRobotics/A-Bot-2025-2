@@ -93,8 +93,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void setSpeed(double speed) {
     if (getPositionEncoder() >= 0 && speed > 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
     } else if (getPositionEncoder() <= -50.1 && speed < 0) {
       leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
     } else {
       leftMotor.set(speed);
     }

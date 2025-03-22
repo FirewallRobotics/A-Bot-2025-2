@@ -12,7 +12,9 @@ public class CoralShootCommand extends Command {
 
   // Called when the command is first scheduled
   @Override
-  public void initialize() {}
+  public void initialize() {
+    // RobotContainer.coralHoldAngleSubsystem.LPosition();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
