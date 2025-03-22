@@ -2,6 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ElevatorStop extends Command {
   private ElevatorSubsystem m_subsystem;
@@ -14,7 +16,8 @@ public class ElevatorStop extends Command {
 
   @Override
   public void initialize() {
-    m_subsystem.setSpeed(0);
+    m_subsystem.stop();
+    Logger.getGlobal().log(Level.INFO, "Stopping Elevator");
   }
 
   @Override

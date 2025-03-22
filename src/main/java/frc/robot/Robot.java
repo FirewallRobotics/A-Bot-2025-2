@@ -8,6 +8,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -62,12 +63,15 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("Box-9", "Box-9");
     m_chooser.addOption("FWD 10 feet", "FWD10");
     m_chooser.addOption("FWD 5 feet", "FWD5");
+    m_chooser.addOption("Wait", "wait");
     SmartDashboard.putData(m_chooser);
 
     m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
     m_CoralStationChooser.addOption("RightCoralStation", "right");
     m_CoralStationChooser.addOption("Stop", "stop");
     SmartDashboard.putData(m_CoralStationChooser);
+
+    DataLogManager.start();
   }
 
   public static Robot getInstance() {
@@ -142,8 +146,10 @@ public class Robot extends TimedRobot {
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
-    autonomousCommand =
-        new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
+    if (!m_autoSelected.equals("wait")) {
+      autonomousCommand =
+          new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
+    }
 
     // if (m_autoSelected.contains("Drop")) {
     //  autonomousCommand.andThen(
@@ -152,11 +158,20 @@ public class Robot extends TimedRobot {
 
     // schedule the autonomous command
     if (!m_CoralStationChooser.getSelected().equals("stop")) {
-      autonomousCommand.addCommands(
-          m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
+      if (m_autoSelected.equals("wait")) {
+        autonomousCommand =
+            new SequentialCommandGroup(
+                m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
+      } else {
+        autonomousCommand.addCommands(
+            m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
+      }
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
-    autonomousCommand.schedule();
+    if (autonomousCommand != null
+        && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
+      autonomousCommand.schedule();
+    }
   }
 
   List<Pose2d> points;

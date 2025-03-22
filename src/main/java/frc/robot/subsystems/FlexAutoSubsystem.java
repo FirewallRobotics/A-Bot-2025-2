@@ -152,7 +152,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
       if (ally.get() == Alliance.Blue) {
         SequentialCommandGroup autonomousCommand =
             new SequentialCommandGroup(
-                new ElevatorMoveLevel4(RobotContainer.elevatorSubsystem),
+                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
                 RobotContainer.drivebase.driveToPose(
                     AlignWithNearest.TagPos[17 + ((int) Math.random() * 3)]),
                 // new CoralShootCommand(RobotContainer.coralHoldSubsystem),
@@ -163,7 +163,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
       } else {
         SequentialCommandGroup autonomousCommand =
             new SequentialCommandGroup(
-                new ElevatorMoveLevel4(RobotContainer.elevatorSubsystem),
+                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
                 RobotContainer.drivebase.driveToPose(
                     AlignWithNearest.TagPos[6 + ((int) Math.random() * 3)]),
                 // new CoralShootCommand(RobotContainer.coralHoldSubsystem),

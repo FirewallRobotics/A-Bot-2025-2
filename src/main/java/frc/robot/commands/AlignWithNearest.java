@@ -1,10 +1,16 @@
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
@@ -64,69 +70,64 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void initialize() {
-    /*
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    if (ally.isPresent()) {
-      if (ally.get() == Alliance.Blue) {
-        if (VisionSubsystem.DistanceToCoralStation() != -1) {
-          if (VisionSubsystem.CanSeeTag(13)) {
-            RobotContainer.drivebase.driveToPose(Tag13);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag12);
-          }
-        }
-        if (VisionSubsystem.DistanceToReef() != -1) {
-          if (VisionSubsystem.CanSeeTag(17)) {
-            RobotContainer.drivebase.driveToPose(Tag17);
-          } else if (VisionSubsystem.CanSeeTag(18)) {
-            RobotContainer.drivebase.driveToPose(Tag18);
-          } else if (VisionSubsystem.CanSeeTag(19)) {
-            RobotContainer.drivebase.driveToPose(Tag19);
-          } else if (VisionSubsystem.CanSeeTag(20)) {
-            RobotContainer.drivebase.driveToPose(Tag20);
-          } else if (VisionSubsystem.CanSeeTag(21)) {
-            RobotContainer.drivebase.driveToPose(Tag21);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag22);
-          }
-        }
-        if (VisionSubsystem.DistanceToProcessor() != -1) {
-          RobotContainer.drivebase.driveToPose(Tag3);
-        }
-      }
-      if (ally.get() == Alliance.Red) {
-        if (VisionSubsystem.DistanceToCoralStation() != -1) {
-          if (VisionSubsystem.CanSeeTag(2)) {
-            RobotContainer.drivebase.driveToPose(Tag2);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag1);
-          }
-        }
-        if (VisionSubsystem.DistanceToReef() != -1) {
-          if (VisionSubsystem.CanSeeTag(6)) {
-            RobotContainer.drivebase.driveToPose(Tag6);
-          } else if (VisionSubsystem.CanSeeTag(7)) {
-            RobotContainer.drivebase.driveToPose(Tag7);
-          } else if (VisionSubsystem.CanSeeTag(8)) {
-            RobotContainer.drivebase.driveToPose(Tag8);
-          } else if (VisionSubsystem.CanSeeTag(9)) {
-            RobotContainer.drivebase.driveToPose(Tag9);
-          } else if (VisionSubsystem.CanSeeTag(10)) {
-            RobotContainer.drivebase.driveToPose(Tag10);
-          } else {
-            RobotContainer.drivebase.driveToPose(Tag11);
-          }
-        }
-        if (VisionSubsystem.DistanceToProcessor() != -1) {
-          RobotContainer.drivebase.driveToPose(Tag16);
-        }
-      }
-    }
-      */
-    for (int i = 0; i < TagPos.length; i++) {
-      if (VisionSubsystem.CanSeeTag(i)) {
-        RobotContainer.drivebase.driveToPose(TagPos[i]);
-      }
+
+    // if we can see the coral station go to it
+    if (VisionSubsystem.DistanceToCoralStation() != -1) {
+
+      // get the pose of the coral station in robot orientation
+      Pose3d coralstation = VisionSubsystem.getCoralStationLocationPose3d();
+
+      // drive to that pose
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> coralstation.getX() - 0.5,
+              () -> coralstation.getY(),
+              () -> coralstation.getRotation().getX())
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Coral Station");
+
+      // if we can see the processor go to it
+    } else if (VisionSubsystem.DistanceToProcessor() != -1) {
+
+      // get the pose of the processor in robot orientation
+      Pose3d processor = VisionSubsystem.getProcessorLocationPose3d();
+
+      // drive to that pose
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> processor.getX() - 0.5,
+              () -> processor.getY(),
+              () -> processor.getRotation().getX())
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Processor");
+
+      // if we can see the reef go to it
+    } else if (VisionSubsystem.DistanceToReef() != -1) {
+
+      // get the reefs pose in robot orientation
+      Pose2d reef = VisionSubsystem.getReefLocationPose2d();
+      // RobotContainer.drivebase.drive(new Translation2d(reef.getX(), reef.getY()),
+      // reef.getRotation().getRadians(), false);
+      // RobotContainer.drivebase.driveToPose(reef).schedule();
+      AutoBuilder.pathfindToPose(
+              reef,
+              new PathConstraints(
+                  5.0,
+                  4.0,
+                  RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+                  Units.degreesToRadians(720)))
+          .schedule();
+
+      // log where we went/are going
+      Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Reef");
+    } else {
+
+      // log that we cannot see anything to goto
+      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target!");
     }
   }
 
