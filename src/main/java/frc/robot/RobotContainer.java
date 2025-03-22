@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,6 +20,9 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -28,6 +32,8 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ArmLevel3;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
@@ -39,9 +45,15 @@ import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
 import frc.robot.commands.SlowMode;
+import frc.robot.commands.WristDown;
+import frc.robot.commands.WristStop;
+import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
+import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.CoralHoldAngleSubsystem;
+import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -66,7 +78,9 @@ import swervelib.SwerveInputStream;
 public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  final CommandXboxController driverXbox = new CommandXboxController(0);
+  
+  public static final CommandXboxController driverXbox = new CommandXboxController(0);
+  final CommandGenericHID genericHID = new CommandGenericHID(1);
   final CommandXboxController coralController = new CommandXboxController(1);
   // final CommandGenericHID genericHID = new CommandGenericHID(1);
   // The robot's subsystems and commands are defined here...
@@ -79,8 +93,6 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
-  public final CoralHoldAngleSubsystem coralHoldAngleSubsystem;
-  public final CoralHoldSubsystem coralHoldSubsystem;
 
   // private final KeyboardInput keyboard;
 
@@ -110,12 +122,11 @@ public class RobotContainer {
           .headingWhile(true);
 
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  // public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
+  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
-  // public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
-  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -153,30 +164,16 @@ public class RobotContainer {
             Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-    /*
-    new EventTrigger("DropCoral")
-        .onTrue(
-            new SequentialCommandGroup(
-                new ElevatorUp(elevatorSubsystem, 0.5),
-                new WaitCommand(0.1),
-                new ElevatorStop(elevatorSubsystem),
-                repeatWristDown,
-                new WaitCommand(0.5),
-                new CoralShootCommand(coralHoldSubsystem, this)));
-    new EventTrigger("ElevatorLvl1")
-        .onTrue(
-            new SequentialCommandGroup(
-                new ElevatorUp(elevatorSubsystem, 0.65),
-                new WaitCommand(0.5),
-                new ElevatorStop(elevatorSubsystem)));
-    new EventTrigger("GrabCoral")
-        .onTrue(
-            new SequentialCommandGroup(
-                new ElevatorMoveLevel1(elevatorSubsystem),
-                new WaitCommand(1),
-                new CoralIntakeCommand(coralHoldSubsystem),
-                new WaitCommand(2)));
-                */
+    NamedCommands.registerCommand(
+        "DropCoral",
+        new SequentialCommandGroup(
+            new ElevatorUp(elevatorSubsystem, 0.5),
+            new WaitCommand(0.2),
+            new ElevatorStop(elevatorSubsystem),
+            new WristDown(coralHoldAngleSubsystem),
+            new WaitCommand(0.25),
+            new WristStop(coralHoldAngleSubsystem),
+            new CoralShootCommand(coralHoldSubsystem, this)));
   }
 
   public void init() {
@@ -197,6 +194,8 @@ public class RobotContainer {
 
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    m_wrist2.setAngle(climberSubsystem.getEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     m_wrist2.setAngle(climberSubsystem.getEncoder());
 
@@ -278,8 +277,8 @@ public class RobotContainer {
     driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
 
     driverXbox.x().onTrue(new AlignWithNearest());
-    // driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
-    // driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
@@ -290,14 +289,17 @@ public class RobotContainer {
     driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.65));
     driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.povUp().whileTrue(new ArmRaise(climberSubsystem));
-    driverXbox.povDown().whileTrue(new ArmLower(climberSubsystem));
+    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem));
+    driverXbox.povDown().onTrue(new WristDown(coralHoldAngleSubsystem));
+    driverXbox.povUp().onFalse(new WristStop(coralHoldAngleSubsystem));
+    driverXbox.povDown().onFalse(new WristStop(coralHoldAngleSubsystem));
 
-    driverXbox.povLeft().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
-    // driverXbox.povRight().whileTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
-    driverXbox.povLeft().onFalse(new algaeStopIntake(algaeSubsystem));
-    // driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
+    driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
+    driverXbox.povRight().whileTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
+    driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
+    driverXbox.povLeft().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());
+    driverXbox.povRight().onFalse(new algaeStopIntake(algaeSubsystem));
 
     // TEMP! Replace with the actual commands once we have the keyboard
     // assistGenericHID.button(0).onTrue(new SequentialCommandGroup(new GoToCommand(1), new

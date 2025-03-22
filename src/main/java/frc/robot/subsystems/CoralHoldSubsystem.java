@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -11,6 +12,8 @@ import frc.robot.Constants.CoralHoldSubsystemConstants;
 public class CoralHoldSubsystem extends SubsystemBase {
 
   private final SparkMax motor;
+
+  // DigitalInput limitSwitch = new DigitalInput(0);
   DigitalInput limitSwitch = new DigitalInput(0);
   boolean doingStuff = false;
 
@@ -44,6 +47,13 @@ public class CoralHoldSubsystem extends SubsystemBase {
 
   // When we want to shoot coral from the intake, has to have a coral in the lift
   public void shoot() {
+    // if (!limitSwitch.get()) {
+    // motorConfig.inverted(false);
+    // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
+    // PersistMode.kPersistParameters);
+
+    motor.set(-setSpeed() * 1.25);
+    // }
     if (!limitSwitch.get()) {
       // motorConfig.inverted(false);
       // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
@@ -54,6 +64,11 @@ public class CoralHoldSubsystem extends SubsystemBase {
 
   // Intakes coral. Lift has to be empty
   public void intake() {
+    // if (limitSwitch.get()) {
+    motor.set(setSpeed());
+    // } else {
+    //  motor.set(0);
+    // }
     if (limitSwitch.get()) {
       motor.set(setSpeed());
       doingStuff = true;
