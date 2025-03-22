@@ -68,7 +68,7 @@ public class AlignWithNearest extends Command {
   public AlignWithNearest() {}
 
   @Override
-  public void execute() {
+  public void initialize() {
 
     // if we can see the coral station go to it
     if (VisionSubsystem.DistanceToCoralStation() != -1) {
@@ -109,7 +109,6 @@ public class AlignWithNearest extends Command {
 
       // get the reefs pose in robot orientation
       Pose3d reef = VisionSubsystem.getReefLocationPose3d();
-
       new SequentialCommandGroup(
               RobotContainer.drivebase.driveCommand(
                   () -> 0, () -> 0, () -> reef.getRotation().getX()),

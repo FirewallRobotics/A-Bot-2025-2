@@ -29,7 +29,7 @@ import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
 import frc.robot.commands.ElevatorDown;
-import frc.robot.commands.ElevatorNextPosition;
+import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
@@ -67,6 +67,8 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
+
+  // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
   // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
@@ -132,7 +134,6 @@ public class RobotContainer {
             Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-
     /*
     new EventTrigger("DropCoral")
         .onTrue(
@@ -211,12 +212,12 @@ public class RobotContainer {
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
-    driverXbox.leftBumper().onTrue(new ElevatorNextPosition(elevatorSubsystem));
-    driverXbox.rightTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
+    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.leftTrigger().whileFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.8));
-    driverXbox.rightTrigger().whileTrue(new ElevatorDown(elevatorSubsystem, 0.8));
+    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.65));
+    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().whileTrue(new ArmRaise(climberSubsystem));
     driverXbox.povDown().whileTrue(new ArmLower(climberSubsystem));
