@@ -4,6 +4,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
 import java.util.logging.Level;
@@ -75,10 +77,12 @@ public class AlignWithNearest extends Command {
       Pose3d coralstation = VisionSubsystem.getCoralStationLocationPose3d();
 
       // drive to that pose
-      RobotContainer.drivebase.driveCommand(
-          () -> coralstation.getX(),
-          () -> coralstation.getY(),
-          () -> coralstation.getRotation().getX());
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> coralstation.getX() - 0.5,
+              () -> coralstation.getY(),
+              () -> coralstation.getRotation().getX())
+          .schedule();
 
       // log where we went/are going
       Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Coral Station");
@@ -90,8 +94,12 @@ public class AlignWithNearest extends Command {
       Pose3d processor = VisionSubsystem.getProcessorLocationPose3d();
 
       // drive to that pose
-      RobotContainer.drivebase.driveCommand(
-          () -> processor.getX(), () -> processor.getY(), () -> processor.getRotation().getX());
+      RobotContainer.drivebase
+          .driveCommand(
+              () -> processor.getX() - 0.5,
+              () -> processor.getY(),
+              () -> processor.getRotation().getX())
+          .schedule();
 
       // log where we went/are going
       Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Processor");
@@ -101,10 +109,13 @@ public class AlignWithNearest extends Command {
 
       // get the reefs pose in robot orientation
       Pose3d reef = VisionSubsystem.getReefLocationPose3d();
-
-      // go to that pose
-      RobotContainer.drivebase.driveCommand(
-          () -> reef.getX(), () -> reef.getY(), () -> reef.getRotation().getX());
+      new SequentialCommandGroup(
+              RobotContainer.drivebase.driveCommand(
+                  () -> 0, () -> 0, () -> reef.getRotation().getX()),
+              new WaitCommand(1),
+              RobotContainer.drivebase.driveCommand(
+                  () -> reef.getX(), () -> reef.getY() - 1, () -> 0))
+          .schedule();
 
       // log where we went/are going
       Logger.getGlobal().log(Level.INFO, "Driver Assist Going To Reef");
@@ -117,6 +128,8 @@ public class AlignWithNearest extends Command {
 
   @Override
   public boolean isFinished() {
-    return true;
+    return (VisionSubsystem.DistanceToReef() == -1)
+        && (VisionSubsystem.DistanceToCoralStation() == -1)
+        && (VisionSubsystem.DistanceToProcessor() == -1);
   }
 }

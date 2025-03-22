@@ -371,7 +371,6 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToCoralStation() {
-
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex(name, 0);
 
@@ -405,7 +404,6 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static double DistanceToProcessor() {
-
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex(name, 0);
 
