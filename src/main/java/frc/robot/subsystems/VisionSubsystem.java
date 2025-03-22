@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -216,13 +217,13 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  public static Pose3d getReefLocationPose3d() {
+  public static Pose2d getReefLocationPose2d() {
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex(name, 0);
 
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults(name);
-    Pose3d tagPoseRobot = null;
+    Pose2d tagPoseRobot = null;
 
     // if the limelights intel is good look for reef tag
     while (!results.valid) {
@@ -237,7 +238,7 @@ public class VisionSubsystem extends SubsystemBase {
         if (tag.fiducialID == reeftag) {
 
           // if we have found a reef tag break out
-          tagPoseRobot = tag.getTargetPose_RobotSpace();
+          tagPoseRobot = tag.getTargetPose_RobotSpace2D();
           break;
         }
       }

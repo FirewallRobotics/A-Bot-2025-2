@@ -1,11 +1,12 @@
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
 import java.util.logging.Level;
@@ -108,13 +109,17 @@ public class AlignWithNearest extends Command {
     } else if (VisionSubsystem.DistanceToReef() != -1) {
 
       // get the reefs pose in robot orientation
-      Pose3d reef = VisionSubsystem.getReefLocationPose3d();
-      new SequentialCommandGroup(
-              RobotContainer.drivebase.driveCommand(
-                  () -> 0, () -> 0, () -> reef.getRotation().getX()),
-              new WaitCommand(1),
-              RobotContainer.drivebase.driveCommand(
-                  () -> reef.getX(), () -> reef.getY() - 1, () -> 0))
+      Pose2d reef = VisionSubsystem.getReefLocationPose2d();
+      // RobotContainer.drivebase.drive(new Translation2d(reef.getX(), reef.getY()),
+      // reef.getRotation().getRadians(), false);
+      // RobotContainer.drivebase.driveToPose(reef).schedule();
+      AutoBuilder.pathfindToPose(
+              reef,
+              new PathConstraints(
+                  5.0,
+                  4.0,
+                  RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
+                  Units.degreesToRadians(720)))
           .schedule();
 
       // log where we went/are going
@@ -128,8 +133,6 @@ public class AlignWithNearest extends Command {
 
   @Override
   public boolean isFinished() {
-    return (VisionSubsystem.DistanceToReef() == -1)
-        && (VisionSubsystem.DistanceToCoralStation() == -1)
-        && (VisionSubsystem.DistanceToProcessor() == -1);
+    return true;
   }
 }
