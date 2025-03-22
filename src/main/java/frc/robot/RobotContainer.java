@@ -27,20 +27,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
-import frc.robot.commands.ArmLevel2;
-import frc.robot.commands.ArmLevel3;
-import frc.robot.commands.ArmLevel4;
-import frc.robot.commands.CoralIntakeCommand;
-import frc.robot.commands.CoralShootCommand;
-import frc.robot.commands.ElevatorDown;
-import frc.robot.commands.ElevatorMoveLevel1;
-import frc.robot.commands.ElevatorMoveLevel2;
-import frc.robot.commands.ElevatorMoveLevel3;
-import frc.robot.commands.ElevatorMoveLevel4;
-import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ArmLevel3;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.ElevatorPrevPosition;
@@ -50,14 +42,17 @@ import frc.robot.commands.SlowMode;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.CoralHoldAngleSubsystem;
+import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlexAutoSubsystem;
-import frc.robot.subsystems.KeyboardInput;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import java.util.Optional;
 import swervelib.SwerveInputStream;
+
+// import frc.robot.subsystems.KeyboardInput;
 
 // import java.util.Scanner;
 
@@ -72,6 +67,7 @@ public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandXboxController driverXbox = new CommandXboxController(0);
+  final CommandXboxController coralController = new CommandXboxController(1);
   // final CommandGenericHID genericHID = new CommandGenericHID(1);
   // The robot's subsystems and commands are defined here...
   public static final SwerveSubsystem drivebase =
@@ -83,9 +79,10 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
+  public final CoralHoldAngleSubsystem coralHoldAngleSubsystem;
+  public final CoralHoldSubsystem coralHoldSubsystem;
 
-
-  private final KeyboardInput keyboard;
+  // private final KeyboardInput keyboard;
 
   // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
@@ -144,7 +141,9 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    keyboard = new KeyboardInput();
+    coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
+    coralHoldSubsystem = new CoralHoldSubsystem();
+    // keyboard = new KeyboardInput();
     flexAutoSubsystem = new FlexAutoSubsystem();
     Pathconstraints =
         new PathConstraints(
@@ -201,9 +200,9 @@ public class RobotContainer {
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     m_wrist2.setAngle(climberSubsystem.getEncoder());
 
-    String key = keyboard.getLastKeyPressed();
+    // String key = keyboard.getLastKeyPressed();
 
-    if (key.equalsIgnoreCase("X")) {
+    /*if (key.equalsIgnoreCase("X")) {
       new SequentialCommandGroup(
           new ParallelCommandGroup(
               new ElevatorMoveLevel2(elevatorSubsystem), new ArmLevel2(coralHoldAngleSubsystem)),
@@ -221,7 +220,7 @@ public class RobotContainer {
               new ElevatorMoveLevel4(elevatorSubsystem), new ArmLevel4(coralHoldAngleSubsystem)),
           new WaitCommand(1),
           new CoralShootCommand(coralHoldSubsystem));
-    }
+    }*/
 
     // m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
@@ -252,6 +251,16 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+
+    coralController
+        .x()
+        .onTrue(
+            new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new ElevatorMoveLevel3(elevatorSubsystem),
+                    new ArmLevel3(coralHoldAngleSubsystem)),
+                new WaitCommand(1),
+                new CoralShootCommand(coralHoldSubsystem)));
 
     // driverXbox.x().whileTrue(new AlignWithNearest());
     /*driverXbox

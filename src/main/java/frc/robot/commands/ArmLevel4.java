@@ -13,7 +13,7 @@ public class ArmLevel4 extends Command {
 
   @Override
   public void initialize() {
-    coralHold.setLevel(4);
+    coralHold.setLevel();
   }
 
   @Override

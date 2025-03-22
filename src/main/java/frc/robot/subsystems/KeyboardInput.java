@@ -29,8 +29,8 @@ public class KeyboardInput extends SubsystemBase {
             // Optional: Handle key typed events
           }
         });
-    frame.setSize(200, 200); // Dummy size
-    frame.setVisible(true);
+    // frame.setSize(200, 200); // Dummy size
+    // frame.setVisible(true);
   }
 
   public String getLastKeyPressed() {

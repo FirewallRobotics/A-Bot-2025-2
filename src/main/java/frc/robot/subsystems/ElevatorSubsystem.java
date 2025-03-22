@@ -59,7 +59,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
         rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    leftMotorConfig.closedLoop.pidf(0f, 0f, 0f, 0.63f, ClosedLoopSlot.kSlot0);
+    leftMotorConfig.closedLoop.pidf(0.001f, 0f, 0f, 0.63f, ClosedLoopSlot.kSlot0);
   }
 
   // Update PIDF

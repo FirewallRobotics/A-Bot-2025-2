@@ -42,7 +42,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
   private RelativeEncoder encoder;
 
-  public static final double[] angles = {0, 0, 0, 0, 0};
+  public static final double shooter = 4.82;
 
   public CoralHoldAngleSubsystem() {
     motor =
@@ -137,19 +137,16 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   } */
 
+  public void setLevel() {
 
-  public void setLevel(int level) {
-    if (level < 0 || level >= angles.length) {
-      System.out.println("Invalid level: " + level);
-      return;
-    }
-    wantedPos = angles[level - 1];
-    holdUp(wantedPos);
+    wantedPos = shooter;
+    state = new State(wantedPos, 0);
+    holdUp(state);
   }
 
   public boolean isFinished(int position) {
 
-    if (angles[position] - (motor.getEncoder().getPosition()) == 0) {
+    if (shooter - (motor.getEncoder().getPosition()) == 0) {
       return true;
     } else {
       return false;
