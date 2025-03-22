@@ -19,11 +19,25 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
+import frc.robot.commands.ArmLevel2;
+import frc.robot.commands.ArmLevel3;
+import frc.robot.commands.ArmLevel4;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorDown;
+import frc.robot.commands.ElevatorMoveLevel1;
+import frc.robot.commands.ElevatorMoveLevel2;
+import frc.robot.commands.ElevatorMoveLevel3;
+import frc.robot.commands.ElevatorMoveLevel4;
+import frc.robot.commands.ElevatorNextPosition;
 import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLower;
 import frc.robot.commands.ArmRaise;
@@ -38,11 +52,14 @@ import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlexAutoSubsystem;
+import frc.robot.subsystems.KeyboardInput;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import java.util.Optional;
 import swervelib.SwerveInputStream;
+
+// import java.util.Scanner;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -66,6 +83,9 @@ public class RobotContainer {
 
   public static PathConstraints Pathconstraints;
   public static FlexAutoSubsystem flexAutoSubsystem;
+
+
+  private final KeyboardInput keyboard;
 
   // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
 
@@ -124,6 +144,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    keyboard = new KeyboardInput();
     flexAutoSubsystem = new FlexAutoSubsystem();
     Pathconstraints =
         new PathConstraints(
@@ -177,8 +198,34 @@ public class RobotContainer {
 
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    m_wrist2.setAngle(climberSubsystem.getEncoder());
+
+    String key = keyboard.getLastKeyPressed();
+
+    if (key.equalsIgnoreCase("X")) {
+      new SequentialCommandGroup(
+          new ParallelCommandGroup(
+              new ElevatorMoveLevel2(elevatorSubsystem), new ArmLevel2(coralHoldAngleSubsystem)),
+          new WaitCommand(1),
+          new CoralShootCommand(coralHoldSubsystem));
+    } else if (key.equalsIgnoreCase("S")) {
+      new SequentialCommandGroup(
+          new ParallelCommandGroup(
+              new ElevatorMoveLevel3(elevatorSubsystem), new ArmLevel3(coralHoldAngleSubsystem)),
+          new WaitCommand(1),
+          new CoralShootCommand(coralHoldSubsystem));
+    } else if (key.equalsIgnoreCase("W")) {
+      new SequentialCommandGroup(
+          new ParallelCommandGroup(
+              new ElevatorMoveLevel4(elevatorSubsystem), new ArmLevel4(coralHoldAngleSubsystem)),
+          new WaitCommand(1),
+          new CoralShootCommand(coralHoldSubsystem));
+    }
+
     // m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
+
   }
 
   /**
@@ -205,6 +252,22 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+
+    // driverXbox.x().whileTrue(new AlignWithNearest());
+    /*driverXbox
+    .x()
+    .onTrue(
+      new SequentialCommandGroup(
+        new ParallelCommandGroup(
+          new ElevatorMoveLevel2(elevatorSubsystem),
+          new ArmLevel2(coralHoldAngleSubsystem)
+        ),
+        new WaitCommand(1),
+        new CoralShootCommand(coralHoldSubsystem)
+      )
+      );*/
+    driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
+
     driverXbox.x().onTrue(new AlignWithNearest());
     // driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     // driverXbox.b().onFalse(new stopCoralIntake(coralHoldSubsystem));

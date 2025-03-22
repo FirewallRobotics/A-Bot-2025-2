@@ -42,6 +42,8 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
   private RelativeEncoder encoder;
 
+  public static final double[] angles = {0, 0, 0, 0, 0};
+
   public CoralHoldAngleSubsystem() {
     motor =
         new SparkFlex(
@@ -134,6 +136,25 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     ControlType.kPosition);
 
   } */
+
+
+  public void setLevel(int level) {
+    if (level < 0 || level >= angles.length) {
+      System.out.println("Invalid level: " + level);
+      return;
+    }
+    wantedPos = angles[level - 1];
+    holdUp(wantedPos);
+  }
+
+  public boolean isFinished(int position) {
+
+    if (angles[position] - (motor.getEncoder().getPosition()) == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   public void holdUp(TrapezoidProfile.State setpoint) {
     // motorConfig.closedLoop.velocityFF(feedforward);
