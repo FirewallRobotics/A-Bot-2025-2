@@ -11,17 +11,12 @@ public class WristDown extends Command {
   }
 
   @Override
-  public void execute() {
+  public void initialize() {
     coralHold.tiltedDown();
   }
 
   @Override
-  public void end(boolean interrupted) {
-    coralHold.stopTilt();
-  }
-
-  @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }

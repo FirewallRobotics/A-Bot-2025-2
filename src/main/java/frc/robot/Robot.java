@@ -129,6 +129,9 @@ public class Robot extends TimedRobot {
     m_robotContainer.setMotorBrake(true);
     disabledTimer.reset();
     disabledTimer.start();
+    RobotContainer.elevatorSubsystem.stop();
+    RobotContainer.coralHoldAngleSubsystem.stopTilt();
+    RobotContainer.climberSubsystem.stop();
   }
 
   @Override
@@ -148,7 +151,9 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
     if (!m_autoSelected.equals("wait")) {
       autonomousCommand =
-          new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
+          new SequentialCommandGroup(
+              m_robotContainer.getAutonomousCommand(m_autoSelected),
+              RobotContainer.drivebase.centerModulesCommand());
     }
 
     // if (m_autoSelected.contains("Drop")) {

@@ -9,6 +9,7 @@ import frc.robot.Constants.CoralHoldSubsystemConstants;
 public class CoralHoldSubsystem extends SubsystemBase {
 
   private final SparkMax motor;
+
   // DigitalInput limitSwitch = new DigitalInput(0);
 
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
@@ -42,9 +43,9 @@ public class CoralHoldSubsystem extends SubsystemBase {
   // When we want to shoot coral from the intake, has to have a coral in the lift
   public void shoot() {
     // if (!limitSwitch.get()) {
-      // motorConfig.inverted(false);
-      // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
-      // PersistMode.kPersistParameters);
+    // motorConfig.inverted(false);
+    // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
+    // PersistMode.kPersistParameters);
 
     motor.set(-setSpeed() * 1.25);
     // }

@@ -1,15 +1,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
-
 import java.util.function.DoubleSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,24 +97,34 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void execute() {
-    if (getReefLocationInFieldSpace().getTranslation().getX() != -1) {
+    double dist = VisionSubsystem.DistanceToReef();
+    if (dist != -1) {
 
-      if(VisionSubsystem.getReefLocation()[0] >= 0.1 || VisionSubsystem.getReefLocation()[0] <= -0.1){
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left/Right");
-        RobotContainer.drivebase.drive(new Translation2d(VisionSubsystem.getReefLocation()[0], 0), 0, false);
-      }else{
+      if (VisionSubsystem.getReefLocation()[0] >= 0.1) {
+        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Right");
+        RobotContainer.drivebase.drive(new ChassisSpeeds(-2.5, 0, 0));
+      } else if (VisionSubsystem.getReefLocation()[0] <= -0.1) {
+        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left");
+        RobotContainer.drivebase.drive(new ChassisSpeeds(2.5, 0, 0));
+      } else {
         Logger.getGlobal().log(Level.INFO, "Driver Assist Going FWD To Reef");
-        RobotContainer.drivebase.driveToDistanceCommand(VisionSubsystem.DistanceToReef(), 1.5);
+        RobotContainer.drivebase.driveToDistanceCommand(dist, 1.5).schedule();
       }
     } else {
 
       // log that we cannot see anything to goto
-      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target!");
+      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target! TAKE OVER!");
     }
   }
 
   @Override
+  public void end(boolean inter) {
+    Logger.getGlobal().log(Level.INFO, "Driver Assist Finished");
+    RobotContainer.drivebase.drive(new ChassisSpeeds(0, 0, 0));
+  }
+
+  @Override
   public boolean isFinished() {
-    return VisionSubsystem.DistanceToReef() == -1;
+    return RobotContainer.driverXbox.getLeftX() > 0.3 || RobotContainer.driverXbox.getLeftY() > 0.3;
   }
 }
