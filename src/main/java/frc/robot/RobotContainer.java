@@ -155,6 +155,7 @@ public class RobotContainer {
     coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
     coralHoldSubsystem = new CoralHoldSubsystem();
     // keyboard = new KeyboardInput();
+    configureBindings();
     flexAutoSubsystem = new FlexAutoSubsystem();
     Pathconstraints =
         new PathConstraints(
@@ -164,21 +165,16 @@ public class RobotContainer {
             Units.degreesToRadians(720));
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-    NamedCommands.registerCommand(
-        "DropCoral",
-        new SequentialCommandGroup(
-            new ElevatorUp(elevatorSubsystem, 0.5),
-            new WaitCommand(0.2),
-            new ElevatorStop(elevatorSubsystem),
-            new WristDown(coralHoldAngleSubsystem),
-            new WaitCommand(0.25),
-            new WristStop(coralHoldAngleSubsystem),
-            new CoralShootCommand(coralHoldSubsystem, this)));
+    NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorSubsystem, 0.5));
+    NamedCommands.registerCommand("Wait0.25", new WaitCommand(0.25));
+    NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
+    NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
+    NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
+    NamedCommands.registerCommand("CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
+    NamedCommands.registerCommand("CoralStop", new stopCoralIntake(coralHoldSubsystem));
   }
 
   public void init() {
-    configureBindings();
-
     Mechanism2d mech = new Mechanism2d(3, 3);
     MechanismRoot2d root = mech.getRoot("climber", 2, 0);
     m_elevator =
@@ -295,7 +291,8 @@ public class RobotContainer {
     driverXbox.povDown().onFalse(new WristStop(coralHoldAngleSubsystem));
 
     driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
-    driverXbox.povRight().whileTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
+    driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
+    driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
     driverXbox.povLeft().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.start().onTrue(new SlowMode());

@@ -11,9 +11,70 @@
           }
         },
         {
-          "type": "named",
+          "type": "sequential",
           "data": {
-            "name": "DropCoral"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ElevatorUp"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Wait0.25"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ElevatorStop"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WristDown"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Wait0.25"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WristStop"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "CoralShootCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Wait0.25"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "CoralStop"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Backup5"
           }
         }
       ]

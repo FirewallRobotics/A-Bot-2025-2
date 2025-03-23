@@ -151,9 +151,7 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
     if (!m_autoSelected.equals("wait")) {
       autonomousCommand =
-          new SequentialCommandGroup(
-              m_robotContainer.getAutonomousCommand(m_autoSelected),
-              RobotContainer.drivebase.centerModulesCommand());
+          new SequentialCommandGroup(m_robotContainer.getAutonomousCommand(m_autoSelected));
     }
 
     // if (m_autoSelected.contains("Drop")) {
@@ -175,6 +173,7 @@ public class Robot extends TimedRobot {
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
+      autonomousCommand.addCommands(RobotContainer.drivebase.centerModulesCommand());
       autonomousCommand.schedule();
     }
   }
