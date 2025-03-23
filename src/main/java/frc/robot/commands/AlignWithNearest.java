@@ -17,6 +17,7 @@ public class AlignWithNearest extends Command {
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
   double distance;
   double rotation;
+  int wantedTag;
 
   public static Pose2d[] TagPos = {
     new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712)),
@@ -93,27 +94,38 @@ public class AlignWithNearest extends Command {
   }
 
   // add vision as a requirement to run
-  public AlignWithNearest() {}
+  public AlignWithNearest(int wantedTag) {
+    this.wantedTag = wantedTag;
+  }
 
   @Override
   public void execute() {
-    double dist = VisionSubsystem.DistanceToReef();
-    if (dist != -1) {
-
-      if (VisionSubsystem.getReefLocation()[0] >= 0.1) {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Right");
-        RobotContainer.drivebase.drive(new ChassisSpeeds(-2.5, 0, 0));
-      } else if (VisionSubsystem.getReefLocation()[0] <= -0.1) {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left");
-        RobotContainer.drivebase.drive(new ChassisSpeeds(2.5, 0, 0));
-      } else {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going FWD To Reef");
-        RobotContainer.drivebase.driveToDistanceCommand(dist, 1.5).schedule();
+    if (wantedTag != 0) {
+      RobotContainer.drivebase.driveToPose(TagPos[wantedTag]);
+      if (VisionSubsystem.CanSeeTag(wantedTag)) {
+        RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
+        wantedTag = 0;
       }
     } else {
+      double dist = VisionSubsystem.DistanceToReef();
+      if (dist != -1) {
 
-      // log that we cannot see anything to goto
-      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target! TAKE OVER!");
+        if (VisionSubsystem.getReefLocation()[0] >= 0.1) {
+          Logger.getGlobal().log(Level.INFO, "Driver Assist Going Right");
+          RobotContainer.drivebase.drive(new ChassisSpeeds(-2.5, 0, 0));
+        } else if (VisionSubsystem.getReefLocation()[0] <= -0.1) {
+          Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left");
+          RobotContainer.drivebase.drive(new ChassisSpeeds(2.5, 0, 0));
+        } else {
+          Logger.getGlobal().log(Level.INFO, "Driver Assist Going FWD To Reef");
+          RobotContainer.drivebase.driveToDistanceCommand(dist, 1.5).schedule();
+        }
+      } else {
+
+        // log that we cannot see anything to goto
+        Logger.getGlobal()
+            .log(Level.WARNING, "Driver Assist Cannot Find A Valid Target! TAKE OVER!");
+      }
     }
   }
 

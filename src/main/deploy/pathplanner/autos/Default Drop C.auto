@@ -11,45 +11,66 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "ElevatorUp"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ElevatorUp"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ElevatorStop"
+                      }
+                    }
+                  ]
                 }
               },
               {
-                "type": "wait",
+                "type": "sequential",
                 "data": {
-                  "waitTime": 0.2
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "WristDown"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.3
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "WristStop"
+                      }
+                    }
+                  ]
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ElevatorStop"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "WristDown"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.25
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "WristStop"
-                }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
@@ -59,7 +80,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 1.0
                 }
               },
               {
@@ -75,6 +96,12 @@
           "type": "path",
           "data": {
             "pathName": "Backup6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Center"
           }
         }
       ]

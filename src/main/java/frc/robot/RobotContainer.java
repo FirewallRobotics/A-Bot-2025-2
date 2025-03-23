@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -43,7 +42,7 @@ import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
+// import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -103,7 +102,7 @@ public class RobotContainer {
           .headingWhile(true);
 
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
@@ -148,8 +147,10 @@ public class RobotContainer {
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
     NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
-    NamedCommands.registerCommand("CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
+    NamedCommands.registerCommand(
+        "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
     NamedCommands.registerCommand("CoralStop", new stopCoralIntake(coralHoldSubsystem));
+    NamedCommands.registerCommand("Center", drivebase.centerModulesCommand());
   }
 
   public void init() {
@@ -169,7 +170,7 @@ public class RobotContainer {
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
-    m_wrist2.setAngle(climberSubsystem.getEncoder());
+    // m_wrist2.setAngle(climberSubsystem.getEncoder());
   }
 
   /**
@@ -196,7 +197,8 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.x().onTrue(new AlignWithNearest());
+    driverXbox.a().whileTrue(drivebase.centerModulesCommand());
+    driverXbox.x().onTrue(new AlignWithNearest(0));
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));

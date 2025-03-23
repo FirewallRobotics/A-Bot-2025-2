@@ -32,16 +32,10 @@ public class CoralShootCommand extends Command {
     m_Coral.shoot();
   }
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    m_Coral.stop();
-  }
-
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // Should come back to this
-    return false;
+    return true;
   }
 }

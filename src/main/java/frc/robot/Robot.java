@@ -131,7 +131,7 @@ public class Robot extends TimedRobot {
     disabledTimer.start();
     RobotContainer.elevatorSubsystem.stop();
     RobotContainer.coralHoldAngleSubsystem.stopTilt();
-    RobotContainer.climberSubsystem.stop();
+    // RobotContainer.climberSubsystem.stop();
   }
 
   @Override
@@ -173,7 +173,6 @@ public class Robot extends TimedRobot {
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
-      autonomousCommand.addCommands(RobotContainer.drivebase.centerModulesCommand());
       autonomousCommand.schedule();
     }
   }
