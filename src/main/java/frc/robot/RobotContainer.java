@@ -203,7 +203,7 @@ public class RobotContainer {
       driverXbox.a().onTrue((Commands.runOnce(visionSubsystem::UpdatePositionOnField)));
     }
 
-    driverXbox.x().onTrue(new AlignWithNearest(6));
+    driverXbox.x().whileTrue(new AlignWithNearest());
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
