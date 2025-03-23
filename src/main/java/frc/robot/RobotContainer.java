@@ -263,7 +263,8 @@ public class RobotContainer {
 
   /**
    * Sets if YAGSL should put all the motors into brake mode and stop the robot
-   @param brake Should we brake?
+   *
+   * @param brake Should we brake?
    */
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
