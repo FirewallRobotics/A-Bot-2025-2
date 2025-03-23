@@ -20,26 +20,22 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
-import frc.robot.commands.CoralIntakeCommand;
-import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ArmLevel2;
 import frc.robot.commands.ArmLevel3;
-import frc.robot.commands.ArmLower;
-import frc.robot.commands.ArmRaise;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
+import frc.robot.commands.ElevatorMoveLevel2;
 import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
@@ -51,9 +47,6 @@ import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.CoralHoldAngleSubsystem;
-import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -78,7 +71,7 @@ import swervelib.SwerveInputStream;
 public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  
+
   public static final CommandXboxController driverXbox = new CommandXboxController(0);
   final CommandGenericHID genericHID = new CommandGenericHID(1);
   final CommandXboxController coralController = new CommandXboxController(1);
@@ -122,7 +115,7 @@ public class RobotContainer {
           .headingWhile(true);
 
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
@@ -152,8 +145,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
-    coralHoldSubsystem = new CoralHoldSubsystem();
     // keyboard = new KeyboardInput();
     configureBindings();
     flexAutoSubsystem = new FlexAutoSubsystem();
@@ -170,7 +161,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
     NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
-    NamedCommands.registerCommand("CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
+    NamedCommands.registerCommand(
+        "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
     NamedCommands.registerCommand("CoralStop", new stopCoralIntake(coralHoldSubsystem));
   }
 
@@ -191,9 +183,9 @@ public class RobotContainer {
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
-    m_wrist2.setAngle(climberSubsystem.getEncoder());
+    // m_wrist2.setAngle(climberSubsystem.getEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
-    m_wrist2.setAngle(climberSubsystem.getEncoder());
+    // m_wrist2.setAngle(climberSubsystem.getEncoder());
 
     // String key = keyboard.getLastKeyPressed();
 
@@ -256,6 +248,15 @@ public class RobotContainer {
                     new ArmLevel3(coralHoldAngleSubsystem)),
                 new WaitCommand(1),
                 new CoralShootCommand(coralHoldSubsystem)));
+    coralController
+        .y()
+        .onTrue(
+            new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new ElevatorMoveLevel2(elevatorSubsystem),
+                    new ArmLevel2(coralHoldAngleSubsystem)),
+                new WaitCommand(1),
+                new CoralShootCommand(coralHoldSubsystem)));
 
     // driverXbox.x().whileTrue(new AlignWithNearest());
     /*driverXbox
@@ -311,6 +312,18 @@ public class RobotContainer {
   public Command getAutonomousCommand(String pathString) {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand(pathString);
+  }
+
+  //On the disablement of auto, or the start of tele if we
+  //don't do auto, this will get the starting position of the elevator.
+  //Basically- through out auto, this will keep the elevators position.
+  //When it moves to tele, that position is now it's zero.
+  //The means we now know our offset.
+  public static void getStart() {
+    
+    elevatorSubsystem.getStartPos();
+    elevatorSubsystem.setOgPOSgotten();
+    
   }
 
   public Command getCoralPathCommand(String chooser) {

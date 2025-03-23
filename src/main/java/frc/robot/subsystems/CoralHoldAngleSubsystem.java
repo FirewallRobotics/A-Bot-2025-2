@@ -104,6 +104,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     }
   }
 
+  public double getPosition() {
+    return encoder.getPosition();
+  }
+
   public void LPosition() {
     State setpoint = new State(0.73, 0);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
@@ -139,7 +143,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   public void setLevel() {
 
-    wantedPos = shooter;
+    wantedPos = 17.59;
     state = new State(wantedPos, 0);
     holdUp(state);
   }

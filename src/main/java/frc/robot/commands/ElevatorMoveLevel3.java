@@ -20,12 +20,12 @@ public class ElevatorMoveLevel3 extends Command {
 
   @Override
   public void execute() {
-    m_subsystem.goToL3();
+    m_subsystem.goToCoralLevel(3);
   }
 
   @Override
   public boolean isFinished() {
-    return -16 - 1 >= m_subsystem.getPositionEncoder()
-        && -16 + 1 <= m_subsystem.getPositionEncoder();
+    return ((m_subsystem.finalLevelPos(3) - 2)) >= m_subsystem.getPositionEncoder()
+        && ((m_subsystem.finalLevelPos(3) + 2)) + 1 <= m_subsystem.getPositionEncoder();
   }
 }

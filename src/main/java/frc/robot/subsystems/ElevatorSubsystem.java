@@ -10,6 +10,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
@@ -24,12 +26,19 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SparkFlexConfig rightMotorConfig;
 
   @SuppressWarnings("unused")
+  private TrapezoidProfile.State state;
+
+  private boolean gottenOgPos;
+
   private RelativeEncoder encoder;
 
   private SparkClosedLoopController closedLoopController;
 
   // Elevator levels in encoder ticks
-  public static final double[] levels = {0, -18, -22, -46, -50};
+  // 0 - Intake position
+  // 1 - level 2
+  // 2 - level 3
+  public static final double[] levels = {0, -15.056, -31.401};
 
   // public static final double[] Angles = {0, 0, 0, 0, 0};
 
@@ -93,8 +102,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
-  public void goToL3() {
-    double setPoint = -39;
+  public double finalLevelPos(int levelWanted) {
+    return levels[levelWanted - 1];
+  }
+
+  public void goToCoralLevel(int levelWanted) {
+    double setPoint = levels[levelWanted - 1];
+    state = new State(setPoint, 0);
     if (setPoint + 1 >= getPositionEncoder()) {
       leftMotor.set(0.15);
       Logger.getGlobal().log(Level.INFO, "Going Down");
@@ -109,6 +123,15 @@ public class ElevatorSubsystem extends SubsystemBase {
       closedLoopController.setReference(
           getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
     }
+
+    // double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
+    // closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
+  }
+
+  public void getStartPos() {
+    double ogOffSet = encoder.getPosition();
+    levels[1] = levels[1] + ogOffSet;
+    levels[2] = levels[2] + ogOffSet;
   }
 
   // -35
@@ -119,6 +142,14 @@ public class ElevatorSubsystem extends SubsystemBase {
       return levels[(int) SmartDashboard.getNumber("ElevatorPos", 0)];
     }
     return leftMotor.getEncoder().getPosition();
+  }
+
+  public boolean getOgPOSgotten() {
+    return gottenOgPos;
+  }
+
+  public void setOgPOSgotten() {
+    gottenOgPos = true;
   }
 
   private void moveToPosition(double position) {

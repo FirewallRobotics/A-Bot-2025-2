@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -84,5 +83,9 @@ public class CoralHoldSubsystem extends SubsystemBase {
   public void stop() {
     motor.set(0);
     doingStuff = false;
+  }
+
+  public boolean getTrigger() {
+    return limitSwitch.get();
   }
 }
