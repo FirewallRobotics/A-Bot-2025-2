@@ -26,7 +26,7 @@ public class VisionSubsystem extends SubsystemBase {
   private static int[] bargeTags = {4, 5, 14, 15};
   boolean doRejectUpdate;
 
-  public void UpdatePositionOnField(){
+  public void UpdatePositionOnField() {
     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
     if (mt2 != null) {
       if (mt2.tagCount == 0) {

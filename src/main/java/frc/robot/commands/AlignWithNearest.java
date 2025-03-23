@@ -105,6 +105,7 @@ public class AlignWithNearest extends Command {
       if (VisionSubsystem.CanSeeTag(wantedTag)) {
         RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
         wantedTag = 0;
+        Logger.getGlobal().log(Level.INFO, "Target Tag Found!");
       }
     } else {
       double dist = VisionSubsystem.DistanceToReef();

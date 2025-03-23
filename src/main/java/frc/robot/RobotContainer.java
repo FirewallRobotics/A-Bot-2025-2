@@ -196,13 +196,13 @@ public class RobotContainer {
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
-    if(DriverStation.isTest()){
+    if (DriverStation.isTest()) {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.a().whileTrue(drivebase.centerModulesCommand());
-    }else{
+    } else {
       driverXbox.a().onTrue((Commands.runOnce(visionSubsystem::UpdatePositionOnField)));
     }
-    
+
     driverXbox.x().onTrue(new AlignWithNearest(6));
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
