@@ -38,21 +38,27 @@ public class AlgaeSubsystem extends SubsystemBase {
     // Add any periodic tasks here, such as motor feedback or sensor checks.
   }
 
-  // Shoots the ball (or algae). The claw motor runs in the forward direction.
+  /**
+   * Shoots the ball (or algae). The claw motor runs in the forward direction at 1.25x the value
+   * returned by {@link #setSpeed()}
+   */
   public void shoot() {
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     motor.set(setSpeed() * 1.25); // Run motor forward to shoot the ball (algae)
   }
 
-  // Intakes the ball (algae). The claw motor runs in the reverse direction.
+  /**
+   * Intakes the ball (algae). The claw motor runs in the reverse direction at the value returned by
+   * {@link #setSpeed()}
+   */
   public void intake() {
     motorConfig.inverted(true); // Invert motor direction for intake
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     motor.set(setSpeed()); // Reverse the motor to pull the algae into the claw
   }
 
-  // Stops the motor. Useful for stopping the claw at any time.
+  /** Stops the motor. Useful for stopping the claw at any time. */
   public void stop() {
     motor.set(0); // Completely stop motor when the claw doesn't need to run
   }

@@ -49,19 +49,23 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the area of the lowest ID seen AprilTag
-   @return Area of lowest ID in view AprilTag
+  /**
+   * Gets the area of the lowest ID seen AprilTag
+   *
+   * @return Area of lowest ID in view AprilTag
    */
-  public static double getTagArea(){
+  public static double getTagArea() {
     LimelightHelpers.setPipelineIndex(name, 0);
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     return results.targets_Fiducials[0].ta;
   }
 
-  /** Gets the distance to the lowest ID seen AprilTag
-   @return How far away the robot is from the lowest in view AprilTag
+  /**
+   * Gets the distance to the lowest ID seen AprilTag
+   *
+   * @return How far away the robot is from the lowest in view AprilTag
    */
-  public static double getXDistance(){
+  public static double getXDistance() {
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex(
         frc.robot.Constants.VisionSubsystemConstants.limelightName, 0);
@@ -74,10 +78,12 @@ public class VisionSubsystem extends SubsystemBase {
     return fiducials[0].distToRobot;
   }
 
-  /** Gets the Pose2D information of the lowest seen AprilTag
-   @return Lowest ID Pose2D of in view AprilTags in robot Space
+  /**
+   * Gets the Pose2D information of the lowest seen AprilTag
+   *
+   * @return Lowest ID Pose2D of in view AprilTags in robot Space
    */
-  public static Pose2d getTagPose2d(){
+  public static Pose2d getTagPose2d() {
     // change the pipeline to apriltags
     LimelightHelpers.setPipelineIndex(name, 0);
 
@@ -118,8 +124,10 @@ public class VisionSubsystem extends SubsystemBase {
       */
   }
 
-  /** Gets the IDs of all in view AprilTags
-   @return Tag IDs of all seen AprilTags
+  /**
+   * Gets the IDs of all in view AprilTags
+   *
+   * @return Tag IDs of all seen AprilTags
    */
   public static int[] getTags() {
 
@@ -146,9 +154,11 @@ public class VisionSubsystem extends SubsystemBase {
     return temp;
   }
 
-  /** Checks to see if we can see an AprilTag
-   @param int Tag ID to look for
-   @return If we can see it
+  /**
+   * Checks to see if we can see an AprilTag
+   *
+   * @param int Tag ID to look for
+   * @return If we can see it
    */
   public static boolean CanSeeTag(int tag) {
 
@@ -177,8 +187,10 @@ public class VisionSubsystem extends SubsystemBase {
     return false;
   }
 
-  /** Finds the robots pose in field space using a seen AprilTag
-   @return The position of the robot in field space
+  /**
+   * Finds the robots pose in field space using a seen AprilTag
+   *
+   * @return The position of the robot in field space
    */
   public static Pose3d getRobotPoseInFieldSpace() {
 
@@ -209,8 +221,10 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Finds if we can see an Algae
-   @return If there is an Algae in our field of view
+  /**
+   * Finds if we can see an Algae
+   *
+   * @return If there is an Algae in our field of view
    */
   public static boolean CanSeeAlgae() {
 
@@ -227,11 +241,13 @@ public class VisionSubsystem extends SubsystemBase {
     return false;
   }
 
-  /** Gets the X and Y of the lowest ID reef Tag in view
-   @return [0] X of the Reef relative to the camera
-   @return [1] Y of the Reef relative to the camera
-   @see #getReefLocationPose3d() Return a robot relative Pose3D instead
-   @see #DistanceToReef() Return the Distance from the robot to the reef tag
+  /**
+   * Gets the X and Y of the lowest ID reef Tag in view
+   *
+   * @return [0] X of the Reef relative to the camera
+   * @return [1] Y of the Reef relative to the camera
+   * @see #getReefLocationPose3d() Return a robot relative Pose3D instead
+   * @see #DistanceToReef() Return the Distance from the robot to the reef tag
    */
   public static double[] getReefLocation() {
     // change the pipeline to apriltags
@@ -272,11 +288,13 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the X and Y of the lowest ID Coral Station Tag in view
-   @return [0] X of the Coral Station relative to the robot
-   @return [1] Y of the Coral Station relative to the robot
-   @see #getCoralStationLocationPose3d() Return a robot relative Pose3D instead
-   @see #DistanceToCoralStation() Return the distance from the robot to the Coral Station tag
+  /**
+   * Gets the X and Y of the lowest ID Coral Station Tag in view
+   *
+   * @return [0] X of the Coral Station relative to the robot
+   * @return [1] Y of the Coral Station relative to the robot
+   * @see #getCoralStationLocationPose3d() Return a robot relative Pose3D instead
+   * @see #DistanceToCoralStation() Return the distance from the robot to the Coral Station tag
    */
   public static double[] getCoralStationLocation() {
 
@@ -318,11 +336,13 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the X and Y of the lowest ID Processor Tag in view
-   @return [0] X of the Processor relative to the robot
-   @return [1] Y of the Processor relative to the robot
-   @see #getProcessorLocationPose3d() Return a robot relative Pose3D instead
-   @see #DistanceToProcessor() Return the distance from the robot to the processor tag
+  /**
+   * Gets the X and Y of the lowest ID Processor Tag in view
+   *
+   * @return [0] X of the Processor relative to the robot
+   * @return [1] Y of the Processor relative to the robot
+   * @see #getProcessorLocationPose3d() Return a robot relative Pose3D instead
+   * @see #DistanceToProcessor() Return the distance from the robot to the processor tag
    */
   public static double[] getProcessorLocation() {
     // change the pipeline to apriltags
@@ -363,10 +383,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the 3D pose of the lowest ID reef Tag in view
-   @return Pose of the reef relative to the robot
-   @see #getReefLocation() Return a camera relative X and Y position instead
-   @see #DistanceToReef() Return the distance from the robot to the Reef tag
+  /**
+   * Gets the 3D pose of the lowest ID reef Tag in view
+   *
+   * @return Pose of the reef relative to the robot
+   * @see #getReefLocation() Return a camera relative X and Y position instead
+   * @see #DistanceToReef() Return the distance from the robot to the Reef tag
    */
   public static Pose3d getReefLocationPose3d() {
     // change the pipeline to apriltags
@@ -407,10 +429,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the 3D pose of the lowest ID Coral Station Tag in view
-   @return Pose of the Coral Station relative to the robot
-   @see #getCoralStationLocation() Return a robot relative X and Y position instead
-   @see #DistanceToCoralStation() Return the distance from the robot to the Coral Station tag
+  /**
+   * Gets the 3D pose of the lowest ID Coral Station Tag in view
+   *
+   * @return Pose of the Coral Station relative to the robot
+   * @see #getCoralStationLocation() Return a robot relative X and Y position instead
+   * @see #DistanceToCoralStation() Return the distance from the robot to the Coral Station tag
    */
   public static Pose3d getCoralStationLocationPose3d() {
     // change the pipeline to apriltags
@@ -451,10 +475,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the 3D pose of the lowest ID Processor Tag in view
-   @return Pose of the Processor relative to the robot
-   @see #getProcessorLocation() Return a camera relative X and Y position instead
-   @see #DistanceToProcessor() Return the distance from the robot to the Processor tag
+  /**
+   * Gets the 3D pose of the lowest ID Processor Tag in view
+   *
+   * @return Pose of the Processor relative to the robot
+   * @see #getProcessorLocation() Return a camera relative X and Y position instead
+   * @see #DistanceToProcessor() Return the distance from the robot to the Processor tag
    */
   public static Pose3d getProcessorLocationPose3d() {
     // change the pipeline to apriltags
@@ -496,10 +522,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the distance to the lowest ID reef tag in view
-   @return Lowest ID reef tag distance
-   @see #getReefLocation() Return the X and Y of the reef tag from the perspective of the camera
-   @see #getReefLocationPose3d() Gives the exact position of the reef tag relative to the robot
+  /**
+   * Gets the distance to the lowest ID reef tag in view
+   *
+   * @return Lowest ID reef tag distance
+   * @see #getReefLocation() Return the X and Y of the reef tag from the perspective of the camera
+   * @see #getReefLocationPose3d() Gives the exact position of the reef tag relative to the robot
    */
   public static double DistanceToReef() {
     // change the pipeline to apriltags
@@ -537,10 +565,14 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the distance to the lowest ID Coral Station tag in view
-   @return Lowest ID Coral Station tag distance
-   @see #getCoralStationLocation() Return the X and Y of the Coral Station tag relative to the robot
-   @see #getCoralStationLocationPose3d() Return the exact position of the Coral Station tag relative to the robot
+  /**
+   * Gets the distance to the lowest ID Coral Station tag in view
+   *
+   * @return Lowest ID Coral Station tag distance
+   * @see #getCoralStationLocation() Return the X and Y of the Coral Station tag relative to the
+   *     robot
+   * @see #getCoralStationLocationPose3d() Return the exact position of the Coral Station tag
+   *     relative to the robot
    */
   public static double DistanceToCoralStation() {
     // change the pipeline to apriltags
@@ -575,10 +607,13 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the distance to the lowest ID Processor tag in view
-   @return Lowest ID Processor tag distance
-   @see #getProcessorLocation() Return the X and Y of the Processor tag relative to the robot
-   @see #getProcessorLocationPose3d() Return the exact position of the Processor tag relative to the robot
+  /**
+   * Gets the distance to the lowest ID Processor tag in view
+   *
+   * @return Lowest ID Processor tag distance
+   * @see #getProcessorLocation() Return the X and Y of the Processor tag relative to the robot
+   * @see #getProcessorLocationPose3d() Return the exact position of the Processor tag relative to
+   *     the robot
    */
   public static double DistanceToProcessor() {
     // change the pipeline to apriltags
@@ -613,8 +648,10 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }
 
-  /** Gets the distance to the lowest ID Barge tag in view
-   @return Lowest ID Barge tag distance
+  /**
+   * Gets the distance to the lowest ID Barge tag in view
+   *
+   * @return Lowest ID Barge tag distance
    */
   public static double DistanceToBarge() {
     // change the pipeline to apriltags

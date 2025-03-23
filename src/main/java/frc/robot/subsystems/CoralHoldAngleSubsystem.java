@@ -77,7 +77,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     return kP * 1; // Based around elevator's 'calculate speed.' Will be adjusted later on.
   }
 
-  // Free hand tilt down. Just hold a button and go. Need an if statement
+  /** Free hand tilt down. Just hold a button and go. Moves at {@link #setSpeed()} */
   public void tiltedDown() {
     buttonPressed = true;
 
@@ -87,6 +87,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     motor.set(setSpeed());
   }
 
+  /**
+   * Move the arm to Intake position or 0.9 at {@link #setSpeed()} When at the position hold it with
+   * {@link #holdUp(State)}
+   */
   public void IntakePosition() {
     double setPoint = 0.9;
     if (setPoint + 0.1 < encoder.getPosition()) {
@@ -102,13 +106,18 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     }
   }
 
+  /**
+   * Move the arm to L3 place position or 0.73 using the PIDF commands
+   *
+   * @deprecated NEEDS WORK! As of late the PIDF movement doesn't work due to the relative encoder
+   */
   public void LPosition() {
     State setpoint = new State(0.73, 0);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
     controller.setReference(0.73, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
   }
 
-  // Free hand tilt up. Just hold a button and go. Need an if statement
+  /** Free hand tilt up. Just hold a button and go. Moves at {@link #setSpeed()} */
   public void tiltUp() {
     buttonPressed = true;
 
@@ -118,6 +127,11 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     motor.set(setSpeed());
   }
 
+  /**
+   * Gets the relative encoder position of the arm
+   *
+   * @return Encoder Position
+   */
   public double getEncoder() {
     return motor.getEncoder().getPosition();
   }
@@ -135,6 +149,11 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   } */
 
+  /**
+   * Uses the ff calculator to keep the arm in a single place
+   *
+   * @param TrapezoidProfile.State Setpoint position to hold
+   */
   public void holdUp(TrapezoidProfile.State setpoint) {
     // motorConfig.closedLoop.velocityFF(feedforward);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
@@ -146,7 +165,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   }
 
-  // When you release a button, this is called to stop the tilt.
+  /** When you release a button, this is called to stop the tilt. */
   public void stopTilt() {
     motor.set(0);
     buttonPressed = false;

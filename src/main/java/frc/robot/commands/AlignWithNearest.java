@@ -68,39 +68,24 @@ public class AlignWithNearest extends Command {
 
   // add vision as a requirement to run
   public AlignWithNearest() {
-        this.xLimiter = new SlewRateLimiter(4);
-        this.yLimiter = new SlewRateLimiter(4);
-        this.giroLimiter = new SlewRateLimiter(Units.degreesToRadians(720));
+    this.xLimiter = new SlewRateLimiter(4);
+    this.yLimiter = new SlewRateLimiter(4);
+    this.giroLimiter = new SlewRateLimiter(Units.degreesToRadians(720));
 
-        /**
-         * PID Controllers for the align
-         */
-        this.drivePID = new PIDController(
-          0.00023,
-          0.0000002,
-          2);
+    /** PID Controllers for the align */
+    this.drivePID = new PIDController(0.00023, 0.0000002, 2);
 
-        this.strafePID = new PIDController(
-          0.00023,
-          0.0000002,
-          2);
+    this.strafePID = new PIDController(0.00023, 0.0000002, 2);
 
-        this.rotationPID = new PIDController(
-          0.0020645,
-          0,
-          0);
-        /**
-         * Boolean for what target to search
-         */
+    this.rotationPID = new PIDController(0.0020645, 0, 0);
+    /** Boolean for what target to search */
 
-        /**
-         * Offsets for the limelight
-         */
-        //this.offsets = limelight.getOffsets(alingToAprilTag);
+    /** Offsets for the limelight */
+    // this.offsets = limelight.getOffsets(alingToAprilTag);
 
-        this.driveOffset = 2.1;
-        this.strafeOffset = -0.2;
-        this.rotationOffset = 10.2;
+    this.driveOffset = 2.1;
+    this.strafeOffset = -0.2;
+    this.rotationOffset = 10.2;
   }
 
   @Override
@@ -115,40 +100,42 @@ public class AlignWithNearest extends Command {
     */
   }
 
-  public void execute(){
+  public void execute() {
     double velForward = 0;
-        double velStrafe = 0;
-        double velGiro = 0;
- 
-        /**
-         * If there is a seen target, calculate the PIDs velocities,
-         * otherwise, rotate so the robot can search the target
-         */
-        if(VisionSubsystem.getTags().length != 0){
+    double velStrafe = 0;
+    double velGiro = 0;
 
-            velForward = drivePID.calculate(VisionSubsystem.getTagArea(), driveOffset);
-            velStrafe = strafePID.calculate(VisionSubsystem.getXDistance(), strafeOffset);
-            velGiro = -rotationPID.calculate(VisionSubsystem.getTagPose2d().getRotation().getDegrees(), rotationOffset);
-        } else if(VisionSubsystem.getTags().length == 0){
-            velForward = 0;
-            velStrafe = 0;
-            velGiro = 0.4;
-        } else {
-            velForward = 0;
-            velStrafe = 0;
-            velGiro = 0;
-        }
- 
-          // 3. Make the driving smoother
-         velForward = xLimiter.calculate(velForward) * 3;
-         velStrafe = yLimiter.calculate(velStrafe) * 3;
-         velGiro = giroLimiter.calculate(velGiro) * 5;
- 
-         // 4. Construct desired chassis speeds
-         ChassisSpeeds chassisSpeeds;
-         
-              //Relative to robot
-             chassisSpeeds = new ChassisSpeeds(velForward, velStrafe, velGiro);
+    /**
+     * If there is a seen target, calculate the PIDs velocities, otherwise, rotate so the robot can
+     * search the target
+     */
+    if (VisionSubsystem.getTags().length != 0) {
+
+      velForward = drivePID.calculate(VisionSubsystem.getTagArea(), driveOffset);
+      velStrafe = strafePID.calculate(VisionSubsystem.getXDistance(), strafeOffset);
+      velGiro =
+          -rotationPID.calculate(
+              VisionSubsystem.getTagPose2d().getRotation().getDegrees(), rotationOffset);
+    } else if (VisionSubsystem.getTags().length == 0) {
+      velForward = 0;
+      velStrafe = 0;
+      velGiro = 0.4;
+    } else {
+      velForward = 0;
+      velStrafe = 0;
+      velGiro = 0;
+    }
+
+    // 3. Make the driving smoother
+    velForward = xLimiter.calculate(velForward) * 3;
+    velStrafe = yLimiter.calculate(velStrafe) * 3;
+    velGiro = giroLimiter.calculate(velGiro) * 5;
+
+    // 4. Construct desired chassis speeds
+    ChassisSpeeds chassisSpeeds;
+
+    // Relative to robot
+    chassisSpeeds = new ChassisSpeeds(velForward, velStrafe, velGiro);
   }
 
   @Override
