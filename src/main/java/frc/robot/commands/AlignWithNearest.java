@@ -103,7 +103,7 @@ public class AlignWithNearest extends Command {
     if (wantedTag != 0) {
       RobotContainer.drivebase.driveToPose(TagPos[wantedTag]);
       if (VisionSubsystem.CanSeeTag(wantedTag)) {
-        RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
+        RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
         wantedTag = 0;
       }
     } else {

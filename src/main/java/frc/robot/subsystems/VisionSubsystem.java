@@ -9,6 +9,7 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -24,6 +25,20 @@ public class VisionSubsystem extends SubsystemBase {
   private static int[] processorTags = {3, 16};
   private static int[] bargeTags = {4, 5, 14, 15};
   boolean doRejectUpdate;
+
+  public void UpdatePositionOnField(){
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
+    if (mt2 != null) {
+      if (mt2.tagCount == 0) {
+        doRejectUpdate = true;
+      } else {
+        doRejectUpdate = false;
+      }
+      if (!doRejectUpdate) {
+        RobotContainer.drivebase.addVisionReading(mt2.pose, mt2.timestampSeconds);
+      }
+    }
+  }
 
   @Override
   public void periodic() {
