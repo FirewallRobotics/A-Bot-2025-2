@@ -10,6 +10,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -30,6 +32,119 @@ import swervelib.math.Matter;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  private static double distanceAway = 1;
+
+  public static Pose2d[] reefFaces = {
+    new Pose2d(
+        Units.inchesToMeters(144.003), Units.inchesToMeters(158.500), Rotation2d.fromDegrees(180)),
+    new Pose2d(
+        Units.inchesToMeters(160.373), Units.inchesToMeters(186.857), Rotation2d.fromDegrees(120)),
+    new Pose2d(
+        Units.inchesToMeters(193.116), Units.inchesToMeters(186.858), Rotation2d.fromDegrees(60)),
+    new Pose2d(
+        Units.inchesToMeters(209.489), Units.inchesToMeters(158.502), Rotation2d.fromDegrees(0)),
+    new Pose2d(
+        Units.inchesToMeters(193.118), Units.inchesToMeters(130.145), Rotation2d.fromDegrees(-60)),
+    new Pose2d(
+        Units.inchesToMeters(160.375), Units.inchesToMeters(130.144), Rotation2d.fromDegrees(-120)),
+    new Pose2d(
+        Units.inchesToMeters(68) + 0.5,
+        Units.inchesToMeters(71) + 0.5,
+        Rotation2d.fromDegrees(-126)), // this is Right source, angle could be inaccurate
+    new Pose2d(
+        Units.inchesToMeters(67.5) + 0.5,
+        Units.inchesToMeters(244.5) - 0.5,
+        Rotation2d.fromDegrees(126)), // this is left source, angle could be inaccurate
+    new Pose2d(
+        Units.inchesToMeters(240),
+        Units.inchesToMeters(55) + 0.75,
+        Rotation2d.fromDegrees(-90)) // this is processer, angle could be inaccurate
+  };
+
+  public enum ReefScorePositions {
+    FRONT(
+        new Pose2d(
+            Math.cos(reefFaces[0].getRotation().getRadians()) * distanceAway
+                + reefFaces[0].getTranslation().getX(),
+            Math.sin(reefFaces[0].getRotation().getRadians()) * distanceAway
+                + reefFaces[0].getTranslation().getY(),
+            reefFaces[0].getRotation()),
+        18),
+    FRONTLEFT(
+        new Pose2d(
+            Math.cos(reefFaces[1].getRotation().getRadians()) * distanceAway
+                + reefFaces[1].getTranslation().getX(),
+            Math.sin(reefFaces[1].getRotation().getRadians()) * distanceAway
+                + reefFaces[1].getTranslation().getY(),
+            reefFaces[1].getRotation()),
+        19),
+
+    BACKLEFT(
+        new Pose2d(
+            Math.cos(reefFaces[2].getRotation().getRadians()) * distanceAway
+                + reefFaces[2].getTranslation().getX(),
+            Math.sin(reefFaces[2].getRotation().getRadians()) * distanceAway
+                + reefFaces[2].getTranslation().getY(),
+            reefFaces[2].getRotation()),
+        20),
+    BACK(
+        new Pose2d(
+            Math.cos(reefFaces[3].getRotation().getRadians()) * distanceAway
+                + reefFaces[3].getTranslation().getX(),
+            Math.sin(reefFaces[3].getRotation().getRadians()) * distanceAway
+                + reefFaces[3].getTranslation().getY(),
+            reefFaces[3].getRotation()),
+        21),
+    BACKRIGHT(
+        new Pose2d(
+            Math.cos(reefFaces[4].getRotation().getRadians()) * distanceAway
+                + reefFaces[4].getTranslation().getX(),
+            Math.sin(reefFaces[4].getRotation().getRadians()) * distanceAway
+                + reefFaces[4].getTranslation().getY(),
+            reefFaces[4].getRotation()),
+        22),
+    FRONTRIGHT(
+        new Pose2d(
+            Math.cos(reefFaces[5].getRotation().getRadians()) * distanceAway
+                + reefFaces[5].getTranslation().getX(),
+            Math.sin(reefFaces[5].getRotation().getRadians()) * distanceAway
+                + reefFaces[5].getTranslation().getY(),
+            reefFaces[5].getRotation()),
+        17),
+    RIGHTSOURCE(
+        new Pose2d(
+            Math.cos(reefFaces[6].getRotation().getRadians()) * distanceAway
+                + reefFaces[6].getTranslation().getX(),
+            Math.sin(reefFaces[6].getRotation().getRadians()) * distanceAway
+                + reefFaces[6].getTranslation().getY(),
+            reefFaces[6].getRotation()),
+        12),
+    LEFTSOURCE(
+        new Pose2d(
+            Math.cos(reefFaces[7].getRotation().getRadians()) * distanceAway
+                + reefFaces[7].getTranslation().getX(),
+            Math.sin(reefFaces[7].getRotation().getRadians()) * distanceAway
+                + reefFaces[7].getTranslation().getY(),
+            reefFaces[7].getRotation()),
+        13),
+    PROCESSER(
+        new Pose2d(
+            Math.cos(reefFaces[8].getRotation().getRadians()) * distanceAway
+                + reefFaces[8].getTranslation().getX(),
+            Math.sin(reefFaces[8].getRotation().getRadians()) * distanceAway
+                + reefFaces[8].getTranslation().getY(),
+            reefFaces[8].getRotation()),
+        16);
+
+    public Pose2d scorePosition;
+    public int aprilTagID;
+
+    private ReefScorePositions(Pose2d pose, int aprilTagID) {
+      this.scorePosition = pose;
+      this.aprilTagID = aprilTagID;
+    }
+  }
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS =
