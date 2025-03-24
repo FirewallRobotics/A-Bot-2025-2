@@ -76,6 +76,7 @@ public class Robot extends TimedRobot {
 
     assistSendableChooser.setDefaultOption("Plan A", "A");
     assistSendableChooser.addOption("Plan B", "B");
+    SmartDashboard.putData(assistSendableChooser);
 
     m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
     m_CoralStationChooser.addOption("RightCoralStation", "right");
@@ -141,6 +142,7 @@ public class Robot extends TimedRobot {
       desiredScoreSendableChooser.addOption("BACK", ReefScorePositions.BACK);
       desiredScoreSendableChooser.addOption("BACKLEFT", ReefScorePositions.BACKLEFT);
       desiredScoreSendableChooser.addOption("PROCESSER", ReefScorePositions.PROCESSER);
+      SmartDashboard.putData(desiredScoreSendableChooser);
     }
   }
 
