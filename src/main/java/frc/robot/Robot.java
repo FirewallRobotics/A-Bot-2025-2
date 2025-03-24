@@ -201,8 +201,8 @@ public class Robot extends TimedRobot {
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
     }
-    if(autonomousCommand != null){
-      if(autonomousCommand.isFinished()){
+    if (autonomousCommand != null) {
+      if (autonomousCommand.isFinished()) {
         centerModules.schedule();
       }
     }
