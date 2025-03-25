@@ -29,7 +29,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private SparkClosedLoopController closedLoopController;
 
   // Elevator levels in encoder ticks
-  public static final double[] levels = {0, -18, -22, -46, -50};
+  public static final double[] levels = {0, -18, -22, -35, -50};
 
   // public static final double[] Angles = {0, 0, 0, 0, 0};
 
@@ -87,7 +87,7 @@ public class ElevatorSubsystem extends SubsystemBase {
       System.out.println("Invalid level: " + level);
       return;
     }
-    goToLevelNoPID(levels[level - 1]);
+    goToLevelNoPID(levels[level]);
     // RobotContainer.coralHoldAngleSubsystem.holdUp(Angles[level]);
   }
 
@@ -124,15 +124,12 @@ public class ElevatorSubsystem extends SubsystemBase {
       Logger.getGlobal().log(Level.INFO, "Going Up");
     }
     if (setPoint - 2 >= getPositionEncoder() && setPoint + 2 <= getPositionEncoder()) {
-      Logger.getGlobal().log(Level.INFO, "Found L3");
+      Logger.getGlobal().log(Level.INFO, "Found Level");
       leftMotor.set(0);
       closedLoopController.setReference(
           getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
     }
   }
-
-  // -35
-  // -16
 
   /**
    * Move to a position for the elevator to move to using PIDF. Will also update the simulation of

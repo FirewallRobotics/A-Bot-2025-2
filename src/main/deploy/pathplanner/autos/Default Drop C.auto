@@ -50,22 +50,9 @@
                       }
                     },
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "WristStop"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.275
                       }
                     },
                     {
@@ -84,6 +71,18 @@
           "type": "sequential",
           "data": {
             "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ElevatorStop"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WristStop"
+                }
+              },
               {
                 "type": "named",
                 "data": {

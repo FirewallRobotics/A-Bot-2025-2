@@ -31,7 +31,10 @@ import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
+import frc.robot.commands.ElevatorMoveLevel1;
+import frc.robot.commands.ElevatorMoveLevel2;
 import frc.robot.commands.ElevatorMoveLevel3;
+import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
@@ -143,6 +146,10 @@ public class RobotContainer {
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
     NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorSubsystem, 0.5));
+    NamedCommands.registerCommand("ElevatorLevel1", new ElevatorMoveLevel1(elevatorSubsystem));
+    NamedCommands.registerCommand("ElevatorLevel2", new ElevatorMoveLevel2(elevatorSubsystem));
+    NamedCommands.registerCommand("ElevatorLevel3", new ElevatorMoveLevel3(elevatorSubsystem));
+    NamedCommands.registerCommand("ElevatorLevel4", new ElevatorMoveLevel4(elevatorSubsystem));
     NamedCommands.registerCommand("Wait0.25", new WaitCommand(0.25));
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
