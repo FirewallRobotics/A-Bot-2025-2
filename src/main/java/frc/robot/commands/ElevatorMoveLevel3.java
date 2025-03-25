@@ -20,7 +20,7 @@ public class ElevatorMoveLevel3 extends Command {
 
   @Override
   public void execute() {
-    m_subsystem.goToL3();
+    m_subsystem.setLevel(3);
   }
 
   @Override

@@ -14,10 +14,16 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.AllianceFlipUtil;
 import frc.robot.subsystems.VisionSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
   public Pose2d getSelectedPose() {
+    Logger.getGlobal()
+        .log(
+            Level.INFO,
+            "Getting pose for tag: " + Robot.desiredScoreSendableChooser.getSelected().toString());
     return AllianceFlipUtil.apply(Robot.desiredScoreSendableChooser.getSelected().scorePosition);
   }
 
@@ -28,7 +34,6 @@ public class AlignWithNearest extends Command {
   private Command pathCommand;
 
   private Pose2d targetPose;
-  private Pose2d robotPose;
   private double distanceAway = -0.55;
 
   public static Pose2d[] TagPos = {
@@ -135,12 +140,14 @@ public class AlignWithNearest extends Command {
        */
       if (VisionSubsystem.getTags().length != 0) {
 
+        Logger.getGlobal().log(Level.INFO, "Calculating drive PID values");
         velForward = drivePID.calculate(VisionSubsystem.getTagArea(), driveOffset);
         velStrafe = strafePID.calculate(VisionSubsystem.getXDistance(), strafeOffset);
         velGiro =
             -rotationPID.calculate(
                 VisionSubsystem.getTagPose2d().getRotation().getDegrees(), rotationOffset);
       } else if (VisionSubsystem.getTags().length == 0) {
+        Logger.getGlobal().log(Level.INFO, "no tags no forward");
         velForward = 0;
         velStrafe = 0;
         velGiro = 0.4;
@@ -150,6 +157,7 @@ public class AlignWithNearest extends Command {
         velGiro = 0;
       }
 
+      Logger.getGlobal().log(Level.INFO, "smoothing drive");
       // 3. Make the driving smoother
       velForward = xLimiter.calculate(velForward) * 3;
       velStrafe = yLimiter.calculate(velStrafe) * 3;
@@ -161,12 +169,14 @@ public class AlignWithNearest extends Command {
       // Relative to robot
       chassisSpeeds = new ChassisSpeeds(velForward, velStrafe, velGiro);
 
+      Logger.getGlobal().log(Level.WARNING, "driving assistance calculations");
       RobotContainer.drivebase.drive(chassisSpeeds);
     } else if (Robot.assistSendableChooser.getSelected().equals("B")) {
-      robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
+      // robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
 
-      if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
+      // if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
 
+      Logger.getGlobal().log(Level.WARNING, "Scheduling path");
       pathCommand.schedule();
     }
   }

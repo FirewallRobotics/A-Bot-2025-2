@@ -50,9 +50,22 @@
                       }
                     },
                     {
+                      "type": "named",
+                      "data": {
+                        "name": "WristStop"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.275
+                        "waitTime": 0.5
                       }
                     },
                     {

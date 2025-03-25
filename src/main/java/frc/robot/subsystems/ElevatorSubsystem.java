@@ -80,14 +80,14 @@ public class ElevatorSubsystem extends SubsystemBase {
   /**
    * Set the level that the elevator should move too
    *
-   * @deprecated Due to the PIDF not being tuned this currently doesn't do anything
+   * @apiNote Currently uses {@link #goToLevelNoPID(double)} which will be shakey
    */
   public void setLevel(int level) {
     if (level < 0 || level >= levels.length) {
       System.out.println("Invalid level: " + level);
       return;
     }
-    moveToPosition(levels[level]);
+    goToLevelNoPID(levels[level - 1]);
     // RobotContainer.coralHoldAngleSubsystem.holdUp(Angles[level]);
   }
 
@@ -108,9 +108,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
-  /** Goes to the level 3 position using if statements */
-  public void goToL3() {
-    double setPoint = -39;
+  /**
+   * Goes to a setpoint using if statements. (No PIDF) But will hold using PIDF
+   *
+   * @param setPoint relative encoder position desired
+   */
+  public void goToLevelNoPID(double setPoint) {
+    // double setPoint = -39;
     if (setPoint + 1 >= getPositionEncoder()) {
       leftMotor.set(0.15);
       Logger.getGlobal().log(Level.INFO, "Going Down");
@@ -136,7 +140,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    *
    * @deprecated As of yet the PIDF has not been tuned so this does nothing
    */
-  private void moveToPosition(double position) {
+  public void moveToPosition(double position) {
     for (int i = 0; i < levels.length; i++) {
       if (levels[i] == position) {
         SmartDashboard.putNumber("ElevatorPos", i);
