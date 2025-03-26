@@ -153,6 +153,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Wait0.25", new WaitCommand(0.25));
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
+    NamedCommands.registerCommand("WristUp", new WristUp(coralHoldAngleSubsystem));
     NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
     NamedCommands.registerCommand(
         "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
@@ -203,12 +204,8 @@ public class RobotContainer {
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
-    if (DriverStation.isTest()) {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverXbox.a().whileTrue(drivebase.centerModulesCommand());
-    } else {
-      driverXbox.a().onTrue((Commands.runOnce(visionSubsystem::UpdatePositionOnField)));
-    }
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.a().whileTrue(drivebase.centerModulesCommand());
 
     driverXbox.x().onTrue(new AlignWithNearest());
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
@@ -255,15 +252,15 @@ public class RobotContainer {
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.get() == Alliance.Blue) {
       if (chooser.equals("left")) {
-        return drivebase.driveToPose(new Pose2d(1.4f, 7f, new Rotation2d(Math.toRadians(65))));
+        return drivebase.driveToPose(new Pose2d(1.9f, 7.5f, new Rotation2d(Math.toRadians(65))));
       } else {
-        return drivebase.driveToPose(new Pose2d(1.2f, 1f, new Rotation2d(Math.toRadians(-125))));
+        return drivebase.driveToPose(new Pose2d(1.9f, 0.5f, new Rotation2d(Math.toRadians(-125))));
       }
     } else {
       if (chooser.equals("left")) {
-        return drivebase.driveToPose(new Pose2d(16.4f, 1f, new Rotation2d(Math.toRadians(-54))));
+        return drivebase.driveToPose(new Pose2d(15.9f, 1.5f, new Rotation2d(Math.toRadians(-54))));
       } else {
-        return drivebase.driveToPose(new Pose2d(16.3f, 7f, new Rotation2d(Math.toRadians(52))));
+        return drivebase.driveToPose(new Pose2d(15.8f, 6.5f, new Rotation2d(Math.toRadians(52))));
       }
     }
   }

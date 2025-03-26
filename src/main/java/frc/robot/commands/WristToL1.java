@@ -22,6 +22,10 @@ public class WristToL1 extends Command {
 
   @Override
   public boolean isFinished() {
-    return coralHold.getEncoder() >= 3.5;
+    if (coralHold.getEncoder() >= 0) {
+      return coralHold.getEncoder() >= 3.5;
+    } else {
+      return coralHold.getEncoder() <= -3.5;
+    }
   }
 }

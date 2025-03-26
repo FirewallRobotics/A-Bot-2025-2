@@ -70,9 +70,6 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
       state = new State(wantedPos, 0);
       holdUp(state);
     }
-    if(encoder.getPosition() < 0){
-      encoder.setPosition(0);
-    }
   }
 
   private double setSpeed() {

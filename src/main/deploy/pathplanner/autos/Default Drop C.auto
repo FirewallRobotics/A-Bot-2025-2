@@ -27,7 +27,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.125
+                        "waitTime": 0.25
                       }
                     },
                     {
@@ -52,7 +52,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.275
+                        "waitTime": 0.4
                       }
                     },
                     {
@@ -74,7 +74,25 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ElevatorStop"
+                  "name": "CoralShootCommand"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.95
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WristUp"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.1
                 }
               },
               {
@@ -86,19 +104,25 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "CoralShootCommand"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
+                  "name": "CoralStop"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "CoralStop"
+                  "name": "ElevatorUp"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.2
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ElevatorStop"
                 }
               }
             ]
@@ -107,13 +131,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Backup6"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Center"
+            "pathName": "Backup5"
           }
         }
       ]
