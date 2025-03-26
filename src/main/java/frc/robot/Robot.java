@@ -198,8 +198,8 @@ public class Robot extends TimedRobot {
       flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
     }
     // Will constantly get the position of the elevator,
-    //so that when we go into tele, we have an offset to
-    //adjust to
+    // so that when we go into tele, we have an offset to
+    // adjust to
     RobotContainer.getStart();
   }
 
@@ -217,9 +217,11 @@ public class Robot extends TimedRobot {
     } else {
       CommandScheduler.getInstance().cancelAll();
     }
-    //This is for testing- if we already have an offset,
-    //this will do nothing
-    RobotContainer.getStart();
+    // This is for testing- if we already have an offset,
+    // this will do nothing
+    if (!RobotContainer.gottenStart()) {
+      RobotContainer.getStart();
+    }
   }
 
   /** This function is called periodically during operator control. */

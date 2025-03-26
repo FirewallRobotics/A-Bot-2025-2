@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.CoralHoldAngleSubsystemConstants;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CoralHoldAngleSubsystem extends SubsystemBase {
 
@@ -43,6 +45,9 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   private RelativeEncoder encoder;
 
   public static final double shooter = 4.82;
+  public double finalPos;
+  private double ogPos;
+  private double setPoint = 21.97;
 
   public CoralHoldAngleSubsystem() {
     motor =
@@ -141,11 +146,40 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   } */
 
+  private double getPositionEncoder() {
+    return encoder.getPosition();
+  }
+
+  public void setOGPos() {
+    ogPos = encoder.getPosition();
+    if (ogPos < setPoint) {
+      finalPos = setPoint - ogPos;
+    }
+  }
+
+  public double getFinalPos() {
+    return finalPos;
+  }
+
   public void setLevel() {
 
-    wantedPos = 17.59;
-    state = new State(wantedPos, 0);
-    holdUp(state);
+    if (finalPos + 1 >= getPositionEncoder()) {
+      motor.set(-0.3);
+      Logger.getGlobal().log(Level.INFO, "Going Down");
+    }
+    if (finalPos - 1 <= getPositionEncoder()) {
+      motor.set(0.15);
+      Logger.getGlobal().log(Level.INFO, "Going Up");
+    }
+    if (finalPos - 2 >= getPositionEncoder() && finalPos + 2 <= getPositionEncoder()) {
+      Logger.getGlobal().log(Level.INFO, "Found L3");
+      motor.set(0);
+      controller.setReference(
+          encoder.getPosition(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
+    }
+    // wantedPos = 17.59;
+    // state = new State(wantedPos, 0);
+    // holdUp(state);
   }
 
   public boolean isFinished(int position) {

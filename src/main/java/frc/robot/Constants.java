@@ -67,6 +67,11 @@ public final class Constants {
   public static class ElevatorSubsystemConstants {
     public static final int ELEVATOR_LEFT_MOTOR_ID = 11;
     public static final int ELEVATOR_RIGHT_MOTOR_ID = 12;
+
+    public static final double kSVolts = 0.11356;
+    public static final double kGVolts = 0.29175;
+    public static final double kVVoltSecondPerRad = 1.5928;
+    public static final double kAVoltSecondSquaredPerRad = 0.030171;
   }
 
   public static class ClimberSubsystemConstants {

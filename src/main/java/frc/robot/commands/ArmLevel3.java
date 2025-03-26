@@ -18,6 +18,7 @@ public class ArmLevel3 extends Command {
 
   @Override
   public boolean isFinished() {
-    return ((17.6 - 2) >= coralHold.getPosition()) && ((17.6 + 2) <= coralHold.getPosition());
+    return ((coralHold.getFinalPos() - 2) >= coralHold.getPosition())
+        && ((coralHold.getFinalPos() + 2) <= coralHold.getPosition());
   }
 }

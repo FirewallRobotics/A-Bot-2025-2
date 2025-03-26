@@ -31,7 +31,6 @@ import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.ArmLevel2;
-import frc.robot.commands.ArmLevel3;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -244,10 +243,17 @@ public class RobotContainer {
         .onTrue(
             new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                    new ElevatorMoveLevel3(elevatorSubsystem),
-                    new ArmLevel3(coralHoldAngleSubsystem)),
+                    new ElevatorMoveLevel3(elevatorSubsystem)
+                    // new ArmLevel3(coralHoldAngleSubsystem)
+                    ),
                 new WaitCommand(1),
                 new CoralShootCommand(coralHoldSubsystem)));
+
+    // DO NOT TOUCH
+    // NEEDS WORK
+    // KATHERINE I WILL KILL YOU
+    // OR AIDEN
+    // I WILL STAB
     coralController
         .y()
         .onTrue(
@@ -257,8 +263,16 @@ public class RobotContainer {
                     new ArmLevel2(coralHoldAngleSubsystem)),
                 new WaitCommand(1),
                 new CoralShootCommand(coralHoldSubsystem)));
-
-    // driverXbox.x().whileTrue(new AlignWithNearest());
+    // coralController
+    //     .b()
+    //     .onTrue(
+    //         new SequentialCommandGroup(
+    //             new ParallelCommandGroup(
+    //                 new ElevatorIntake(elevatorSubsystem), new
+    // ArmIntake(coralHoldAngleSubsystem)),
+    //             new WaitCommand(1),
+    //             new CoralIntakeCommand(coralHoldSubsystem)));
+    // // driverXbox.x().whileTrue(new AlignWithNearest());
     /*driverXbox
     .x()
     .onTrue(
@@ -279,14 +293,14 @@ public class RobotContainer {
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
-    driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
+    // driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
     driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
     driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
     driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.65));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.64));
     driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem));
+    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem, elevatorSubsystem));
     driverXbox.povDown().onTrue(new WristDown(coralHoldAngleSubsystem));
     driverXbox.povUp().onFalse(new WristStop(coralHoldAngleSubsystem));
     driverXbox.povDown().onFalse(new WristStop(coralHoldAngleSubsystem));
@@ -314,16 +328,20 @@ public class RobotContainer {
     return drivebase.getAutonomousCommand(pathString);
   }
 
-  //On the disablement of auto, or the start of tele if we
-  //don't do auto, this will get the starting position of the elevator.
-  //Basically- through out auto, this will keep the elevators position.
-  //When it moves to tele, that position is now it's zero.
-  //The means we now know our offset.
+  // On the disablement of auto, or the start of tele if we
+  // don't do auto, this will get the starting position of the elevator.
+  // Basically- through out auto, this will keep the elevators position.
+  // When it moves to tele, that position is now it's zero.
+  // The means we now know our offset.
   public static void getStart() {
-    
+
     elevatorSubsystem.getStartPos();
+    coralHoldAngleSubsystem.setOGPos();
     elevatorSubsystem.setOgPOSgotten();
-    
+  }
+
+  public static boolean gottenStart() {
+    return elevatorSubsystem.getOgPOSgotten();
   }
 
   public Command getCoralPathCommand(String chooser) {
