@@ -86,9 +86,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         .pidf(0f, 0f, 0f, 0.63f, ClosedLoopSlot.kSlot0);
 
     leftMotor.configure(
-        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
-        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   // Update PIDF
@@ -137,9 +137,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         .pidf(0.000001f, 0f, 0f, 0.3f, ClosedLoopSlot.kSlot0);
 
     leftMotor.configure(
-        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
-        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
 
@@ -243,9 +243,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         .pidf(0f, 0f, 0f, 0, ClosedLoopSlot.kSlot0);
 
     leftMotor.configure(
-        leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     rightMotor.configure(
-        rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController.setReference(
         getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);

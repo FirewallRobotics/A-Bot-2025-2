@@ -2,6 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CoralHoldAngleSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ArmLevel3 extends Command {
   private CoralHoldAngleSubsystem coralHold;
@@ -12,13 +14,23 @@ public class ArmLevel3 extends Command {
   }
 
   @Override
-  public void initialize() {
-    coralHold.setLevel();
+  public void execute() {
+    coralHold.setLevel(3);
+
+    if (coralHold.atLevel(3)) {
+
+      // Logger.getGlobal().log(Level.INFO, "found level");
+      coralHold.stopTilt();
+    }
   }
 
   @Override
   public boolean isFinished() {
-    return ((coralHold.getFinalPos() - 2) >= coralHold.getPosition())
-        && ((coralHold.getFinalPos() + 2) <= coralHold.getPosition());
+    if (coralHold.atLevel(3)) {
+      Logger.getGlobal().log(Level.INFO, "found level");
+      coralHold.stopTilt();
+      return true;
+    }
+    return false;
   }
 }
