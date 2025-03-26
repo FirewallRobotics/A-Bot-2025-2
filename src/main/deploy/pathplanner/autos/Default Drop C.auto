@@ -27,7 +27,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.25
+                        "waitTime": 0.275
                       }
                     },
                     {
@@ -52,7 +52,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.4
+                        "waitTime": 0.45
                       }
                     },
                     {
@@ -80,49 +80,13 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.95
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "WristUp"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.1
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "WristStop"
+                  "waitTime": 1.0
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "CoralStop"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ElevatorUp"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.2
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ElevatorStop"
                 }
               }
             ]
