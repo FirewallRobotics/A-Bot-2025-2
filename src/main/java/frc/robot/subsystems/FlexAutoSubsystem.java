@@ -43,6 +43,12 @@ public class FlexAutoSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
   }
 
+  /**
+   * Check to see if a new path is available based on if we are not moving and flex has had enough
+   * time to cycle
+   *
+   * @return If we are not moving and the cycle counter is high enough
+   */
   public boolean isNewPathAvailable() {
     // new path is avaliable if we are not moving
     if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.05
@@ -56,6 +62,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
     return false;
   }
 
+  /**
+   * Gets the location of a reef tag in field space
+   *
+   * @return The location of the nearest reef tag in field space
+   */
   public Translation2d getReefLocationInFieldSpace() {
 
     // get reef location in robot space
@@ -83,6 +94,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
     return null;
   }
 
+  /**
+   * Gets the location of a Coral Station tag in field space
+   *
+   * @return The location of the nearest Coral Station tag in field space
+   */
   public Translation2d getCoralStationLocationInFieldSpace() {
 
     // get reef location in robot space
@@ -110,6 +126,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
     return null;
   }
 
+  /**
+   * Gets the location of a Processor tag in field space
+   *
+   * @return The location of the nearest Processor tag in field space
+   */
   public Translation2d getProcessorLocationInFieldSpace() {
 
     // get Processor location in robot space
@@ -139,11 +160,17 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   int elevatorSearch = 0;
 
+  /**
+   * Creates and follows a path based on what we can see with vision goals: Auto can do 2 things 1)
+   * drop off preloaded coral and do cycles between coral station and reef 2) drop off preloaded
+   * coral and do cycles between reef(algae) and processor
+   *
+   * @implNote Currently Algae cycles have been commented out as we do not plan to do them and thus
+   *     I will not support it
+   * @param constraints The Constraints of the robot
+   * @param CoralStationChoose The current prefered Coral Station (We will cycle to and from this)
+   */
   public void CreatePath(PathConstraints constraints, String CoralStationChoose) {
-
-    // goals: Auto can do 2 things
-    // 1) drop off preloaded coral and do cycles between coral station and reef
-    // 2) drop off preloaded coral and do cycles between reef(algae) and processor
 
     // if our plan is to go to the coral station then were doing coral station cycles
     if (!CoralStationChoose.equals("stop")) {

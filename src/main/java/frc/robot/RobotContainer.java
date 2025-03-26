@@ -163,6 +163,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
     NamedCommands.registerCommand("CoralStop", new stopCoralIntake(coralHoldSubsystem));
+    NamedCommands.registerCommand("Center", drivebase.centerModulesCommand());
   }
 
   public void init() {
@@ -183,7 +184,6 @@ public class RobotContainer {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
-    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
 
     // String key = keyboard.getLastKeyPressed();
@@ -236,6 +236,7 @@ public class RobotContainer {
         drivebase.driveWithSetpointGeneratorFieldRelative(driveDirectAngleKeyboard);
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
+
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
 
     coralController
@@ -282,6 +283,16 @@ public class RobotContainer {
     driverXbox.b().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
 
     driverXbox.x().onTrue(new AlignWithNearest());
+
+    if (DriverStation.isTest()) {
+      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+      driverXbox.a().whileTrue(drivebase.centerModulesCommand());
+    } else {
+      driverXbox.a().onTrue((Commands.runOnce(visionSubsystem::UpdatePositionOnField)));
+    }
+
+    driverXbox.x().whileTrue(new AlignWithNearest());
+
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().whileTrue(new AlgaeIntakeCommand(algaeSubsystem));
@@ -355,6 +366,11 @@ public class RobotContainer {
     }
   }
 
+  /**
+   * Sets if YAGSL should put all the motors into brake mode and stop the robot
+   *
+   * @param brake Should we brake?
+   */
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
   }

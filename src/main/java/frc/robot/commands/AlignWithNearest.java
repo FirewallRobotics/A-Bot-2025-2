@@ -1,22 +1,35 @@
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.AllianceFlipUtil;
 import frc.robot.subsystems.VisionSubsystem;
-import java.util.function.DoubleSupplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
+  public Pose2d getSelectedPose() {
+    return AllianceFlipUtil.apply(Robot.desiredScoreSendableChooser.getSelected().scorePosition);
+  }
+
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
-  double distance;
-  double rotation;
+  private final SlewRateLimiter xLimiter, yLimiter, giroLimiter;
+  private final PIDController drivePID, strafePID, rotationPID;
+  private final double driveOffset, strafeOffset, rotationOffset;
+  private Command pathCommand;
+
+  private Pose2d targetPose;
+  private Pose2d robotPose;
+  private double distanceAway = -0.55;
 
   public static Pose2d[] TagPos = {
     new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712)),
@@ -25,7 +38,7 @@ public class AlignWithNearest extends Command {
     new Pose2d(0, 0, new Rotation2d(0)),
     new Pose2d(0, 0, new Rotation2d(0)),
     new Pose2d(13.787, 2.811, new Rotation2d(2.094395)),
-    new Pose2d(14.538, 3.969, new Rotation2d(3.141593)),
+    new Pose2d(14.261, 2.220, new Rotation2d(Math.toRadians(125))),
     new Pose2d(13.840, 5.217, new Rotation2d(-2.111848)),
     new Pose2d(12.365, 5.165, new Rotation2d(-1.012291)),
     new Pose2d(11.638, 4.007, new Rotation2d(0)),
@@ -65,66 +78,106 @@ public class AlignWithNearest extends Command {
   public static Pose2d Tag10 = new Pose2d(11.638, 4.007, new Rotation2d(0));
   public static Pose2d Tag11 = new Pose2d(12.390, 2.790, new Rotation2d(1.012291));
 
-  public Pose2d getReefLocationInFieldSpace() {
-
-    // get reef location in robot space
-    Pose2d ReefLocation = VisionSubsystem.getReefLocationPose2d();
-
-    // if we dont have the reefs location find it by spinning slowly
-    if (ReefLocation.getX() == -1 && ReefLocation.getY() == -1) {
-      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
-    } else {
-      // if we do have the reefs location then convert it
-      // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0).schedule();
-
-      // get the robots location in field space
-      Pose2d RobotFieldSpace = RobotContainer.drivebase.getPose2d();
-
-      // do the math to find the location of the reef by adding together the values
-      double xActual = ReefLocation.getX() + RobotFieldSpace.getX();
-      double yActual = ReefLocation.getY() + RobotFieldSpace.getY();
-
-      // return the values
-      return new Pose2d(new Translation2d(xActual, yActual), ReefLocation.getRotation());
-    }
-    return new Pose2d(new Translation2d(-1, -1), ReefLocation.getRotation());
-  }
+  public Command targetCommand;
 
   // add vision as a requirement to run
-  public AlignWithNearest() {}
+  public AlignWithNearest() {
+    this.xLimiter = new SlewRateLimiter(4);
+    this.yLimiter = new SlewRateLimiter(4);
+    this.giroLimiter = new SlewRateLimiter(Units.degreesToRadians(720));
+
+    /** PID Controllers for the align */
+    this.drivePID = new PIDController(0.00023, 0.0000002, 2);
+
+    this.strafePID = new PIDController(0.00023, 0.0000002, 2);
+
+    this.rotationPID = new PIDController(0.0020645, 0, 0);
+    /** Boolean for what target to search */
+
+    /** Offsets for the limelight */
+    // this.offsets = limelight.getOffsets(alingToAprilTag);
+
+    this.driveOffset = 2.1;
+    this.strafeOffset = -0.2;
+    this.rotationOffset = 10.2;
+  }
 
   @Override
+  public void initialize() {
+    if (Robot.assistSendableChooser.getSelected().equals("B")) {
+      Pose2d selectedPosition = getSelectedPose();
+
+      targetPose =
+          new Pose2d(
+              Math.cos(selectedPosition.getRotation().getRadians()) * distanceAway
+                  - Math.sin(selectedPosition.getRotation().getRadians())
+                      * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
+                  + selectedPosition.getTranslation().getX(),
+              Math.sin(selectedPosition.getRotation().getRadians()) * distanceAway
+                  + Math.cos(selectedPosition.getRotation().getRadians())
+                      * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
+                  + selectedPosition.getTranslation().getY(),
+              selectedPosition.getRotation());
+
+      pathCommand = AutoBuilder.pathfindToPose(targetPose, new PathConstraints(1, 1, 180, 180));
+    }
+  }
+
   public void execute() {
-    double dist = VisionSubsystem.DistanceToReef();
-    if (dist != -1) {
+    if (Robot.assistSendableChooser.getSelected().equals("A")) {
+      double velForward = 0;
+      double velStrafe = 0;
+      double velGiro = 0;
 
-      if (VisionSubsystem.getReefLocation()[0] >= 0.1) {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Right");
-        RobotContainer.drivebase.drive(new ChassisSpeeds(-2.5, 0, 0));
-      } else if (VisionSubsystem.getReefLocation()[0] <= -0.1) {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going Left");
-        RobotContainer.drivebase.drive(new ChassisSpeeds(2.5, 0, 0));
+      /*
+       * If there is a seen target, calculate the PIDs velocities, otherwise, rotate so the robot can
+       * search the target
+       */
+      if (VisionSubsystem.getTags().length != 0) {
+
+        velForward = drivePID.calculate(VisionSubsystem.getTagArea(), driveOffset);
+        velStrafe = strafePID.calculate(VisionSubsystem.getXDistance(), strafeOffset);
+        velGiro =
+            -rotationPID.calculate(
+                VisionSubsystem.getTagPose2d().getRotation().getDegrees(), rotationOffset);
+      } else if (VisionSubsystem.getTags().length == 0) {
+        velForward = 0;
+        velStrafe = 0;
+        velGiro = 0.4;
       } else {
-        Logger.getGlobal().log(Level.INFO, "Driver Assist Going FWD To Reef");
-        RobotContainer.drivebase.driveToDistanceCommand(dist, 1.5).schedule();
+        velForward = 0;
+        velStrafe = 0;
+        velGiro = 0;
       }
-    } else {
 
-      // log that we cannot see anything to goto
-      Logger.getGlobal().log(Level.WARNING, "Driver Assist Cannot Find A Valid Target! TAKE OVER!");
+      // 3. Make the driving smoother
+      velForward = xLimiter.calculate(velForward) * 3;
+      velStrafe = yLimiter.calculate(velStrafe) * 3;
+      velGiro = giroLimiter.calculate(velGiro) * 5;
+
+      // 4. Construct desired chassis speeds
+      ChassisSpeeds chassisSpeeds;
+
+      // Relative to robot
+      chassisSpeeds = new ChassisSpeeds(velForward, velStrafe, velGiro);
+
+      RobotContainer.drivebase.drive(chassisSpeeds);
+    } else if (Robot.assistSendableChooser.getSelected().equals("B")) {
+      robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
+
+      if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
+
+      pathCommand.schedule();
     }
   }
 
   @Override
   public void end(boolean inter) {
-    Logger.getGlobal().log(Level.INFO, "Driver Assist Finished");
-    RobotContainer.drivebase.drive(new ChassisSpeeds(0, 0, 0));
+    pathCommand.end(inter);
   }
 
   @Override
   public boolean isFinished() {
-    return RobotContainer.driverXbox.getLeftX() > 0.3 || RobotContainer.driverXbox.getLeftY() > 0.3;
+    return pathCommand.isFinished();
   }
 }

@@ -44,7 +44,11 @@ public class CoralHoldSubsystem extends SubsystemBase {
       //Let it go if limit switch is hit
   }*/
 
-  // When we want to shoot coral from the intake, has to have a coral in the lift
+  /**
+   * When we want to shoot coral from the intake. Moves at negative {@link #setSpeed()} x 1.25
+   *
+   * @implNote Currently doesn't use the limit switch but can in the future if we have it
+   */
   public void shoot() {
     // if (!limitSwitch.get()) {
     // motorConfig.inverted(false);
@@ -61,7 +65,11 @@ public class CoralHoldSubsystem extends SubsystemBase {
     }
   }
 
-  // Intakes coral. Lift has to be empty
+  /**
+   * Intakes coral. Moves at {@link #setSpeed()}
+   *
+   * @implNote Currently doesn't use the limit switch but can in the future if we have it
+   */
   public void intake() {
     // if (limitSwitch.get()) {
     motor.set(setSpeed());
@@ -79,7 +87,7 @@ public class CoralHoldSubsystem extends SubsystemBase {
     }
   }
 
-  // Makes the motor stop. Can shut down both functions.
+  /** Makes the motor stop. */
   public void stop() {
     motor.set(0);
     doingStuff = false;

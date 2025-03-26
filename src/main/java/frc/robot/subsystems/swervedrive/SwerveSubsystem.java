@@ -40,6 +40,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.parser.ParseException;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -79,7 +81,7 @@ public class SwerveSubsystem extends SubsystemBase {
               .createSwerveDrive(
                   Constants.MAX_SPEED,
                   new Pose2d(
-                      new Translation2d(Meter.of(7.6), Meter.of(7)), Rotation2d.fromDegrees(180)));
+                      new Translation2d(Meter.of(10), Meter.of(0.7)), Rotation2d.fromDegrees(0)));
       // Alternative method if you don't want to supply the conversion factor via JSON files.
       // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
       // angleConversionFactor, driveConversionFactor);
@@ -125,7 +127,7 @@ public class SwerveSubsystem extends SubsystemBase {
             driveCfg,
             controllerCfg,
             Constants.MAX_SPEED,
-            new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)), Rotation2d.fromDegrees(0)));
+            new Pose2d(new Translation2d(Meter.of(10), Meter.of(0.7)), Rotation2d.fromDegrees(0)));
   }
 
   @Override
@@ -329,6 +331,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return a Command that centers the modules of the SwerveDrive subsystem
    */
   public Command centerModulesCommand() {
+    Logger.getGlobal().log(Level.INFO, "Centering");
     return run(() -> Arrays.asList(swerveDrive.getModules()).forEach(it -> it.setAngle(0.0)));
   }
 

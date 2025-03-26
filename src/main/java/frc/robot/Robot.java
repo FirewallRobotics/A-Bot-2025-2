@@ -14,8 +14,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.ReefScorePositions;
 import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.UltrasonicSensor;
 import java.util.List;
@@ -37,9 +39,15 @@ public class Robot extends TimedRobot {
 
   private Timer disabledTimer;
 
+  private Command centerModules = RobotContainer.drivebase.centerModulesCommand();
+
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
+
+  public static final SendableChooser<String> assistSendableChooser = new SendableChooser<>();
+  public static final SendableChooser<ReefScorePositions> desiredScoreSendableChooser =
+      new SendableChooser<>();
 
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
@@ -65,6 +73,10 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("FWD 5 feet", "FWD5");
     m_chooser.addOption("Wait", "wait");
     SmartDashboard.putData(m_chooser);
+
+    assistSendableChooser.setDefaultOption("Plan A", "A");
+    assistSendableChooser.addOption("Plan B", "B");
+    SmartDashboard.putData(assistSendableChooser);
 
     m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
     m_CoralStationChooser.addOption("RightCoralStation", "right");
@@ -116,11 +128,22 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
-    RobotContainer.elevatorSubsystem.Periodic();
+    frc.robot.RobotContainer.elevatorSubsystem.Periodic();
 
     // to set the levels
     // SmartDashboard.putNumber("ElevEncoder:",
     // RobotContainer.elevatorSubsystem.getPositionEncoder());
+    if (assistSendableChooser.getSelected().equals("B")) {
+      SmartDashboard.putNumber("getAutoAlignOffsetX", 0);
+      desiredScoreSendableChooser.setDefaultOption("FRONTLEFT", ReefScorePositions.FRONTLEFT);
+      desiredScoreSendableChooser.addOption("FRONT", ReefScorePositions.FRONT);
+      desiredScoreSendableChooser.addOption("FRONTRIGHT", ReefScorePositions.FRONTRIGHT);
+      desiredScoreSendableChooser.addOption("BACKRIGHT", ReefScorePositions.BACKRIGHT);
+      desiredScoreSendableChooser.addOption("BACK", ReefScorePositions.BACK);
+      desiredScoreSendableChooser.addOption("BACKLEFT", ReefScorePositions.BACKLEFT);
+      desiredScoreSendableChooser.addOption("PROCESSER", ReefScorePositions.PROCESSER);
+      SmartDashboard.putData(desiredScoreSendableChooser);
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -132,6 +155,8 @@ public class Robot extends TimedRobot {
     RobotContainer.elevatorSubsystem.stop();
     RobotContainer.coralHoldAngleSubsystem.stopTilt();
     // RobotContainer.climberSubsystem.stop();
+
+    // centerModules.ignoringDisable(true);
   }
 
   @Override
@@ -140,12 +165,14 @@ public class Robot extends TimedRobot {
       m_robotContainer.setMotorBrake(false);
       disabledTimer.stop();
     }
+    // centerModules.schedule();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    RobotContainer.drivebase.zeroGyro();
+    // centerModules.end(true);
+    // RobotContainer.drivebase.zeroGyro();
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
@@ -173,8 +200,12 @@ public class Robot extends TimedRobot {
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
-      autonomousCommand.addCommands(RobotContainer.drivebase.centerModulesCommand());
       autonomousCommand.schedule();
+    }
+    if (autonomousCommand != null) {
+      if (autonomousCommand.isFinished()) {
+        centerModules.schedule();
+      }
     }
   }
 
@@ -205,6 +236,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    centerModules.end(true);
     // RobotContainer.drivebase.zeroGyro();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
@@ -230,6 +262,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    centerModules.end(true);
     m_robotContainer.init();
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();

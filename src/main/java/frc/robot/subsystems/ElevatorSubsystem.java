@@ -91,16 +91,26 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  // Update PIDF
   public void Periodic() {
     SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
     SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
   }
 
+  /**
+   * Get the current speed that the motors are moving at
+   *
+   * @apiNote The elevator is inverted (-1 goes up and 1 goes down)
+   * @return Left motor speed(both motors are mirrored)
+   */
   public double getSpeed() {
     return leftMotor.get();
   }
 
+  /**
+   * Set the level that the elevator should move too
+   *
+   * @deprecated Due to the PIDF not being tuned this currently doesn't do anything
+   */
   public void setLevel(int level) {
     if (level < 0 || level >= levels.length) {
       System.out.println("Invalid level: " + level);
@@ -110,6 +120,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     // RobotContainer.coralHoldAngleSubsystem.holdUp(Angles[level]);
   }
 
+  /**
+   * Sets the speed of the elevator with some safe guards. And holds the position using a blanket
+   * 30% feed forward Will not go over 0 on the encoders (elevator position is inverted) or go under
+   * -50.1 as reported by the encoder
+   */
   public void setSpeed(double speed) {
     leftMotor.set(speed);
     // if (getPositionEncoder() >= 0 && speed > 0) {
@@ -205,10 +220,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     double ogOffSet = encoder.getPosition();
     levels[1] = levels[1] + ogOffSet;
     levels[2] = levels[2] + ogOffSet;
+
   }
 
   // -35
   // -16
+
 
   public double getLevel() {
     if (Robot.isSimulation()) {
@@ -225,6 +242,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     gottenOgPos = true;
   }
 
+
+  /**
+   * Move to a position for the elevator to move to using PIDF. Will also update the simulation of
+   * the elevator
+   *
+   * @deprecated As of yet the PIDF has not been tuned so this does nothing
+   */
+
   private void moveToPosition(double position) {
     for (int i = 0; i < levels.length; i++) {
       if (levels[i] == position) {
@@ -234,6 +259,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
+  /** Stop the elevator from moving and hold the position with a flat 30% feed forward */
   public void stop() {
     leftMotor.set(0);
 
@@ -248,13 +274,22 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController.setReference(
-        getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.5);
+        getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
   }
 
+  /**
+   * Get the position of the elevator encoder
+   *
+   * @return Position of the left motor encoder(the elevator is mirrored so it doesn't matter)
+   */
   public double getPositionEncoder() {
     return leftMotor.getEncoder().getPosition();
   }
 
+  /**
+   * If the elevator is finished moving to a position If we are in the sim blanket return 0 as we
+   * cannot move a mechanism
+   */
   public boolean isFinished(int position) {
     if (Robot.isSimulation()) {
       return true;

@@ -19,6 +19,11 @@ public class UltrasonicSensor extends SubsystemBase {
     Ultrasonic.setAutomaticMode(true);
   }
 
+  /**
+   * Get the distance from the Coral ultrasonics sensor
+   *
+   * @return The distance between the Coral ultrasonics sensor and the nearest object
+   */
   public double getDistanceCoral() {
     // Get the distance in inches
     double distanceInches = ultrasonicSensorCoral.getRangeInches();
@@ -29,6 +34,11 @@ public class UltrasonicSensor extends SubsystemBase {
     return distanceInches;
   }
 
+  /**
+   * Get the distance from the Algae ultrasonics sensor
+   *
+   * @return The distance between the Algae ultrasonics sensor and the nearest object
+   */
   public double getDistanceAlgae() {
     // Get the distance in inches
     double distanceInches = ultrasonicSensorAlgae.getRangeInches();

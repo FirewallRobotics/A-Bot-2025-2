@@ -43,19 +43,27 @@ public class ClimberSubsystem extends SubsystemBase {
         m_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
+  /** Start extending the higher Climber motor at {@link #EXTENSION_SPEED} */
   public void StartExtending() {
     m_higherClimber.set(EXTENSION_SPEED);
   }
 
+  /** Start retracting the lower Climber motor at {@link #RETRACTION_SPEED} */
   public void StartRetracting() {
     m_lowerClimber.set(RETRACTION_SPEED);
   }
 
+  /** Stop the climber */
   public void stop() {
     m_higherClimber.stopMotor();
     m_lowerClimber.stopMotor();
   }
 
+  /**
+   * Get the left Climber motor encoder
+   *
+   * @return left Climber motor encoder position
+   */
   public double getEncoder() {
     return m_leftEncoder.getPosition();
   }
