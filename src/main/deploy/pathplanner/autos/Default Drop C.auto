@@ -27,7 +27,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.125
+                        "waitTime": 0.275
                       }
                     },
                     {
@@ -52,7 +52,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.275
+                        "waitTime": 0.45
                       }
                     },
                     {
@@ -95,13 +95,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Backup6"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Center"
+            "pathName": "Backup5"
           }
         }
       ]

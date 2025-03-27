@@ -2,33 +2,29 @@ package frc.robot.commands;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.AllianceFlipUtil;
-import frc.robot.subsystems.VisionSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
   public Pose2d getSelectedPose() {
+    Logger.getGlobal()
+        .log(
+            Level.INFO,
+            "Getting pose for tag: " + Robot.desiredScoreSendableChooser.getSelected().toString());
     return AllianceFlipUtil.apply(Robot.desiredScoreSendableChooser.getSelected().scorePosition);
   }
 
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
-  private final SlewRateLimiter xLimiter, yLimiter, giroLimiter;
-  private final PIDController drivePID, strafePID, rotationPID;
-  private final double driveOffset, strafeOffset, rotationOffset;
   private Command pathCommand;
 
   private Pose2d targetPose;
-  private Pose2d robotPose;
   private double distanceAway = -0.55;
 
   public static Pose2d[] TagPos = {
@@ -81,94 +77,34 @@ public class AlignWithNearest extends Command {
   public Command targetCommand;
 
   // add vision as a requirement to run
-  public AlignWithNearest() {
-    this.xLimiter = new SlewRateLimiter(4);
-    this.yLimiter = new SlewRateLimiter(4);
-    this.giroLimiter = new SlewRateLimiter(Units.degreesToRadians(720));
-
-    /** PID Controllers for the align */
-    this.drivePID = new PIDController(0.00023, 0.0000002, 2);
-
-    this.strafePID = new PIDController(0.00023, 0.0000002, 2);
-
-    this.rotationPID = new PIDController(0.0020645, 0, 0);
-    /** Boolean for what target to search */
-
-    /** Offsets for the limelight */
-    // this.offsets = limelight.getOffsets(alingToAprilTag);
-
-    this.driveOffset = 2.1;
-    this.strafeOffset = -0.2;
-    this.rotationOffset = 10.2;
-  }
+  public AlignWithNearest() {}
 
   @Override
   public void initialize() {
-    if (Robot.assistSendableChooser.getSelected().equals("B")) {
-      Pose2d selectedPosition = getSelectedPose();
+    Pose2d selectedPosition = getSelectedPose();
 
-      targetPose =
-          new Pose2d(
-              Math.cos(selectedPosition.getRotation().getRadians()) * distanceAway
-                  - Math.sin(selectedPosition.getRotation().getRadians())
-                      * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
-                  + selectedPosition.getTranslation().getX(),
-              Math.sin(selectedPosition.getRotation().getRadians()) * distanceAway
-                  + Math.cos(selectedPosition.getRotation().getRadians())
-                      * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
-                  + selectedPosition.getTranslation().getY(),
-              selectedPosition.getRotation());
+    targetPose =
+        new Pose2d(
+            Math.cos(selectedPosition.getRotation().getRadians()) * distanceAway
+                - Math.sin(selectedPosition.getRotation().getRadians())
+                    * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
+                + selectedPosition.getTranslation().getX(),
+            Math.sin(selectedPosition.getRotation().getRadians()) * distanceAway
+                + Math.cos(selectedPosition.getRotation().getRadians())
+                    * SmartDashboard.getNumber("getAutoAlignOffsetX", 0)
+                + selectedPosition.getTranslation().getY(),
+            selectedPosition.getRotation());
 
-      pathCommand = AutoBuilder.pathfindToPose(targetPose, new PathConstraints(1, 1, 180, 180));
-    }
+    pathCommand = AutoBuilder.pathfindToPose(targetPose, new PathConstraints(1, 1, 180, 180));
   }
 
   public void execute() {
-    if (Robot.assistSendableChooser.getSelected().equals("A")) {
-      double velForward = 0;
-      double velStrafe = 0;
-      double velGiro = 0;
+    // robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
 
-      /*
-       * If there is a seen target, calculate the PIDs velocities, otherwise, rotate so the robot can
-       * search the target
-       */
-      if (VisionSubsystem.getTags().length != 0) {
+    // if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
 
-        velForward = drivePID.calculate(VisionSubsystem.getTagArea(), driveOffset);
-        velStrafe = strafePID.calculate(VisionSubsystem.getXDistance(), strafeOffset);
-        velGiro =
-            -rotationPID.calculate(
-                VisionSubsystem.getTagPose2d().getRotation().getDegrees(), rotationOffset);
-      } else if (VisionSubsystem.getTags().length == 0) {
-        velForward = 0;
-        velStrafe = 0;
-        velGiro = 0.4;
-      } else {
-        velForward = 0;
-        velStrafe = 0;
-        velGiro = 0;
-      }
-
-      // 3. Make the driving smoother
-      velForward = xLimiter.calculate(velForward) * 3;
-      velStrafe = yLimiter.calculate(velStrafe) * 3;
-      velGiro = giroLimiter.calculate(velGiro) * 5;
-
-      // 4. Construct desired chassis speeds
-      ChassisSpeeds chassisSpeeds;
-
-      // Relative to robot
-      chassisSpeeds = new ChassisSpeeds(velForward, velStrafe, velGiro);
-
-      RobotContainer.drivebase.drive(chassisSpeeds);
-    } else if (Robot.assistSendableChooser.getSelected().equals("B")) {
-      robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
-
-      if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
-
-      pathCommand.schedule();
-    }
+    Logger.getGlobal().log(Level.WARNING, "Scheduling path");
+    pathCommand.schedule();
   }
 
   @Override

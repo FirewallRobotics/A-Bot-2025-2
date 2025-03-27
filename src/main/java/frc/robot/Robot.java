@@ -45,7 +45,6 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
 
-  public static final SendableChooser<String> assistSendableChooser = new SendableChooser<>();
   public static final SendableChooser<ReefScorePositions> desiredScoreSendableChooser =
       new SendableChooser<>();
 
@@ -73,10 +72,6 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("FWD 5 feet", "FWD5");
     m_chooser.addOption("Wait", "wait");
     SmartDashboard.putData(m_chooser);
-
-    assistSendableChooser.setDefaultOption("Plan A", "A");
-    assistSendableChooser.addOption("Plan B", "B");
-    SmartDashboard.putData(assistSendableChooser);
 
     m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
     m_CoralStationChooser.addOption("RightCoralStation", "right");
@@ -133,17 +128,17 @@ public class Robot extends TimedRobot {
     // to set the levels
     // SmartDashboard.putNumber("ElevEncoder:",
     // RobotContainer.elevatorSubsystem.getPositionEncoder());
-    if (assistSendableChooser.getSelected().equals("B")) {
-      SmartDashboard.putNumber("getAutoAlignOffsetX", 0);
-      desiredScoreSendableChooser.setDefaultOption("FRONTLEFT", ReefScorePositions.FRONTLEFT);
-      desiredScoreSendableChooser.addOption("FRONT", ReefScorePositions.FRONT);
-      desiredScoreSendableChooser.addOption("FRONTRIGHT", ReefScorePositions.FRONTRIGHT);
-      desiredScoreSendableChooser.addOption("BACKRIGHT", ReefScorePositions.BACKRIGHT);
-      desiredScoreSendableChooser.addOption("BACK", ReefScorePositions.BACK);
-      desiredScoreSendableChooser.addOption("BACKLEFT", ReefScorePositions.BACKLEFT);
-      desiredScoreSendableChooser.addOption("PROCESSER", ReefScorePositions.PROCESSER);
-      SmartDashboard.putData(desiredScoreSendableChooser);
-    }
+    /*
+    SmartDashboard.putNumber("getAutoAlignOffsetX", 0);
+    desiredScoreSendableChooser.setDefaultOption("FRONTLEFT", ReefScorePositions.FRONTLEFT);
+    desiredScoreSendableChooser.addOption("FRONT", ReefScorePositions.FRONT);
+    desiredScoreSendableChooser.addOption("FRONTRIGHT", ReefScorePositions.FRONTRIGHT);
+    desiredScoreSendableChooser.addOption("BACKRIGHT", ReefScorePositions.BACKRIGHT);
+    desiredScoreSendableChooser.addOption("BACK", ReefScorePositions.BACK);
+    desiredScoreSendableChooser.addOption("BACKLEFT", ReefScorePositions.BACKLEFT);
+    desiredScoreSendableChooser.addOption("PROCESSER", ReefScorePositions.PROCESSER);
+    SmartDashboard.putData(desiredScoreSendableChooser);
+    */
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -201,11 +196,6 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
-    }
-    if (autonomousCommand != null) {
-      if (autonomousCommand.isFinished()) {
-        centerModules.schedule();
-      }
     }
   }
 

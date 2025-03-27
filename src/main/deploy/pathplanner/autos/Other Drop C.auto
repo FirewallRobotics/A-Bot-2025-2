@@ -97,12 +97,6 @@
           "data": {
             "pathName": "OtherSide6"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Center"
-          }
         }
       ]
     }

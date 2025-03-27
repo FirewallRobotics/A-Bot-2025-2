@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -9,10 +10,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.RobotContainer;
 import frc.robot.commands.*;
-import frc.robot.commands.AlignWithNearest;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
@@ -53,7 +54,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
     // new path is avaliable if we are not moving
     if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.05
         && RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 0.05
-        && counter >= 275) {
+        && counter >= 400) {
       counter = 0;
       return true;
     }
@@ -170,6 +171,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
    * @param constraints The Constraints of the robot
    * @param CoralStationChoose The current prefered Coral Station (We will cycle to and from this)
    */
+  @SuppressWarnings("static-access")
   public void CreatePath(PathConstraints constraints, String CoralStationChoose) {
 
     // if our plan is to go to the coral station then were doing coral station cycles
@@ -177,27 +179,45 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
       Optional<Alliance> ally = DriverStation.getAlliance();
       if (ally.get() == Alliance.Blue) {
-        SequentialCommandGroup autonomousCommand =
-            new SequentialCommandGroup(
-                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
-                RobotContainer.drivebase.driveToPose(
-                    AlignWithNearest.TagPos[17 + ((int) Math.random() * 3)]),
-                // new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+        new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
-                RobotContainer.drivebase.driveToPose(
-                    AlignWithNearest.TagPos[12 + ((int) Math.random())]));
-        autonomousCommand.schedule();
+                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WaitCommand(0.05),
+                new WristStop(RobotContainer.coralHoldAngleSubsystem),
+                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+                new WaitCommand(2),
+                new RobotContainer()
+                    .drivebase.driveToPose(
+                        new Pose2d(3.7, 5.4, new Rotation2d(Math.toRadians(-60)))),
+                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+                new WaitCommand(1),
+                new stopCoralIntake(RobotContainer.coralHoldSubsystem),
+                new RobotContainer()
+                    .drivebase.driveToPose(
+                        new Pose2d(1.5, 6.85, new Rotation2d(Math.toRadians(124)))))
+            .schedule();
       } else {
-        SequentialCommandGroup autonomousCommand =
-            new SequentialCommandGroup(
-                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
-                RobotContainer.drivebase.driveToPose(
-                    AlignWithNearest.TagPos[6 + ((int) Math.random() * 3)]),
-                // new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+        new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
-                RobotContainer.drivebase.driveToPose(
-                    AlignWithNearest.TagPos[1 + ((int) Math.random())]));
-        autonomousCommand.schedule();
+                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WaitCommand(0.05),
+                new WristStop(RobotContainer.coralHoldAngleSubsystem),
+                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+                new WaitCommand(2),
+                new RobotContainer()
+                    .drivebase.driveToPose(
+                        new Pose2d(3.5, 5.4, new Rotation2d(Math.toRadians(50)))),
+                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+                new WaitCommand(1),
+                new stopCoralIntake(RobotContainer.coralHoldSubsystem),
+                new RobotContainer()
+                    .drivebase.driveToPose(
+                        new Pose2d(14, 5.4, new Rotation2d(Math.toRadians(-122)))))
+            .schedule();
       }
       // if we are not going to go to the coral station then we are doing algae cycles
     }
