@@ -150,6 +150,7 @@ public class Robot extends TimedRobot {
     RobotContainer.elevatorSubsystem.stop();
     RobotContainer.coralHoldAngleSubsystem.stopTilt();
     // RobotContainer.climberSubsystem.stop();
+
     // centerModules.ignoringDisable(true);
   }
 
@@ -217,6 +218,10 @@ public class Robot extends TimedRobot {
       // have flex create points to follow
       flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
     }
+    // Will constantly get the position of the elevator,
+    // so that when we go into tele, we have an offset to
+    // adjust to
+    RobotContainer.getStart();
   }
 
   @Override
@@ -233,6 +238,11 @@ public class Robot extends TimedRobot {
       RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, true);
     } else {
       CommandScheduler.getInstance().cancelAll();
+    }
+    // This is for testing- if we already have an offset,
+    // this will do nothing
+    if (!RobotContainer.gottenStart()) {
+      RobotContainer.getStart();
     }
   }
 

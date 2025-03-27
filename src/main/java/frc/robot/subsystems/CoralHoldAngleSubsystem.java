@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -17,6 +18,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.CoralHoldAngleSubsystemConstants;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CoralHoldAngleSubsystem extends SubsystemBase {
 
@@ -42,18 +45,30 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
   private RelativeEncoder encoder;
 
+  public static final double shooter = 4.82;
+  public double finalPos;
+  private double ogPos;
+  private double setPoint = 21.97;
+
+  private double[] levels = {0, -5.8, -2.9};
+
   public CoralHoldAngleSubsystem() {
     motor =
         new SparkFlex(
             CoralHoldAngleSubsystemConstants.CORAL_HOLD_ANGLE_MOTOR_ID,
             MotorType.kBrushless); // Assign motor controller port
-    motorConfig = new SparkFlexConfig();
+
     controller = motor.getClosedLoopController();
     encoder = motor.getEncoder();
+    motorConfig = new SparkFlexConfig();
 
     motorConfig.idleMode(IdleMode.kBrake);
-    motorConfig.closedLoop.pidf(0f, 0f, 0f, 0f, ClosedLoopSlot.kSlot0);
+    motorConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pidf(0f, 0f, 0f, 0f, ClosedLoopSlot.kSlot0);
 
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
     state = new State(wantedPos, 0);
@@ -81,6 +96,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public void tiltedDown() {
     buttonPressed = true;
 
+    Logger.getGlobal().log(Level.INFO, "DOWN " + getPositionEncoder());
     motorConfig.inverted(true);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -106,6 +122,10 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     }
   }
 
+  public double getPosition() {
+    return encoder.getPosition();
+  }
+
   /**
    * Move the arm to L3 place position or 0.73 using the PIDF commands
    *
@@ -120,6 +140,8 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   /** Free hand tilt up. Just hold a button and go. Moves at {@link #setSpeed()} */
   public void tiltUp() {
     buttonPressed = true;
+
+    Logger.getGlobal().log(Level.INFO, "UP: " + getPositionEncoder());
 
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -149,6 +171,56 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   } */
 
+  private double getPositionEncoder() {
+    return encoder.getPosition();
+  }
+
+  public void setOGPos() {
+    ogPos = encoder.getPosition();
+  }
+
+  public double getFinalPos() {
+    return finalPos;
+  }
+
+  public void setLevel(int levelNeeded) {
+    // double setPoint = 0;
+
+    // if(ogPos > levels[levelNeeded - 1]){
+    //   setPoint = levels[levelNeeded - 1] + ogPos;
+    // } else if (ogPos < levels[levelNeeded - 1]){
+    //   setPoint = levels[levelNeeded] + ogPos;
+    // } else{
+    //   setPoint = levels[levelNeeded - 1];
+    // }
+
+    double setPoint = levels[levelNeeded - 1];
+
+    motorConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pidf(0.0001f, 0f, 0f, 0.3f, ClosedLoopSlot.kSlot0);
+
+    controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.1);
+  }
+
+  public boolean atLevel(int levlNeeded) {
+    Logger.getGlobal().log(Level.INFO, "looking for level");
+    Logger.getGlobal().log(Level.INFO, "encoder value " + getPositionEncoder());
+    Logger.getGlobal().log(Level.INFO, "target value " + levels[levlNeeded - 1]);
+
+    return getPositionEncoder() < levels[levlNeeded - 1];
+  }
+
+  public boolean isFinished(int position) {
+
+    if (shooter - (motor.getEncoder().getPosition()) == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   /**
    * Uses the ff calculator to keep the arm in a single place
    *
@@ -168,6 +240,20 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   /** When you release a button, this is called to stop the tilt. */
   public void stopTilt() {
     motor.set(0);
+
+    motorConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pidf(0f, 0f, 0f, 0, ClosedLoopSlot.kSlot0);
+
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    State setPoint = new State(getPositionEncoder(), 0);
+    holdUp(setPoint);
+    // State setPoint = new State(getPositionEncoder(), 0);
+    // double ff = feedforward.calculate(setPoint.position * 2 * Math.PI, setPoint.velocity);
+    // controller.setReference(
+    //     getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
     buttonPressed = false;
   }
 }

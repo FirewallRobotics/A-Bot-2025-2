@@ -3,7 +3,9 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.CoralHoldSubsystemConstants;
 
 public class CoralHoldSubsystem extends SubsystemBase {
@@ -11,6 +13,8 @@ public class CoralHoldSubsystem extends SubsystemBase {
   private final SparkMax motor;
 
   // DigitalInput limitSwitch = new DigitalInput(0);
+  DigitalInput limitSwitch = new DigitalInput(0);
+  boolean doingStuff = false;
 
   // The endcoder isn't used in the basic form of the subsystem - But we may need it later on
   // would need to add 'import edu.wpi.first.wpilibj.Encoder;' if we do
@@ -53,6 +57,12 @@ public class CoralHoldSubsystem extends SubsystemBase {
 
     motor.set(-setSpeed() * 1.25);
     // }
+    if (!limitSwitch.get()) {
+      // motorConfig.inverted(false);
+      // motor.configure(motorConfig, ResetMode.kResetSafeParameters,
+      // PersistMode.kPersistParameters);
+      motor.set(-setSpeed() * 1.25);
+    }
   }
 
   /**
@@ -66,10 +76,24 @@ public class CoralHoldSubsystem extends SubsystemBase {
     // } else {
     //  motor.set(0);
     // }
+    if (limitSwitch.get()) {
+      motor.set(setSpeed());
+      doingStuff = true;
+
+    } else if (limitSwitch.get() && doingStuff == true) {
+      new WaitCommand(1.2f);
+      motor.set(0);
+      doingStuff = false;
+    }
   }
 
   /** Makes the motor stop. */
   public void stop() {
     motor.set(0);
+    doingStuff = false;
+  }
+
+  public boolean getTrigger() {
+    return limitSwitch.get();
   }
 }

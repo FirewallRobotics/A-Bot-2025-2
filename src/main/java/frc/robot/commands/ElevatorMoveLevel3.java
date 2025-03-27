@@ -2,6 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** An example command that uses an example subsystem. */
 public class ElevatorMoveLevel3 extends Command {
@@ -20,12 +22,23 @@ public class ElevatorMoveLevel3 extends Command {
 
   @Override
   public void execute() {
-    m_subsystem.setLevel(3);
+    m_subsystem.goToCoralLevel(3);
+
+    if (m_subsystem.atLevel(3)) {
+
+      // Logger.getGlobal().log(Level.INFO, "found level");
+      m_subsystem.stop();
+    }
   }
 
   @Override
   public boolean isFinished() {
-    return -16 - 1 >= m_subsystem.getPositionEncoder()
-        && -16 + 1 <= m_subsystem.getPositionEncoder();
+
+    if (m_subsystem.atLevel(3)) {
+      Logger.getGlobal().log(Level.INFO, "found level");
+      m_subsystem.stop();
+      return true;
+    }
+    return false;
   }
 }

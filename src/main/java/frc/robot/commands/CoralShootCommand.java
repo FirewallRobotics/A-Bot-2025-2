@@ -35,7 +35,8 @@ public class CoralShootCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // Should come back to this
-    return true;
+    // If Milo needs this changed, they can
+
+    return m_Coral.getTrigger();
   }
 }
