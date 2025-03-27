@@ -235,19 +235,19 @@ public final class Constants {
     public static final ArrayList<Integer> blueHPTags = new ArrayList<>(Arrays.asList(13, 12));
     public static ArrayList<Integer> HPTags = new ArrayList<>();
 
-    // Standard deviations below are from Team Spectrum 3847’s X-Ray robot
+    // Standard deviations below are from Team Spectrum 3847s X-Ray robot
 
     /**
      * Standard deviations of model states. Increase these numbers to trust your model's state
-     * estimates less. This matrix is in the form [x, y, theta]ᵀ, with units in meters and radians,
+     * estimates less. This matrix is in the form [x, y, theta], with units in meters and radians,
      * then meters.
      */
     public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 10);
 
     /**
      * Standard deviations of the vision measurements. Increase these numbers to trust global
-     * measurements from vision less. This matrix is in the form [x, y, theta]ᵀ, with units in
-     * meters and radians.
+     * measurements from vision less. This matrix is in the form [x, y, theta], with units in meters
+     * and radians.
      */
     public static final Matrix<N3, N1> measurementStdDevs = VecBuilder.fill(5, 5, 500);
 
