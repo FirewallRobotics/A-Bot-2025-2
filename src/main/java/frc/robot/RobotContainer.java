@@ -166,7 +166,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
     NamedCommands.registerCommand(
-        "WristUp", new WristUp(coralHoldAngleSubsystem, elevatorSubsystem));
+        "WristUp", new WristUp(coralHoldAngleSubsystem));
     NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
     NamedCommands.registerCommand(
         "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
