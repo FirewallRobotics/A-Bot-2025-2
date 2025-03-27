@@ -241,9 +241,9 @@ public class Robot extends TimedRobot {
     }
     // This is for testing- if we already have an offset,
     // this will do nothing
-    if (!RobotContainer.gottenStart()) {
-      RobotContainer.getStart();
-    }
+    // if (!RobotContainer.gottenStart()) {
+    //   RobotContainer.getStart();
+    // }
   }
 
   /** This function is called periodically during operator control. */
