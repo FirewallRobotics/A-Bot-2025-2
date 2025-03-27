@@ -220,12 +220,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     double ogOffSet = encoder.getPosition();
     levels[1] = levels[1] + ogOffSet;
     levels[2] = levels[2] + ogOffSet;
-
   }
 
   // -35
   // -16
-
 
   public double getLevel() {
     if (Robot.isSimulation()) {
@@ -241,7 +239,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void setOgPOSgotten() {
     gottenOgPos = true;
   }
-
 
   /**
    * Goes to a setpoint using if statements. (No PIDF) But will hold using PIDF
@@ -265,11 +262,10 @@ public class ElevatorSubsystem extends SubsystemBase {
           getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
     }
   }
-  
+
   /**
    * Move to a position for the elevator to move to using PIDF. Will also update the simulation of
    * the elevator
-   *
    */
   private void moveToPosition(double position) {
     for (int i = 0; i < levels.length; i++) {

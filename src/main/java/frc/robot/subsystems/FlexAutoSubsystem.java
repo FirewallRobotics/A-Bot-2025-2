@@ -182,7 +182,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
         new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
                 new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(
+                    RobotContainer.coralHoldAngleSubsystem, RobotContainer.elevatorSubsystem),
                 new WaitCommand(0.05),
                 new WristStop(RobotContainer.coralHoldAngleSubsystem),
                 new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
@@ -202,7 +203,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
         new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
                 new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(
+                    RobotContainer.coralHoldAngleSubsystem, RobotContainer.elevatorSubsystem),
                 new WaitCommand(0.05),
                 new WristStop(RobotContainer.coralHoldAngleSubsystem),
                 new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),

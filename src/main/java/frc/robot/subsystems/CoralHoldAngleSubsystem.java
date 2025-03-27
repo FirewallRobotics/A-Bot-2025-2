@@ -122,18 +122,15 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     }
   }
 
-
   public double getPosition() {
     return encoder.getPosition();
   }
-
 
   /**
    * Move the arm to L3 place position or 0.73 using the PIDF commands
    *
    * @deprecated NEEDS WORK! As of late the PIDF movement doesn't work due to the relative encoder
    */
-
   public void LPosition() {
     State setpoint = new State(0.73, 0);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
@@ -173,7 +170,6 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     ControlType.kPosition);
 
   } */
-
 
   private double getPositionEncoder() {
     return encoder.getPosition();
@@ -225,13 +221,11 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     }
   }
 
-
   /**
    * Uses the ff calculator to keep the arm in a single place
    *
    * @param TrapezoidProfile.State Setpoint position to hold
    */
-
   public void holdUp(TrapezoidProfile.State setpoint) {
     // motorConfig.closedLoop.velocityFF(feedforward);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
