@@ -218,8 +218,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void getStartPos() {
     double ogOffSet = encoder.getPosition();
-    levels[1] = levels[1] + ogOffSet;
-    levels[2] = levels[2] + ogOffSet;
+    // levels[1] = levels[1] + ogOffSet;
+    // levels[2] = levels[2] + ogOffSet;
   }
 
   // -35

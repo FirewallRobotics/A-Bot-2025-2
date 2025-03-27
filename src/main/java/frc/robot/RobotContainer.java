@@ -29,8 +29,6 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
-import frc.robot.commands.ArmLevel2;
-import frc.robot.commands.ArmLevel3;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -244,11 +242,7 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
 
-    coralController
-        .y()
-        .onTrue(
-            new ParallelCommandGroup(
-                new ElevatorMoveLevel3(elevatorSubsystem), new ArmLevel3(coralHoldAngleSubsystem)));
+    coralController.y().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel3(elevatorSubsystem)));
 
     // DO NOT TOUCH
     // NEEDS WORK
@@ -257,11 +251,7 @@ public class RobotContainer {
     // I WILL STAB
 
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
-    coralController
-        .b()
-        .onTrue(
-            new ParallelCommandGroup(
-                new ElevatorMoveLevel2(elevatorSubsystem), new ArmLevel2(coralHoldAngleSubsystem)));
+    coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
 
     // coralController
     //     .b()
