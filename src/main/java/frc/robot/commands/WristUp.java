@@ -8,13 +8,11 @@ import java.util.logging.Logger;
 
 public class WristUp extends Command {
   private CoralHoldAngleSubsystem coralHold;
-  private ElevatorSubsystem elevator;
 
-  public WristUp(CoralHoldAngleSubsystem ca_Subsystem, ElevatorSubsystem e_Subsystem) {
+  public WristUp(CoralHoldAngleSubsystem ca_Subsystem) {
     coralHold = ca_Subsystem;
-    elevator = e_Subsystem;
 
-    addRequirements(ca_Subsystem, e_Subsystem);
+    addRequirements(ca_Subsystem);
   }
 
   @Override

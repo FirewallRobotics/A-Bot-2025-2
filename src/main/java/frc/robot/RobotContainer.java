@@ -301,7 +301,7 @@ public class RobotContainer {
     driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.64));
     driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem, elevatorSubsystem));
+    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem));
     driverXbox.povDown().onTrue(new WristDown(coralHoldAngleSubsystem));
     driverXbox.povUp().onFalse(new WristStop(coralHoldAngleSubsystem));
     driverXbox.povDown().onFalse(new WristStop(coralHoldAngleSubsystem));
