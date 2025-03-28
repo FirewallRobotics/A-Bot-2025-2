@@ -12,18 +12,18 @@ public class AlgaeIntakeCommand extends Command {
 
   // Called when the command is first scheduled
   @Override
-  public void initialize() {}
+  public void initialize() {
+    m_Algae.intake();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {
-    m_Algae.intake();
-  }
+  public void execute() {}
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // Should come back to this
-    return false;
+    return true;
   }
 }
