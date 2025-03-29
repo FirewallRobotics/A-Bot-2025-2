@@ -73,9 +73,9 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("Wait", "wait");
     SmartDashboard.putData(m_chooser);
 
-    m_CoralStationChooser.setDefaultOption("LeftCoralStation", "left");
+    m_CoralStationChooser.addOption("LeftCoralStation", "left");
     m_CoralStationChooser.addOption("RightCoralStation", "right");
-    m_CoralStationChooser.addOption("Stop", "stop");
+    m_CoralStationChooser.setDefaultOption("Stop", "stop");
     SmartDashboard.putData(m_CoralStationChooser);
 
     DataLogManager.start();
