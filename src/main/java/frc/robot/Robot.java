@@ -4,10 +4,8 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -41,7 +39,6 @@ public class Robot extends TimedRobot {
 
   private Command centerModules = RobotContainer.drivebase.centerModulesCommand();
 
-  private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
 
@@ -50,8 +47,7 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
-    SmartDashboard.putBoolean("", false);
-    SmartDashboard.putBoolean("", false);
+    SmartDashboard.putBoolean("Kid-Mode", false);
     SmartDashboard.putNumber("AssistMinDistance", 40);
     SmartDashboard.putNumber("AutoMoveSpeed", 5);
     SmartDashboard.putNumber("AutoScanSpeed", 5);
@@ -168,6 +164,8 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     // centerModules.end(true);
     // RobotContainer.drivebase.zeroGyro();
+    // INOP: Due to event
+    /*
     m_robotContainer.init();
     m_autoSelected = m_chooser.getSelected();
     System.out.println("Auto selected: " + m_autoSelected);
@@ -197,6 +195,7 @@ public class Robot extends TimedRobot {
         && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
     }
+      */
   }
 
   List<Pose2d> points;
@@ -204,19 +203,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
-    SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
-    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
-      // create robots constraints
-      PathConstraints constraints =
-          new PathConstraints(
-              RobotContainer.drivebase.getMaximumChassisVelocity(),
-              4.0,
-              RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
-              Units.degreesToRadians(720));
+    if (SmartDashboard.getBoolean("FlexAuto", false)) {
 
       // have flex create points to follow
-      flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
+      flexAutoSubsystem.CreatePath();
     }
     // Will constantly get the position of the elevator,
     // so that when we go into tele, we have an offset to
@@ -248,7 +238,13 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (SmartDashboard.getBoolean("Kid-Mode", false)) {
+      RobotContainer.drivebase.setMaxSpeed(0.5, 200);
+    } else {
+      RobotContainer.drivebase.setMaxSpeed(4, 540);
+    }
+  }
 
   @Override
   public void testInit() {

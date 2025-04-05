@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -11,7 +10,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
@@ -27,11 +25,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public boolean levelThere;
 
-  private TrapezoidProfile.State state;
-
   private boolean gottenOgPos;
-
-  private RelativeEncoder encoder;
 
   private SparkClosedLoopController closedLoopController;
 
@@ -68,7 +62,6 @@ public class ElevatorSubsystem extends SubsystemBase {
             MotorType.kBrushless); // Assign motor controller port
 
     closedLoopController = leftMotor.getClosedLoopController();
-    encoder = leftMotor.getEncoder();
     leftMotorConfig = new SparkFlexConfig();
     rightMotorConfig = new SparkFlexConfig();
     leftMotorConfig.encoder.positionConversionFactor(1);
@@ -217,7 +210,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void getStartPos() {
-    double ogOffSet = encoder.getPosition();
+    @SuppressWarnings("unused")
+    double ogOffSet = leftMotor.getEncoder().getPosition();
     // levels[1] = levels[1] + ogOffSet;
     // levels[2] = levels[2] + ogOffSet;
   }
@@ -261,19 +255,6 @@ public class ElevatorSubsystem extends SubsystemBase {
       closedLoopController.setReference(
           getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
     }
-  }
-
-  /**
-   * Move to a position for the elevator to move to using PIDF. Will also update the simulation of
-   * the elevator
-   */
-  private void moveToPosition(double position) {
-    for (int i = 0; i < levels.length; i++) {
-      if (levels[i] == position) {
-        SmartDashboard.putNumber("ElevatorPos", i);
-      }
-    }
-    closedLoopController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   /** Stop the elevator from moving and hold the position with a flat 30% feed forward */

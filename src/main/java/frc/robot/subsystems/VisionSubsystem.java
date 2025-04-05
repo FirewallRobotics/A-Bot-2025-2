@@ -233,8 +233,14 @@ public class VisionSubsystem extends SubsystemBase {
         frc.robot.Constants.VisionSubsystemConstants.limelightName, 3);
 
     // if our target color is in view then return true
-    if (LimelightHelpers.getTargetColor(name)[0] != -1) {
-      return true;
+    int counter = 0;
+    for (double color : LimelightHelpers.getTargetColor(name)) {
+      if (color > 0.5) {
+        counter += 1;
+      }
+      if (counter > 500) {
+        return true;
+      }
     }
 
     // if not then false
