@@ -548,8 +548,8 @@ public class FireLib {
 
     /**
      * Plagiarized from ChatGPT as I have not taken a physics class yet. Solves for a valid velocity
-     * vector to hit a target, using a fixed angle. Returns null if the input angle is
-     * not correct or there is no correct solution. (Will also send WARNINGs to the DS)
+     * vector to hit a target, using a fixed angle. Returns null if the input angle is not correct
+     * or there is no correct solution. (Will also send WARNINGs to the DS)
      *
      * @param target Target point in space (Robot space for easier math)
      * @param launchAngleDeg The fixed angle we are shooting from
@@ -594,8 +594,8 @@ public class FireLib {
 
     /**
      * Plagiarized from ChatGPT as I have not taken a physics class yet Solves for a valid velocity
-     * vector to hit a target. Returns null if no valid solution exists.
-     * (Will also send WARNINGs to the DS)
+     * vector to hit a target. Returns null if no valid solution exists. (Will also send WARNINGs to
+     * the DS)
      *
      * @param target Target point in space (Robot space for easier math)
      * @param maxLaunchSpeed Max velocity that the game object can be launched at
