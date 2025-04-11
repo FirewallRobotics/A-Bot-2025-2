@@ -12,6 +12,7 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -546,34 +547,107 @@ public class FireLib {
     }
 
     /**
-     * Shoots the held game object at a target. VERY Dirty calculations that should be improved
-     * uppon when required
+     * Plagiarized from ChatGPT as I have not taken a physics class yet. Solves for a valid velocity
+     * vector to hit a target, using a fixed angle. Returns null if the input angle is
+     * not correct or there is no correct solution. (Will also send WARNINGs to the DS)
      *
-     * @param ObjectLands boolean if the game object should aim to hit the target at its highest
-     *     point (false) Or if it lands at the end of its throw
-     * @param DistanceFromTarget The horizontal distance from the target (meters)
-     * @param fullSpeedThrowDistance When the motors run full speed. How far does the game object go
-     *     (meters)
+     * @param target Target point in space (Robot space for easier math)
+     * @param launchAngleDeg The fixed angle we are shooting from
+     * @param maxLaunchSpeed Max velocity that the game object can be launched at
+     * @return [Motor power, Angle]
      */
-    public void ShootAt(
-        boolean ObjectLands, double DistanceFromTarget, double fullSpeedThrowDistance) {
-      if (ObjectLands) {
-        // if the object should land then we should calculate the percentage of power required to
-        // throw that far
-        // (This makes the assumption that the distance thrown is linear to the motor speed
-        // percentage)
+    public static double[] calculateLaunchVelocity(
+        Translation3d target, double launchAngleDeg, double maxLaunchSpeed) {
+      double dx =
+          Math.sqrt(
+              target.getX() * target.getX() + target.getZ() * target.getZ()); // Horizontal distance
+      double dy = target.getY();
+
+      if (dx == 0) return null; // Prevent divide-by-zero
+      // Use fixed launch angle
+      double angleRad = Math.toRadians(launchAngleDeg);
+      double cos = Math.cos(angleRad);
+
+      // Time to target (quadratic from vertical motion)
+      double vSquared = (9.81 * dx * dx) / (2 * cos * cos * (dx * Math.tan(angleRad) - dy));
+
+      if (vSquared <= 0) {
         Logger.getGlobal()
-            .log(Level.INFO, "Shooting at: " + DistanceFromTarget / fullSpeedThrowDistance);
-        motor.set(DistanceFromTarget / fullSpeedThrowDistance);
-      } else {
-        // if the object should land then we should calculate to throw it twice as far (as all
-        // trejectorys follow Parabola's)
-        // (This makes the assumption that the distance thrown is linear to the motor speed
-        // percentage)
-        Logger.getGlobal()
-            .log(Level.INFO, "Shooting at: " + (DistanceFromTarget * 2) / fullSpeedThrowDistance);
-        motor.set((DistanceFromTarget * 2) / fullSpeedThrowDistance);
+            .log(
+                Level.WARNING,
+                "Cannot shoot to (Unable to break laws of physics): " + target.toString());
+        return null; // Not physically possible
       }
+
+      double v = Math.sqrt(vSquared);
+      if (v > maxLaunchSpeed) {
+        Logger.getGlobal()
+            .log(Level.WARNING, "Cannot shoot to (Not enough power): " + target.toString());
+        return null; // Need more power than available
+      }
+
+      // Motor power as a fraction of max speed
+      double power = v / maxLaunchSpeed;
+
+      return new double[] {power, launchAngleDeg}; // Return motor power and fixed launch angle
+    }
+
+    /**
+     * Plagiarized from ChatGPT as I have not taken a physics class yet Solves for a valid velocity
+     * vector to hit a target. Returns null if no valid solution exists.
+     * (Will also send WARNINGs to the DS)
+     *
+     * @param target Target point in space (Robot space for easier math)
+     * @param maxLaunchSpeed Max velocity that the game object can be launched at
+     * @param maxAngle Highest angle that the end effector can point at
+     * @param minAngle Lowest angle that the end effector can point at
+     * @return [Motor power, Angle]
+     */
+    public static double[] calculateLaunchVelocity(
+        Translation3d target, double maxLaunchSpeed, double maxAngle, double minAngle) {
+      double dx =
+          Math.sqrt(
+              target.getX() * target.getX() + target.getZ() * target.getZ()); // Horizontal distance
+      double dy = target.getY();
+
+      if (dx == 0) return null; // Prevent divide-by-zero
+      // Solve for angle and velocity
+      double g = 9.81;
+      double v2_min = Double.POSITIVE_INFINITY;
+      double bestPower = -1;
+      double bestAngle = -1;
+
+      for (double angle = minAngle; angle <= maxAngle; angle += 0.5) {
+        double rad = Math.toRadians(angle);
+        double cos = Math.cos(rad);
+
+        double vSquared = (g * dx * dx) / (2 * cos * cos * (dx * Math.tan(rad) - dy));
+
+        if (vSquared > 0) {
+          double v = Math.sqrt(vSquared);
+          if (v <= maxLaunchSpeed && vSquared < v2_min) {
+            // Save best (lowest required v²)
+            v2_min = vSquared;
+
+            // Store power and angle
+            bestPower = v / maxLaunchSpeed; // Motor power
+            bestAngle = angle;
+          }
+        }
+      }
+
+      if (bestPower == -1) {
+        Logger.getGlobal()
+            .log(
+                Level.WARNING,
+                "Cannot find valid solution to shoot (tried the following angles): "
+                    + minAngle
+                    + " to "
+                    + maxAngle);
+        return null; // No valid solution
+      }
+
+      return new double[] {bestPower, bestAngle}; // Return motor power and launch angle
     }
 
     /**
