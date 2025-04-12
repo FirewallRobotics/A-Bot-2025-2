@@ -90,6 +90,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   private double setSpeed() {
     double kP = 0.1;
+    if (SmartDashboard.getBoolean("Kid-Mode", false)) kP = 0.05;
     return kP * 1; // Based around elevator's 'calculate speed.' Will be adjusted later on.
   }
 

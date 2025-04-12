@@ -38,7 +38,6 @@ import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
-import frc.robot.commands.SlowMode;
 import frc.robot.commands.WristDown;
 import frc.robot.commands.WristStop;
 import frc.robot.commands.WristUp;
@@ -249,6 +248,8 @@ public class RobotContainer {
     // OR AIDEN
     // I WILL STAB
 
+    // Peak Gracious Professionalism(tm) above
+
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
 
@@ -300,7 +301,7 @@ public class RobotContainer {
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
     driverXbox.povLeft().onFalse(new stopCoralIntake(coralHoldSubsystem));
-    driverXbox.start().onTrue(new SlowMode());
+    // driverXbox.start().onTrue(new SlowMode());
     driverXbox.povRight().onFalse(new algaeStopIntake(algaeSubsystem));
 
     // TEMP! Replace with the actual commands once we have the keyboard

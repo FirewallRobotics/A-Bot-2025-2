@@ -119,16 +119,18 @@ public class ElevatorSubsystem extends SubsystemBase {
    * -50.1 as reported by the encoder
    */
   public void setSpeed(double speed) {
-    leftMotor.set(speed);
-    // if (getPositionEncoder() >= 0 && speed > 0) {
-    //   leftMotor.set(0);
-    //   //closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
-    // } else if (getPositionEncoder() <= -50.1 && speed < 0) {
-    //   leftMotor.set(0);
-    //   //closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
-    // } else {
-    //   leftMotor.set(speed);
-    // }
+    // leftMotor.set(speed);
+    if (getPositionEncoder() >= 0 && speed > 0) {
+      Logger.getGlobal().log(Level.WARNING, "Trying to go too low! Stopping");
+      leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
+    } else if (getPositionEncoder() <= -50.1 && speed < 0) {
+      Logger.getGlobal().log(Level.WARNING, "Trying to go too high! Stopping");
+      leftMotor.set(0);
+      closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
+    } else {
+      leftMotor.set(speed);
+    }
   }
 
   public double finalLevelPos(int levelWanted) {
