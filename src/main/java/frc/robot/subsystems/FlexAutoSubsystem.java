@@ -154,14 +154,20 @@ public class FlexAutoSubsystem extends SubsystemBase {
   }
 
   public void CreatePath() {
-    if (VisionSubsystem.getTagPose2d().getX() >= 0.3) {
-      Logger.getGlobal().log(Level.INFO, "Turning ClockWise");
-      RobotContainer.drivebase.drive(new Translation2d(0, 0), -5, false);
-    } else if (VisionSubsystem.getTagPose2d().getX() <= -0.3) {
-      Logger.getGlobal().log(Level.INFO, "Turning CCW");
-      RobotContainer.drivebase.drive(new Translation2d(0, 0), 5, false);
+    if (VisionSubsystem.getTagPose2d() != null) {
+      double Tagx = VisionSubsystem.getTagPose2d().getX();
+      if (Tagx >= 0.3) {
+        Logger.getGlobal().log(Level.INFO, "Turning ClockWise");
+        RobotContainer.drivebase.drive(new Translation2d(0, 0), -5, false);
+      } else if (Tagx <= -0.3) {
+        Logger.getGlobal().log(Level.INFO, "Turning CCW");
+        RobotContainer.drivebase.drive(new Translation2d(0, 0), 5, false);
+      } else {
+        Logger.getGlobal().log(Level.INFO, "Stopping");
+        RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
+      }
     } else {
-      Logger.getGlobal().log(Level.INFO, "Stopping");
+      Logger.getGlobal().log(Level.INFO, "No Targets!");
       RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
     }
   }

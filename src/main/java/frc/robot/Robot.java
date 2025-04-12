@@ -39,23 +39,22 @@ public class Robot extends TimedRobot {
 
   private Command centerModules = RobotContainer.drivebase.centerModulesCommand();
 
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
+  // private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  // private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
 
   public static final SendableChooser<ReefScorePositions> desiredScoreSendableChooser =
       new SendableChooser<>();
 
   public Robot() {
-    SmartDashboard.putBoolean("FlexAuto", false);
+    SmartDashboard.putBoolean("FollowSeenTag", false);
     SmartDashboard.putBoolean("Kid-Mode", false);
-    SmartDashboard.putNumber("AssistMinDistance", 40);
-    SmartDashboard.putNumber("AutoMoveSpeed", 5);
-    SmartDashboard.putNumber("AutoScanSpeed", 5);
     SmartDashboard.putNumber("Elevator-P", 0);
     SmartDashboard.putNumber("Elevator-I", 0);
     SmartDashboard.putNumber("Elevator-D", 0);
     SmartDashboard.putNumber("Elevator-F", 0);
 
+    /*
+    Inop for convention
     instance = this;
     m_chooser.setDefaultOption("Our Cage 1", "Default Drop C");
     m_chooser.addOption("Our Cage 2", "Default Drop M");
@@ -73,6 +72,7 @@ public class Robot extends TimedRobot {
     m_CoralStationChooser.addOption("RightCoralStation", "right");
     m_CoralStationChooser.addOption("Stop", "stop");
     SmartDashboard.putData(m_CoralStationChooser);
+    */
 
     DataLogManager.start();
   }
@@ -203,7 +203,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    if (SmartDashboard.getBoolean("FlexAuto", false)) {
+    if (SmartDashboard.getBoolean("FollowSeenTag", false)) {
 
       // have flex create points to follow
       flexAutoSubsystem.CreatePath();

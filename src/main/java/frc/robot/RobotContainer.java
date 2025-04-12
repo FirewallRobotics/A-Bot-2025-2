@@ -185,8 +185,8 @@ public class RobotContainer {
   }
 
   public void Periodic() {
-    m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
-    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    if (!Robot.isSimulation()) m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    if (!Robot.isSimulation()) m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
 

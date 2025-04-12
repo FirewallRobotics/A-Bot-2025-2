@@ -90,13 +90,15 @@ public class VisionSubsystem extends SubsystemBase {
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults(name);
 
-    // if the limelights intel is good look for reef tag
+    // wait until we get good intel
     while (!results.valid) {
       results = LimelightHelpers.getLatestResults(name);
     }
 
     // get the first listed aprilTag and return its pose in robot space
-    return results.targets_Fiducials[0].getTargetPose_RobotSpace2D();
+    if (results.targets_Fiducials != null)
+      return results.targets_Fiducials[0].getTargetPose_RobotSpace2D();
+    else return null;
   }
 
   @Override
