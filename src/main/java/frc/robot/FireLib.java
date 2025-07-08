@@ -1,5 +1,9 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -11,25 +15,43 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Library that holds any portable code to be used in future years. The idea for this came from
  * Mr.Strickland: He saw how we restarted our code base for items like elevators and arms every year
  * He had the idea to create a framework that allows us to easily maintain code to save time!
  */
-public class FireLib {
+public final class FireLib {
+
+  /**
+   * As far as I know there isn't a built in GCD/GCF operation and I need it
+   * So I copy and pasted from google :p
+   * @param a
+   * @param b
+   * @return
+   */
+  public int gcd(int a, int b) {
+    if (b==0) return a;
+    return gcd(b,a%b);
+  }
 
   // Elevator
   public class ElevatorSubsystem {
+
+    private String name;
+
+    private MechanismLigament2d m_elevator;
+
     private final SparkFlex leftMotor;
     private final SparkFlex rightMotor;
     private final SparkFlexConfig leftMotorConfig;
@@ -53,10 +75,11 @@ public class FireLib {
 
     /**
      * Creates an ElevatorSubsystem taken from the code for the 2025 FRC Season ReefScape Please
-     * fill in the ArrayList {@link levels} with the levels you wish to hold Call {@link Periodic}
-     * in robot Periodic
+     * fill in the ArrayList {@link levels} with the levels you wish to hold
+     * Place periodic in robot periodic
      *
      * @implNote PLEASE TEST (Not tested YET)
+     * @param name Nickname of this elevator
      * @param ELEVATOR_LEFT_MOTOR_ID CANID of the Left Motor
      * @param ELEVATOR_RIGHT_MOTOR_ID CANID of the Right Motor
      * @param idleMode IdleMode that the Elevator Motors should follow (Brake mode recomended)
@@ -76,6 +99,7 @@ public class FireLib {
      * @param inverted If the Elevator is inverted
      */
     public ElevatorSubsystem(
+        String name,
         int ELEVATOR_LEFT_MOTOR_ID,
         int ELEVATOR_RIGHT_MOTOR_ID,
         IdleMode idleMode,
@@ -107,6 +131,8 @@ public class FireLib {
       rightMotorConfig.inverted(inverted);
       rightMotorConfig.follow(leftMotor, true);
 
+      this.name = name;
+
       leftMotorConfig
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -124,10 +150,58 @@ public class FireLib {
           rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
+    /**
+     * Does the setup for the visulizer interpretation of this elevator
+     * Doesn't put the data to SmartDashboard (Do that when your done adding ligaments)
+     * @param root The root object to attach this elevator too
+     * @param angle The angle this is elevator is at relative to the root obj (0 is pointing towards the front, 90 is pointing up)
+     */
+    public MechanismLigament2d setupVisulizer(MechanismRoot2d root, double angle){
+      if(MaxPosition != -1 && MinPosition != 1){
+        int m_posGCF = gcd((int)MaxPosition, (int)MinPosition);
+        int m_maxpos = ((int)MaxPosition/m_posGCF)-((int)MinPosition/m_posGCF);
+        m_elevator = root.append(new MechanismLigament2d("elevator", m_maxpos, angle));
+        return m_elevator;
+      }else{
+        Logger.getGlobal().log(Level.WARNING, "Cannot setup visulizer as max and/or min position is not set!");
+        return null;
+      }
+    }
+
+    /**
+     * Does the setup for the visulizer interpretation of this elevator
+     * Doesn't put the data to SmartDashboard (Do that when your done adding ligaments)
+     * @param root The obj to attach this elevator too
+     * @param angle The angle this is elevator is at relative to its attached obj
+     */
+    public MechanismLigament2d setupVisulizer(MechanismLigament2d root, double angle){
+      if(MaxPosition != -1 && MinPosition != 1){
+        int m_posGCF = gcd((int)MaxPosition, (int)MinPosition);
+        int m_maxpos = ((int)MaxPosition/m_posGCF)-((int)MinPosition/m_posGCF);
+        m_elevator = root.append(new MechanismLigament2d("elevator", m_maxpos, angle));
+        return m_elevator;
+      }else{
+        Logger.getGlobal().log(Level.WARNING, "Cannot setup visulizer as max and/or min position is not set!");
+        return null;
+      }
+    }
+
+    /**
+     * Attaches a Mechanism to this elevators visulization
+     * @param Mechanism to be attached
+     * @return Elevator with attached ligament
+     */
+    public MechanismLigament2d AttachMechanism(MechanismLigament2d Mechanism){
+      return m_elevator.append(Mechanism);
+    }
+
     /** Updates the Speed and Encoder Position of the Elevator to SmartDashboard */
     public void Periodic() {
-      SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
-      SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
+      SmartDashboard.putNumber(name+"-Speed", leftMotor.get());
+      SmartDashboard.putNumber(name+"-EncoderPos", getPositionEncoder());
+
+      int m_posGCF = gcd((int)MaxPosition, (int)MinPosition);
+      m_elevator.setLength(getPositionEncoder()/m_posGCF);
     }
 
     /**
@@ -265,6 +339,8 @@ public class FireLib {
     private final SparkFlex motor;
     private final SparkFlexConfig motorConfig;
 
+    private MechanismLigament2d arm;
+
     private double wantedPos;
 
     SparkClosedLoopController controller;
@@ -285,7 +361,8 @@ public class FireLib {
     public ArrayList<Double> levels = new ArrayList<>();
 
     /**
-     * Creates an ArmSubsystem place {@link #periodic()} into robot periodic
+     * Creates an ArmSubsystem
+     * Place periodic in robot periodic
      *
      * @see ArmFeedforward For helping setting up the feedforward
      * @param ARM_MOTOR_ID CANID of the Arm motor
@@ -326,9 +403,43 @@ public class FireLib {
       this.SmartDashboardNickName = SmartDashboardNickName;
     }
 
+    /**
+     * Does the setup for the visulizer interpretation of this arm
+     * Doesn't put the data to SmartDashboard (Do that when your done adding ligaments)
+     * @param root The root object to attach this arm too
+     * @param length length of this arm
+     * @param angle The angle this is arm is at relative to the root obj (0 is pointing towards the front, 90 is pointing up)
+     */
+    public MechanismLigament2d setupVisulizer(MechanismRoot2d root, double length, double angle){
+      arm = root.append(new MechanismLigament2d("elevator", length, angle));
+      return arm;
+    }
+
+    /**
+     * Does the setup for the visulizer interpretation of this arm
+     * Doesn't put the data to SmartDashboard (Do that when your done adding ligaments)
+     * @param root The parent obj to attach this arm too
+     * @param length length of this arm
+     * @param angle The angle this is arm is at relative to the parent obj
+     */
+    public MechanismLigament2d setupVisulizer(MechanismLigament2d root, double length, double angle){
+      arm = root.append(new MechanismLigament2d("elevator", length, angle));
+      return arm;
+    }
+
+    /**
+     * Attaches a Mechanism to this arms visulization
+     * @param Mechanism to be attached
+     * @return Arm with attached ligament
+     */
+    public MechanismLigament2d AttachMechanism(MechanismLigament2d Mechanism){
+      return arm.append(Mechanism);
+    }
+
     /** Updates the Speed and Encoder position/angle of the Arm to SmartDashboard */
     public void periodic() {
       SmartDashboard.putNumber(SmartDashboardNickName + "Encoder:", getPositionEncoder());
+      arm.setAngle(new Rotation2d(getPositionEncoder()));
 
       if (!buttonPressed) {
         wantedPos = getPositionEncoder();
@@ -470,10 +581,14 @@ public class FireLib {
 
     private DigitalInput limitSwitch;
 
+    private String name;
+
     /**
      * Creates a subsystem to control an end effector Designed for end effectors that have
      * mechanisms that directly grab the object and can shoot it
+     * Place periodic in robot periodic
      *
+     * @param name nickname for this end effector
      * @param MOTOR_ID CANID of motor to control
      * @param CurrentLimit Smart current limit of motor. A good value would be (40-50)
      * @param inverted If the motor is inverted
@@ -483,6 +598,7 @@ public class FireLib {
      * @param DIOLimitSwitch Digital input limit switch
      */
     public endEffectorSubsystem(
+        String name,
         int MOTOR_ID,
         int CurrentLimit,
         boolean inverted,
@@ -495,6 +611,8 @@ public class FireLib {
 
       motorConfig.smartCurrentLimit(CurrentLimit);
       motorConfig.inverted(inverted);
+
+      this.name = name;
 
       motorConfig
           .closedLoop
@@ -510,7 +628,9 @@ public class FireLib {
     /**
      * Creates a subsystem to control an end effector Designed for end effectors that have
      * mechanisms that directly grab the object and can shoot it
+     * Place periodic in robot periodic
      *
+     * @param name nickname for this end effector
      * @param MOTOR_ID CANID of motor to control
      * @param CurrentLimit Smart current limit of motor. A good value would be (40-50)
      * @param inverted If the motor is inverted
@@ -519,6 +639,7 @@ public class FireLib {
      * @param ShootSpeed The speed to shoot at
      */
     public endEffectorSubsystem(
+        String name,
         int MOTOR_ID,
         int CurrentLimit,
         boolean inverted,
@@ -531,6 +652,8 @@ public class FireLib {
       motorConfig.smartCurrentLimit(CurrentLimit);
       motorConfig.inverted(inverted);
 
+      this.name = name;
+
       motorConfig
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -539,6 +662,10 @@ public class FireLib {
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
       this.IntakeSpeed = IntakeSpeed;
       this.ShootSpeed = ShootSpeed;
+    }
+
+    public void periodic(){
+      SmartDashboard.putNumber(name + "-Speed", motor.get());
     }
 
     /** Shoots the motor at {@link #ShootSpeed} */
