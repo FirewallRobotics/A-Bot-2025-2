@@ -135,15 +135,13 @@ public final class FireLib {
 
       this.name = name;
 
-      if(PIDF != null){
+      if (PIDF != null) {
         leftMotorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
-      }else{
-        leftMotorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+      } else {
+        leftMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
       }
 
       Arbfeedforward = ArbitraryFeedForward;
@@ -403,15 +401,13 @@ public final class FireLib {
       this.feedforward = feedforward;
 
       motorConfig.idleMode(idleMode);
-      if (PIDF != null){
+      if (PIDF != null) {
         motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
-      }else{
-        motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+      } else {
+        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
       }
 
       motor.configure(
@@ -641,15 +637,13 @@ public final class FireLib {
 
       this.name = name;
 
-      if (PIDF != null){
+      if (PIDF != null) {
         motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
-      }else{
-        motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+      } else {
+        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
       }
 
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -686,15 +680,13 @@ public final class FireLib {
 
       this.name = name;
 
-      if(PIDF != null){
+      if (PIDF != null) {
         motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
-      }else{
-        motorConfig
-          .closedLoop
-          .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+      } else {
+        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
       }
 
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
