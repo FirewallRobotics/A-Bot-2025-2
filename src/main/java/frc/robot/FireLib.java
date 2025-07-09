@@ -30,29 +30,28 @@ import java.util.logging.Logger;
  * Mr.Strickland: He saw how we restarted our code base for items like elevators and arms every year
  * He had the idea to create a framework that allows us to easily maintain code to save time!
  *
- * <p>Intended to act as a base to replace SubsystemBase in the matching subsystem
+ * <p>Intended to act as a base to replace SubsystemBase in the matching subsystem.
+ *
+ * <p>This library is documented where the names or control flow isn't evident (Please document your
+ * changes as such) and is intended to be changed to be improved upon.
  */
 public final class FireLib {
 
   /**
    * As far as I know there isn't a built in GCD/GCF operation and I need it So I copy and pasted
    * from google :p
-   *
-   * @param a
-   * @param b
-   * @return
    */
   public static int gcd(int a, int b) {
     if (b == 0) return a;
     return gcd(b, a % b);
   }
 
-  // Elevator
-  public static class ElevatorSubsystemBase extends SubsystemBase {
+  // 2 motor Elevator
+  public static class DuelMotorElevatorSubsystemBase extends SubsystemBase {
 
-    private String name;
+    private String name; // Nickname to be used in Smartdashboard messages
 
-    private MechanismLigament2d m_elevator;
+    private MechanismLigament2d m_elevator; // The visulizer version of this elevator
 
     public final SparkFlex leftMotor;
     public final SparkFlex rightMotor;
@@ -62,14 +61,19 @@ public final class FireLib {
     private double MaxPosition;
     private double MinPosition;
 
+    private boolean inverted;
+
+    // The arbitrary speed to be used up and down without PIDF
     private double ArbUpSpeed;
     private double ArbDownSpeed;
 
     @SuppressWarnings("unused")
     private RelativeEncoder encoder;
 
+    // The arbitrary value that is always sent to hold the elevator up without PIDF
     private float Arbfeedforward;
 
+    // The closed loop controller on the sparkflex/max
     private SparkClosedLoopController closedLoopController;
 
     /** Position measurements from the encoder to which the elevator should goto on command */
@@ -100,7 +104,7 @@ public final class FireLib {
      *     from 40-50)
      * @param inverted If the Elevator is inverted
      */
-    public ElevatorSubsystemBase(
+    public DuelMotorElevatorSubsystemBase(
         String name,
         int ELEVATOR_LEFT_MOTOR_ID,
         int ELEVATOR_RIGHT_MOTOR_ID,
@@ -113,6 +117,7 @@ public final class FireLib {
         double ArbitraryDownSpeed,
         int smartCurrentLimit,
         boolean inverted) {
+
       leftMotor =
           new SparkFlex(
               ELEVATOR_LEFT_MOTOR_ID, MotorType.kBrushless); // Assign motor controller port
@@ -120,28 +125,43 @@ public final class FireLib {
           new SparkFlex(
               ELEVATOR_RIGHT_MOTOR_ID, MotorType.kBrushless); // Assign motor controller port
 
+      // Getting a reference to the closed loop controller and encoder on the sparkflex/max
       closedLoopController = leftMotor.getClosedLoopController();
       encoder = leftMotor.getEncoder();
+
+      // Getting a reference to the config of the sparkflex/max
       leftMotorConfig = new SparkFlexConfig();
       rightMotorConfig = new SparkFlexConfig();
+
+      // Setting the conversion factors (1:1 in this case)
       leftMotorConfig.encoder.positionConversionFactor(1);
       leftMotorConfig.encoder.velocityConversionFactor(1);
+
       leftMotorConfig.smartCurrentLimit(smartCurrentLimit);
       rightMotorConfig.smartCurrentLimit(smartCurrentLimit);
       leftMotorConfig.idleMode(idleMode);
       rightMotorConfig.idleMode(idleMode);
       rightMotorConfig.inverted(inverted);
+
+      // We run the elevator as right motor dominant
       rightMotorConfig.follow(leftMotor, true);
 
       this.name = name;
 
+      this.inverted = inverted;
+
+      // If PIDF is a thing set it in the motor configs using the encoder as feedback
+      // or just tell it to use the encoder and disable PIDF
       if (PIDF != null) {
         leftMotorConfig
             .closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
       } else {
-        leftMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        leftMotorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
       }
 
       Arbfeedforward = ArbitraryFeedForward;
@@ -165,16 +185,13 @@ public final class FireLib {
      *     the front, 90 is pointing up)
      */
     public MechanismLigament2d setupVisulizer(MechanismRoot2d root, double angle) {
-      if (MaxPosition != -1 && MinPosition != 1) {
-        int m_posGCF = FireLib.gcd((int) MaxPosition, (int) MinPosition);
-        m_elevator =
-            root.append(new MechanismLigament2d("elevator", (int) MaxPosition / m_posGCF, angle));
-        return m_elevator;
-      } else {
-        Logger.getGlobal()
-            .log(Level.WARNING, "Cannot setup visulizer as max and/or min position is not set!");
-        return null;
-      }
+
+      // adds the elevator onto the root obj with a max length of 1 and sets the angle relative to
+      // root
+      m_elevator = root.append(new MechanismLigament2d("elevator", 1, angle));
+
+      // Then return the created obj
+      return m_elevator;
     }
 
     /**
@@ -185,16 +202,12 @@ public final class FireLib {
      * @param angle The angle this is elevator is at relative to its attached obj
      */
     public MechanismLigament2d setupVisulizer(MechanismLigament2d root, double angle) {
-      if (MaxPosition != -1 && MinPosition != 1) {
-        int m_posGCF = gcd((int) MaxPosition, (int) MinPosition);
-        m_elevator =
-            root.append(new MechanismLigament2d("elevator", (int) MaxPosition / m_posGCF, angle));
-        return m_elevator;
-      } else {
-        Logger.getGlobal()
-            .log(Level.WARNING, "Cannot setup visulizer as max and/or min position is not set!");
-        return null;
-      }
+      // adds the elevator onto the parent obj with a max length of 1 and sets the angle relative to
+      // the parent
+      m_elevator = root.append(new MechanismLigament2d("elevator", 1, angle));
+
+      // Then return the created obj
+      return m_elevator;
     }
 
     /**
@@ -212,9 +225,35 @@ public final class FireLib {
       SmartDashboard.putNumber(name + "-Speed", leftMotor.get());
       SmartDashboard.putNumber(name + "-EncoderPos", getPositionEncoder());
 
-      int m_posGCF = gcd((int) MaxPosition, (int) MinPosition);
+      // If we have an elevator
       if (m_elevator != null) {
-        m_elevator.setLength(getPositionEncoder() / m_posGCF);
+
+        // and we are not in the sim
+        if (!Robot.isSimulation()) {
+
+          // If we are not inverted and have a max position
+          if (!inverted && MaxPosition != -1) {
+
+            // divide the encoder position by the max to get a value between 0-1
+            m_elevator.setLength(getPositionEncoder() / MaxPosition);
+
+            // Else we are inverted and should use the minimum position to do the same
+            // (absolute the values to prevent weird math)
+          } else if (MinPosition != 1) {
+            m_elevator.setLength(Math.abs(getPositionEncoder()) / Math.abs(MinPosition));
+          }
+          // if all else fails we don't have a max/min value (Making it info rather then warning as
+          // this runs every tick)
+          else {
+            Logger.getGlobal().log(Level.INFO, name + "-Visulizer: Missing max/min position");
+          }
+
+          // if we are in the simulator
+        } else {
+          // I don't know how long it takes for your elevator to reach its peak
+          // so I added a stand in while in the sim. Some feedback is better then no feedback
+          m_elevator.setLength(m_elevator.getLength() + (getSpeed() / 10));
+        }
       }
     }
 
@@ -229,41 +268,67 @@ public final class FireLib {
     }
 
     /**
-     * Set the level that the elevator should move too Uses the ArbitraryUpSpeed and
+     * Set the level that the elevator should move too. Uses the ArbitraryUpSpeed and
      * ArbitraryDownSpeed to set the speed to follow
      *
      * @apiNote Currently uses {@link #goToLevelNoPID(double)} which will be shakey due to not using
      *     PIDF
      */
     public void setLevel(int level) {
+      // check to make sure the level is above 0 and not calling for level 99999999
       if (level < 0 || level >= levels.size()) {
-        System.out.println("Invalid level: " + level);
+        // if its invalid call it out
+        Logger.getGlobal().log(Level.WARNING, name + ": Invalid level " + level);
         return;
       }
+
+      // else were okay to ask the elevator to move to that level
       goToLevelNoPID(levels.get(level), ArbUpSpeed, ArbDownSpeed);
     }
 
     /**
-     * Sets the speed of the elevator with some safe guards (prevented from moving outside of max
-     * and min values). And holds the position using the flat ArbitraryFeedForward
+     * Sets the speed of the elevator with some safe guards*. And holds the position using the flat
+     * ArbitraryFeedForward
+     *
+     * <p>* prevented from moving outside of max and min values and only if max and min values exist
      *
      * @param speed the speed that the motors should be commanded too
      */
     public void setSpeed(double speed) {
+
+      // Check to see if we have max and min position values
       if (MaxPosition != -1 && MinPosition != 1) {
+
+        // If we are beyond the max position do not move up
         if (getPositionEncoder() >= MaxPosition && speed > 0) {
           leftMotor.set(0);
+
+          // tell PIDF to hold it where we are
           closedLoopController.setReference(
               0, ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
-          Logger.getGlobal().log(Level.WARNING, "Elevator Trying to move past maximums");
+
+          // phone home
+          Logger.getGlobal().log(Level.WARNING, name + ": Trying to move past maximums");
+
+          // If we are beyond the min position do not move down
         } else if (getPositionEncoder() <= MinPosition && speed < 0) {
           leftMotor.set(0);
+
+          // tell PIDF to hold it where we are
           closedLoopController.setReference(
               0, ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
-          Logger.getGlobal().log(Level.WARNING, "Elevator Trying to move past minimums");
+
+          // phone home
+          Logger.getGlobal().log(Level.WARNING, name + ": Trying to move past minimums");
+
+          // If other checks didn't pass we are free to move as requested!
         } else {
           leftMotor.set(speed);
         }
+
+        // if we don't have max and min positions just set the speed to the requested
+      } else {
+        leftMotor.set(speed);
       }
     }
 
@@ -273,9 +338,9 @@ public final class FireLib {
      * @param index of level we are looking for
      */
     public boolean atLevel(int levlNeeded) {
-      Logger.getGlobal().log(Level.INFO, "looking for level");
-      Logger.getGlobal().log(Level.INFO, "encoder value " + getPositionEncoder());
-      Logger.getGlobal().log(Level.INFO, "target value " + levels.get(levlNeeded));
+      Logger.getGlobal().log(Level.INFO, name + ": looking for level");
+      Logger.getGlobal().log(Level.INFO, name + ": encoder value " + getPositionEncoder());
+      Logger.getGlobal().log(Level.INFO, name + ": target value " + levels.get(levlNeeded));
 
       return getPositionEncoder() < levels.get(levlNeeded);
     }
@@ -287,20 +352,30 @@ public final class FireLib {
      * @param setPoint relative encoder position desired
      */
     public void goToLevelNoPID(double setPoint, double arbUp, double arbDown) {
-      // double setPoint = -39;
-      if (setPoint + 1 >= getPositionEncoder()) {
-        leftMotor.set(arbUp);
-        Logger.getGlobal().log(Level.INFO, "Going Down");
-      }
-      if (setPoint - 1 <= getPositionEncoder()) {
-        leftMotor.set(arbDown);
-        Logger.getGlobal().log(Level.INFO, "Going Up");
-      }
+
+      // changed this a bit as I found it was doing some weird stuff. Everything was its own If
+      // statement
+      // and: "setPoint + 1 >= getPositionEncoder()"
+      // If there is something I'm missing........
+
+      // If within 2 units of setpoint hold position using arbFF
       if (setPoint - 2 >= getPositionEncoder() && setPoint + 2 <= getPositionEncoder()) {
-        Logger.getGlobal().log(Level.INFO, "Found Level");
+        Logger.getGlobal().log(Level.INFO, name + ": Found Level");
         leftMotor.set(0);
         closedLoopController.setReference(
             getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+      }
+
+      // if greater then move up
+      else if (setPoint >= getPositionEncoder()) {
+        leftMotor.set(arbUp);
+        Logger.getGlobal().log(Level.INFO, name + ": Going Up");
+      }
+
+      // if less then move down
+      else if (setPoint <= getPositionEncoder()) {
+        leftMotor.set(arbDown);
+        Logger.getGlobal().log(Level.INFO, name + ": Going Down");
       }
     }
 
@@ -337,10 +412,379 @@ public final class FireLib {
      * cannot move a mechanism
      */
     public boolean isFinished(int position) {
+
+      // if we are in the sim. we're always done
       if (Robot.isSimulation()) {
         return true;
       }
+
+      // If we are at our desired level then we are done
       if (levels.get(position) - (leftMotor.getEncoder().getPosition()) == 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // 2 motor Elevator
+  public static class singleMotorElevatorSubsystemBase extends SubsystemBase {
+
+    private String name; // Nickname to be used in Smartdashboard messages
+
+    private MechanismLigament2d m_elevator; // The visulizer version of this elevator
+
+    public final SparkFlex motor;
+    public final SparkFlexConfig motorConfig;
+
+    private double MaxPosition;
+    private double MinPosition;
+
+    private boolean inverted;
+
+    // The arbitrary speed to be used up and down without PIDF
+    private double ArbUpSpeed;
+    private double ArbDownSpeed;
+
+    @SuppressWarnings("unused")
+    private RelativeEncoder encoder;
+
+    // The arbitrary value that is always sent to hold the elevator up without PIDF
+    private float Arbfeedforward;
+
+    // The closed loop controller on the sparkflex/max
+    private SparkClosedLoopController closedLoopController;
+
+    /** Position measurements from the encoder to which the elevator should goto on command */
+    public ArrayList<Double> levels = new ArrayList<>();
+
+    /**
+     * Creates an ElevatorSubsystem taken from the code for the 2025 FRC Season ReefScape Please
+     * fill in the ArrayList {@link levels} with the levels you wish to hold Place periodic in robot
+     * periodic
+     *
+     * @implNote PLEASE TEST (Not tested YET)
+     * @param name Nickname of this elevator
+     * @param ELEVATOR_MOTOR_ID CANID of the Motor
+     * @param idleMode IdleMode that the Elevator Motors should follow (Brake mode recomended)
+     * @param PIDF List containing the PIDF values to be sent to the motors
+     * @param ArbitraryFeedForward (Part of PIDF...kinda) speed value always sent to the elevator to
+     *     hold its position without having to calculate FF
+     * @param MaxElevatorPosition The max position of the Elevator that we can get too (If you don't
+     *     know set to -1)
+     * @param MinElevatorPosition The min position of the Elevator that we can get too (If you don't
+     *     know set to 1)
+     * @param ArbitraryUpSpeed Speed the Elevator will follow (when going up) if not using PIDF for
+     *     position holding
+     * @param ArbitraryDownSpeed Speed the Elevator will follow (when going down) if not using PIDF
+     *     for position holding
+     * @param smartCurrentLimit The smart current limit sent to the motors (default is any where
+     *     from 40-50)
+     * @param inverted If the Elevator is inverted
+     */
+    public singleMotorElevatorSubsystemBase(
+        String name,
+        int ELEVATOR_MOTOR_ID,
+        IdleMode idleMode,
+        double[] PIDF,
+        float ArbitraryFeedForward,
+        double MaxElevatorPosition,
+        double MinElevatorPosition,
+        double ArbitraryUpSpeed,
+        double ArbitraryDownSpeed,
+        int smartCurrentLimit,
+        boolean inverted) {
+
+      motor =
+          new SparkFlex(ELEVATOR_MOTOR_ID, MotorType.kBrushless); // Assign motor controller port
+
+      // Getting a reference to the closed loop controller and encoder on the sparkflex/max
+      closedLoopController = motor.getClosedLoopController();
+      encoder = motor.getEncoder();
+
+      // Getting a reference to the config of the sparkflex/max
+      motorConfig = new SparkFlexConfig();
+
+      // Setting the conversion factors (1:1 in this case)
+      motorConfig.encoder.positionConversionFactor(1);
+      motorConfig.encoder.velocityConversionFactor(1);
+
+      motorConfig.smartCurrentLimit(smartCurrentLimit);
+      motorConfig.idleMode(idleMode);
+      motorConfig.inverted(inverted);
+
+      this.name = name;
+
+      this.inverted = inverted;
+
+      // If PIDF is a thing set it in the motor configs using the encoder as feedback
+      // or just tell it to use the encoder and disable PIDF
+      if (PIDF != null) {
+        motorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+      } else {
+        motorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
+      }
+
+      Arbfeedforward = ArbitraryFeedForward;
+      MaxPosition = MaxElevatorPosition;
+      MinPosition = MinElevatorPosition;
+      ArbUpSpeed = ArbitraryUpSpeed;
+      ArbDownSpeed = ArbitraryDownSpeed;
+
+      motor.configure(
+          motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    /**
+     * Does the setup for the visulizer interpretation of this elevator Doesn't put the data to
+     * SmartDashboard (Do that when your done adding ligaments)
+     *
+     * @param root The root object to attach this elevator too
+     * @param angle The angle this is elevator is at relative to the root obj (0 is pointing towards
+     *     the front, 90 is pointing up)
+     */
+    public MechanismLigament2d setupVisulizer(MechanismRoot2d root, double angle) {
+
+      // adds the elevator onto the root obj with a max length of 1 and sets the angle relative to
+      // root
+      m_elevator = root.append(new MechanismLigament2d("elevator", 1, angle));
+
+      // Then return the created obj
+      return m_elevator;
+    }
+
+    /**
+     * Does the setup for the visulizer interpretation of this elevator Doesn't put the data to
+     * SmartDashboard (Do that when your done adding ligaments)
+     *
+     * @param root The obj to attach this elevator too
+     * @param angle The angle this is elevator is at relative to its attached obj
+     */
+    public MechanismLigament2d setupVisulizer(MechanismLigament2d root, double angle) {
+      // adds the elevator onto the parent obj with a max length of 1 and sets the angle relative to
+      // the parent
+      m_elevator = root.append(new MechanismLigament2d("elevator", 1, angle));
+
+      // Then return the created obj
+      return m_elevator;
+    }
+
+    /**
+     * Attaches a Mechanism to this elevators visulization
+     *
+     * @param Mechanism to be attached
+     * @return Elevator with attached ligament
+     */
+    public MechanismLigament2d AttachMechanism(MechanismLigament2d Mechanism) {
+      return m_elevator.append(Mechanism);
+    }
+
+    /** Updates the Speed and Encoder Position of the Elevator to SmartDashboard */
+    public void Periodic() {
+      SmartDashboard.putNumber(name + "-Speed", motor.get());
+      SmartDashboard.putNumber(name + "-EncoderPos", getPositionEncoder());
+
+      // If we have an elevator
+      if (m_elevator != null) {
+
+        // and we are not in the sim
+        if (!Robot.isSimulation()) {
+
+          // If we are not inverted and have a max position
+          if (!inverted && MaxPosition != -1) {
+
+            // divide the encoder position by the max to get a value between 0-1
+            m_elevator.setLength(getPositionEncoder() / MaxPosition);
+
+            // Else we are inverted and should use the minimum position to do the same
+            // (absolute the values to prevent weird math)
+          } else if (MinPosition != 1) {
+            m_elevator.setLength(Math.abs(getPositionEncoder()) / Math.abs(MinPosition));
+          }
+          // if all else fails we don't have a max/min value (Making it info rather then warning as
+          // this runs every tick)
+          else {
+            Logger.getGlobal().log(Level.INFO, name + "-Visulizer: Missing max/min position");
+          }
+
+          // if we are in the simulator
+        } else {
+          // I don't know how long it takes for your elevator to reach its peak
+          // so I added a stand in while in the sim. Some feedback is better then no feedback
+          m_elevator.setLength(m_elevator.getLength() + (getSpeed() / 10));
+        }
+      }
+    }
+
+    /**
+     * Get the current speed that the motors are moving at
+     *
+     * @apiNote The elevator is inverted (-1 goes up and 1 goes down)
+     * @return Left motor speed(both motors are mirrored)
+     */
+    public double getSpeed() {
+      return motor.get();
+    }
+
+    /**
+     * Set the level that the elevator should move too. Uses the ArbitraryUpSpeed and
+     * ArbitraryDownSpeed to set the speed to follow
+     *
+     * @apiNote Currently uses {@link #goToLevelNoPID(double)} which will be shakey due to not using
+     *     PIDF
+     */
+    public void setLevel(int level) {
+      // check to make sure the level is above 0 and not calling for level 99999999
+      if (level < 0 || level >= levels.size()) {
+        // if its invalid call it out
+        Logger.getGlobal().log(Level.WARNING, name + ": Invalid level " + level);
+        return;
+      }
+
+      // else were okay to ask the elevator to move to that level
+      goToLevelNoPID(levels.get(level), ArbUpSpeed, ArbDownSpeed);
+    }
+
+    /**
+     * Sets the speed of the elevator with some safe guards*. And holds the position using the flat
+     * ArbitraryFeedForward
+     *
+     * <p>* prevented from moving outside of max and min values and only if max and min values exist
+     *
+     * @param speed the speed that the motors should be commanded too
+     */
+    public void setSpeed(double speed) {
+
+      // Check to see if we have max and min position values
+      if (MaxPosition != -1 && MinPosition != 1) {
+
+        // If we are beyond the max position do not move up
+        if (getPositionEncoder() >= MaxPosition && speed > 0) {
+          motor.set(0);
+
+          // tell PIDF to hold it where we are
+          closedLoopController.setReference(
+              0, ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+
+          // phone home
+          Logger.getGlobal().log(Level.WARNING, name + ": Trying to move past maximums");
+
+          // If we are beyond the min position do not move down
+        } else if (getPositionEncoder() <= MinPosition && speed < 0) {
+          motor.set(0);
+
+          // tell PIDF to hold it where we are
+          closedLoopController.setReference(
+              0, ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+
+          // phone home
+          Logger.getGlobal().log(Level.WARNING, name + ": Trying to move past minimums");
+
+          // If other checks didn't pass we are free to move as requested!
+        } else {
+          motor.set(speed);
+        }
+
+        // if we don't have max and min positions just set the speed to the requested
+      } else {
+        motor.set(speed);
+      }
+    }
+
+    /**
+     * Logs the encoder value currently to logs and then the value we are looking for in logs
+     *
+     * @param index of level we are looking for
+     */
+    public boolean atLevel(int levlNeeded) {
+      Logger.getGlobal().log(Level.INFO, name + ": looking for level");
+      Logger.getGlobal().log(Level.INFO, name + ": encoder value " + getPositionEncoder());
+      Logger.getGlobal().log(Level.INFO, name + ": target value " + levels.get(levlNeeded));
+
+      return getPositionEncoder() < levels.get(levlNeeded);
+    }
+
+    /**
+     * Goes to a setpoint using if statements. (No PIDF) But will hold using PIDF
+     * (ArbitraryFeedForward)
+     *
+     * @param setPoint relative encoder position desired
+     */
+    public void goToLevelNoPID(double setPoint, double arbUp, double arbDown) {
+
+      // changed this a bit as I found it was doing some weird stuff. Everything was its own If
+      // statement
+      // and: "setPoint + 1 >= getPositionEncoder()"
+      // If there is something I'm missing........
+
+      // If within 2 units of setpoint hold position using arbFF
+      if (setPoint - 2 >= getPositionEncoder() && setPoint + 2 <= getPositionEncoder()) {
+        Logger.getGlobal().log(Level.INFO, name + ": Found Level");
+        motor.set(0);
+        closedLoopController.setReference(
+            getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+      }
+
+      // if greater then move up
+      else if (setPoint >= getPositionEncoder()) {
+        motor.set(arbUp);
+        Logger.getGlobal().log(Level.INFO, name + ": Going Up");
+      }
+
+      // if less then move down
+      else if (setPoint <= getPositionEncoder()) {
+        motor.set(arbDown);
+        Logger.getGlobal().log(Level.INFO, name + ": Going Down");
+      }
+    }
+
+    /**
+     * Move to a position for the elevator to move to using PIDF.
+     *
+     * @param position the encoder position to move too
+     */
+    public void moveToPosition(double position) {
+      closedLoopController.setReference(
+          position, ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+    }
+
+    /** Stop the elevator from moving and hold the position with the flat feed forward */
+    public void stop() {
+      motor.set(0);
+
+      closedLoopController.setReference(
+          getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, Arbfeedforward);
+    }
+
+    /**
+     * Get the position of the elevator encoder
+     *
+     * @return Position of the left motor encoder(the right motor follows the left so it doesn't
+     *     matter)
+     */
+    public double getPositionEncoder() {
+      return motor.getEncoder().getPosition();
+    }
+
+    /**
+     * If the elevator is finished moving to a position If we are in the sim blanket return 0 as we
+     * cannot move a mechanism
+     */
+    public boolean isFinished(int position) {
+
+      // if we are in the sim. we're always done
+      if (Robot.isSimulation()) {
+        return true;
+      }
+
+      // If we are at our desired level then we are done
+      if (levels.get(position) - (motor.getEncoder().getPosition()) == 0) {
         return true;
       } else {
         return false;
@@ -353,20 +797,19 @@ public final class FireLib {
     public final SparkFlex motor;
     public final SparkFlexConfig motorConfig;
 
+    // The visulizer version of this arm
     private MechanismLigament2d arm;
 
     private double wantedPos;
 
+    // SparkFlex/max closed loop controller
     SparkClosedLoopController controller;
 
     private boolean buttonPressed;
 
+    // The PIDF profile to account for variable gravity loads
     private TrapezoidProfile.State state;
-
     private ArmFeedforward feedforward;
-
-    public static final double shooter = 4.82;
-    public double finalPos;
 
     private double MoveSpeed;
     private String SmartDashboardNickName;
@@ -395,24 +838,32 @@ public final class FireLib {
         String SmartDashboardNickName) {
       motor = new SparkFlex(ARM_MOTOR_ID, MotorType.kBrushless); // Assign motor controller port
 
+      // Get motor references to motor configs and the sparkFlex
       controller = motor.getClosedLoopController();
       motorConfig = new SparkFlexConfig();
 
       this.feedforward = feedforward;
 
       motorConfig.idleMode(idleMode);
+
+      // If we have PIDF set it or disable it
       if (PIDF != null) {
         motorConfig
             .closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
       } else {
-        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        motorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
       }
 
       motor.configure(
           motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
       // encoder = new Encoder(1, 1); // Assign encoder ports
+
+      // Set the inital position to hold
       wantedPos = motor.getEncoder().getPosition();
       state = new State(wantedPos, 0);
 
@@ -461,10 +912,15 @@ public final class FireLib {
     /** Updates the Speed and Encoder position/angle of the Arm to SmartDashboard */
     public void periodic() {
       SmartDashboard.putNumber(SmartDashboardNickName + "Encoder:", getPositionEncoder());
+
+      // If we have an arm visulizer obj then set it to the angle position if IRL
       if (arm != null) {
-        arm.setAngle(new Rotation2d(getPositionEncoder()));
+        if (!Robot.isSimulation()) {
+          arm.setAngle(new Rotation2d(getPositionEncoder()));
+        }
       }
 
+      // If we are not actively tilting then hold position
       if (!buttonPressed) {
         wantedPos = getPositionEncoder();
         state = new State(wantedPos, 0);
@@ -474,13 +930,23 @@ public final class FireLib {
 
     /** Free hand tilt down. Just hold a button and go. Moves at MoveSpeed */
     public void tiltDown() {
+
+      // mark that we are moving to release PIDF control while moving
       buttonPressed = true;
 
-      Logger.getGlobal().log(Level.INFO, "DOWN " + getPositionEncoder());
+      Logger.getGlobal().log(Level.INFO, SmartDashboardNickName + ": DOWN " + getPositionEncoder());
+
+      // invert motor and reconfig
       motorConfig.inverted(true);
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+      // start moving
       motor.set(MoveSpeed);
+
+      // if in the sim nothing will happen so simulate movement
+      if (Robot.isSimulation()) {
+        arm.setAngle(arm.getAngle() - MoveSpeed);
+      }
     }
 
     /**
@@ -493,13 +959,19 @@ public final class FireLib {
      *     Objects onto the field. This function is designed for you to be able to reuse that
      *     functionality easily
      */
-    public void IntakePosition(double setPoint) {
-      if (setPoint + 0.1 < getPositionEncoder()) {
+    public void moveToPosition(double setPoint) {
+
+      // if we are under the setpoint move up
+      if (setPoint - 0.5 < getPositionEncoder()) {
         motorConfig.inverted(false);
         motor.set(MoveSpeed);
-      } else if (setPoint - 0.1 > getPositionEncoder()) {
+
+        // if we are over the setpoint move down
+      } else if (setPoint + 0.5 > getPositionEncoder()) {
         motorConfig.inverted(true);
         motor.set(MoveSpeed);
+
+        // if within a degree of the setpoint stop and hold
       } else {
         wantedPos = getPositionEncoder();
         state = new State(wantedPos, 0);
@@ -509,14 +981,23 @@ public final class FireLib {
 
     /** Free hand tilt up. Just hold a button and go. Moves at MoveSpeed */
     public void tiltUp() {
+
+      // mark that we are moving to release PIDF control while moving
       buttonPressed = true;
 
-      Logger.getGlobal().log(Level.INFO, "UP: " + getPositionEncoder());
+      Logger.getGlobal().log(Level.INFO, SmartDashboardNickName + ": UP " + getPositionEncoder());
 
+      // uninvert and reconfig
       motorConfig.inverted(false);
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+      // start moving
       motor.set(MoveSpeed);
+
+      // if in the sim nothing will happen so simulate movement
+      if (Robot.isSimulation()) {
+        arm.setAngle(arm.getAngle() + MoveSpeed);
+      }
     }
 
     /**
@@ -544,9 +1025,13 @@ public final class FireLib {
      */
     public void setLevel(int levelNeeded) {
 
+      // index the level setpoint from the list
       double setPoint = levels.get(levelNeeded);
 
+      // do the math for the setpoint
       double ff = feedforward.calculate(setPoint * 2 * Math.PI, 0);
+
+      // and set that position for PIDF to aim for
       controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
     }
 
@@ -570,11 +1055,8 @@ public final class FireLib {
      */
     public boolean isFinished(int position) {
 
-      if (shooter - (motor.getEncoder().getPosition()) == 0) {
-        return true;
-      } else {
-        return false;
-      }
+      // if we are finished moving to the selected position return true
+      return (position - (motor.getEncoder().getPosition()) == 0);
     }
 
     /**
@@ -583,7 +1065,11 @@ public final class FireLib {
      * @param TrapezoidProfile.State Setpoint position to hold
      */
     public void holdUp(TrapezoidProfile.State setpoint) {
+
+      // do the math for the setpoint
       double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
+
+      // send the math to PIDF to follow
       controller.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
     }
 
@@ -591,6 +1077,8 @@ public final class FireLib {
     public void stopTilt() {
       motor.set(0);
 
+      // get our current state and tell PIDF to hold it along with releasing the button press
+      // I feel like this is redundent as periodic does the same thing
       State setPoint = new State(getPositionEncoder(), 0);
       holdUp(setPoint);
       buttonPressed = false;
@@ -599,13 +1087,15 @@ public final class FireLib {
 
   // Game object end effector
   public static class endEffectorSubsystemBase extends SubsystemBase {
+
     public final SparkFlex motor;
     public final SparkFlexConfig motorConfig;
+
     private double IntakeSpeed, ShootSpeed;
 
     private DigitalInput limitSwitch;
 
-    private String name;
+    private String name; // Nickname to be used in Smartdashboard messages
 
     /**
      * Creates a subsystem to control an end effector Designed for end effectors that have
@@ -629,7 +1119,9 @@ public final class FireLib {
         double IntakeSpeed,
         double ShootSpeed,
         DigitalInput DIOLimitSwitch) {
-      motor = new SparkFlex(MOTOR_ID, MotorType.kBrushless);
+      motor = new SparkFlex(MOTOR_ID, MotorType.kBrushless); // assign motor to port
+
+      // get reference to sparkFlex/max
       motorConfig = new SparkFlexConfig();
 
       motorConfig.smartCurrentLimit(CurrentLimit);
@@ -637,16 +1129,23 @@ public final class FireLib {
 
       this.name = name;
 
+      // if we have PIDF then set the motor config with it
       if (PIDF != null) {
         motorConfig
             .closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+
+        // or else just zero out PIDF to disable it
       } else {
-        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        motorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
       }
 
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
       this.IntakeSpeed = IntakeSpeed;
       this.ShootSpeed = ShootSpeed;
       limitSwitch = DIOLimitSwitch;
@@ -672,7 +1171,9 @@ public final class FireLib {
         double[] PIDF,
         double IntakeSpeed,
         double ShootSpeed) {
-      motor = new SparkFlex(MOTOR_ID, MotorType.kBrushless);
+      motor = new SparkFlex(MOTOR_ID, MotorType.kBrushless); // assign motor to port
+
+      // get reference to sparkFlex/max
       motorConfig = new SparkFlexConfig();
 
       motorConfig.smartCurrentLimit(CurrentLimit);
@@ -680,16 +1181,23 @@ public final class FireLib {
 
       this.name = name;
 
+      // if we have PIDF then set the motor config with it
       if (PIDF != null) {
         motorConfig
             .closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             .pidf(PIDF[0], PIDF[1], PIDF[2], PIDF[3], ClosedLoopSlot.kSlot0);
+
+        // or else just zero out PIDF to disable it
       } else {
-        motorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        motorConfig
+            .closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
       }
 
       motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
       this.IntakeSpeed = IntakeSpeed;
       this.ShootSpeed = ShootSpeed;
     }
@@ -713,7 +1221,7 @@ public final class FireLib {
      * @param maxLaunchSpeed Max velocity that the game object can be launched at
      * @return [Motor power, Angle]
      */
-    public static double[] calculateLaunchVelocity(
+    public double[] calculateLaunchVelocity(
         Translation3d target, double launchAngleDeg, double maxLaunchSpeed) {
       double dx =
           Math.sqrt(
@@ -732,14 +1240,15 @@ public final class FireLib {
         Logger.getGlobal()
             .log(
                 Level.WARNING,
-                "Cannot shoot to (Unable to break laws of physics): " + target.toString());
+                name + ": Cannot shoot to (Unable to break laws of physics): " + target.toString());
         return null; // Not physically possible
       }
 
       double v = Math.sqrt(vSquared);
       if (v > maxLaunchSpeed) {
         Logger.getGlobal()
-            .log(Level.WARNING, "Cannot shoot to (Not enough power): " + target.toString());
+            .log(
+                Level.WARNING, name + ": Cannot shoot to (Not enough power): " + target.toString());
         return null; // Need more power than available
       }
 
@@ -760,7 +1269,7 @@ public final class FireLib {
      * @param minAngle Lowest angle that the end effector can point at
      * @return [Motor power, Angle]
      */
-    public static double[] calculateLaunchVelocity(
+    public double[] calculateLaunchVelocity(
         Translation3d target, double maxLaunchSpeed, double maxAngle, double minAngle) {
       double dx =
           Math.sqrt(
@@ -797,7 +1306,8 @@ public final class FireLib {
         Logger.getGlobal()
             .log(
                 Level.WARNING,
-                "Cannot find valid solution to shoot (tried the following angles): "
+                name
+                    + ": Cannot find valid solution to shoot (tried the following angles): "
                     + minAngle
                     + " to "
                     + maxAngle);
@@ -812,12 +1322,18 @@ public final class FireLib {
      * used)
      */
     public void intake() {
+
+      // if we have a limit switch
       if (limitSwitch != null) {
+
+        // intake until limit switch changes
         if (!limitSwitch.get()) {
           motor.set(IntakeSpeed);
         } else {
           motor.set(0);
         }
+
+        // if we don't have a limit switch just move
       } else {
         motor.set(IntakeSpeed);
       }
