@@ -5,7 +5,10 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AlgaeSubsystem extends SubsystemBase {
 
@@ -36,6 +39,7 @@ public class AlgaeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Add any periodic tasks here, such as motor feedback or sensor checks.
+    SmartDashboard.putNumber("Motor Temp", motor.getMotorTemperature());
   }
 
   /**
@@ -43,6 +47,9 @@ public class AlgaeSubsystem extends SubsystemBase {
    * returned by {@link #setSpeed()}
    */
   public void shoot() {
+    if (motor.getMotorTemperature() > 135) {
+      Logger.getGlobal().log(Level.SEVERE, "ALGAE MOTOR TOO HOT! please STOP USE!");
+    }
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     motor.set(setSpeed() * 1.25); // Run motor forward to shoot the ball (algae)
@@ -53,6 +60,9 @@ public class AlgaeSubsystem extends SubsystemBase {
    * {@link #setSpeed()}
    */
   public void intake() {
+    if (motor.getMotorTemperature() > 135) {
+      Logger.getGlobal().log(Level.SEVERE, "ALGAE MOTOR TOO HOT! please STOP USE!");
+    }
     motorConfig.inverted(true); // Invert motor direction for intake
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     motor.set(setSpeed()); // Reverse the motor to pull the algae into the claw

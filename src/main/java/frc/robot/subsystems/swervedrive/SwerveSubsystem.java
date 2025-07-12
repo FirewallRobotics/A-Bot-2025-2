@@ -110,10 +110,6 @@ public class SwerveSubsystem extends SubsystemBase {
     setupPathPlanner();
   }
 
-  public void setMaxSpeed(double speed) {
-    swerveDrive.setMaximumAllowableSpeeds(speed, getMaximumChassisAngularVelocity());
-  }
-
   public void setMaxSpeed(double speed, double rotation) {
     swerveDrive.setMaximumAllowableSpeeds(speed, rotation);
   }

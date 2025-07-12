@@ -100,7 +100,7 @@ public class RobotContainer {
               () -> driverXbox.getLeftY() * -1,
               () -> driverXbox.getLeftX() * -1)
           .withControllerRotationAxis(driverXbox::getRightX)
-          .deadband(OperatorConstants.DEADBAND)
+          .deadband(0.75)
           .scaleTranslation(0.8)
           .allianceRelativeControl(true);
 
@@ -275,8 +275,8 @@ public class RobotContainer {
         new CoralShootCommand(coralHoldSubsystem)
       )
       );*/
-    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.a().whileTrue(drivebase.centerModulesCommand());
+    coralController.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    coralController.a().whileTrue(drivebase.centerModulesCommand());
 
     // driverXbox.x().onTrue(new AlignWithNearest());
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));

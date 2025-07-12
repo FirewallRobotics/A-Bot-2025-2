@@ -87,6 +87,19 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void Periodic() {
     SmartDashboard.putNumber("Elevator-Speed", leftMotor.get());
     SmartDashboard.putNumber("Elevator-EncoderPos", getPositionEncoder());
+    if (getPositionEncoder() <= -40) {
+      while (getPositionEncoder() <= -40) {
+        setSpeed(0.1);
+      }
+      setSpeed(0);
+    }
+
+    if (getPositionEncoder() >= -1) {
+      while (getPositionEncoder() >= -1) {
+        setSpeed(-0.5);
+      }
+      setSpeed(0);
+    }
   }
 
   /**
@@ -120,11 +133,11 @@ public class ElevatorSubsystem extends SubsystemBase {
    */
   public void setSpeed(double speed) {
     // leftMotor.set(speed);
-    if (getPositionEncoder() >= 0 && speed > 0) {
+    if (getPositionEncoder() >= -1 && speed > 0) {
       Logger.getGlobal().log(Level.WARNING, "Trying to go too low! Stopping");
       leftMotor.set(0);
       closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
-    } else if (getPositionEncoder() <= -50.1 && speed < 0) {
+    } else if (getPositionEncoder() <= -40 && speed < 0) {
       Logger.getGlobal().log(Level.WARNING, "Trying to go too high! Stopping");
       leftMotor.set(0);
       closedLoopController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);

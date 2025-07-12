@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.RobotContainer;
 import java.util.List;
@@ -154,18 +155,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
   }
 
   public void CreatePath() {
-    if (VisionSubsystem.getTagPose2d() != null) {
-      double Tagx = VisionSubsystem.getTagPose2d().getX();
-      if (Tagx >= 0.3) {
-        Logger.getGlobal().log(Level.INFO, "Turning ClockWise");
-        RobotContainer.drivebase.drive(new Translation2d(0, 0), -5, false);
-      } else if (Tagx <= -0.3) {
-        Logger.getGlobal().log(Level.INFO, "Turning CCW");
-        RobotContainer.drivebase.drive(new Translation2d(0, 0), 5, false);
-      } else {
-        Logger.getGlobal().log(Level.INFO, "Stopping");
-        RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
-      }
+    if (LimelightHelpers.getLatestResults(VisionSubsystem.name) != null) {
+      RobotContainer.drivebase.drive(
+          new Translation2d(0, 0),
+          LimelightHelpers.getLatestResults(VisionSubsystem.name).targets_Detector[0].tx,
+          false);
     } else {
       Logger.getGlobal().log(Level.INFO, "No Targets!");
       RobotContainer.drivebase.drive(new Translation2d(0, 0), 0, false);
