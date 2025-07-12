@@ -38,6 +38,7 @@ import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
+import frc.robot.commands.FieldLogger;
 import frc.robot.commands.SlowMode;
 import frc.robot.commands.WristDown;
 import frc.robot.commands.WristStop;
@@ -115,7 +116,7 @@ public class RobotContainer {
   public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
-  public static VisionSubsystem visionSubsystem = new VisionSubsystem();
+  public static VisionSubsystem visionSubsystem = new VisionSubsystem(drivebase);
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
   public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
 
@@ -251,6 +252,9 @@ public class RobotContainer {
 
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
+    // Will make it so pressing right on the controller will put the position to the logger. this
+    // means that we won't flood our logs with information and cause me to go nuts.
+    coralController.povRight().whileTrue(new FieldLogger(visionSubsystem));
 
     // coralController
     //     .b()

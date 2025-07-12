@@ -46,6 +46,7 @@ import org.json.simple.parser.ParseException;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.imu.SwerveIMU;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -72,6 +73,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param directory Directory of swerve drive config files.
    */
   public SwerveSubsystem(File directory) {
+
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being
     // created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
@@ -481,6 +483,11 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public SwerveDriveKinematics getKinematics() {
     return swerveDrive.kinematics;
+  }
+
+  public SwerveIMU getGyro() {
+
+    return swerveDrive.getGyro();
   }
 
   /**
