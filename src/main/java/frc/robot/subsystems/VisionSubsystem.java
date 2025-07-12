@@ -97,8 +97,8 @@ public class VisionSubsystem extends SubsystemBase {
     // Get the 3d position of the robot on the field to the logger.
     Logger.getGlobal()
         .log(
-            Level.INFO,
-            "Current position is - X: "
+            Level.WARNING,
+            "QWERT Current position is - X: "
                 + LimelightHelpers.getBotPose3d("").getX()
                 + " Y: "
                 + LimelightHelpers.getBotPose3d("").getY());

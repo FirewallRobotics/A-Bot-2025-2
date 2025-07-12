@@ -68,13 +68,17 @@ public class FlexAutoSubsystem extends SubsystemBase {
    *
    * @return The location of the nearest reef tag in field space
    */
-  public Translation2d getReefLocationInFieldSpace() {
+  public static Pose2d getReefLocationInFieldSpace() {
+
+    double robotrot;
+    double reefrot;
 
     // get reef location in robot space
-    ReefLocation = VisionSubsystem.getReefLocation();
+    Pose2d reefLocationpPose2d = VisionSubsystem.getReefLocationPose3d().toPose2d();
+    Pose2d RobotFieldSpace;
 
     // if we dont have the reefs location find it by spinning slowly
-    if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
+    if (reefLocationpPose2d == null) {
       DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
       RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
     } else {
@@ -85,12 +89,29 @@ public class FlexAutoSubsystem extends SubsystemBase {
       // get the robots location in field space
       RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
 
+      if (reefLocationpPose2d.getRotation().getDegrees() > 180) {
+        reefrot = reefLocationpPose2d.getRotation().getDegrees() - 360;
+      } else {
+        reefrot = reefLocationpPose2d.getRotation().getDegrees();
+      }
+
+      if (RobotFieldSpace.getRotation().getDegrees() > 180) {
+        robotrot = RobotFieldSpace.getRotation().getDegrees() - 360;
+      } else {
+        robotrot = RobotFieldSpace.getRotation().getDegrees();
+      }
+
       // do the math to find the location of the reef by adding together the values
-      double xActual = ReefLocation[0] + RobotFieldSpace.getX();
-      double yActual = ReefLocation[1] + RobotFieldSpace.getY();
+      double xActual = reefLocationpPose2d.getX() + RobotFieldSpace.getX();
+      double yActual = reefLocationpPose2d.getY() + RobotFieldSpace.getY();
+      double rotActual = reefrot + robotrot;
+
+      if (rotActual < 0) {
+        rotActual += 360;
+      }
 
       // return the values
-      return new Translation2d(xActual, yActual);
+      return new Pose2d(new Translation2d(xActual, yActual), new Rotation2d(rotActual));
     }
     return null;
   }

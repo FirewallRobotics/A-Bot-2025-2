@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
+import frc.robot.commands.AlignWithNearest;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -281,7 +282,7 @@ public class RobotContainer {
     driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     driverXbox.a().whileTrue(drivebase.centerModulesCommand());
 
-    // driverXbox.x().onTrue(new AlignWithNearest());
+    driverXbox.x().onTrue(new AlignWithNearest());
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
     driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));

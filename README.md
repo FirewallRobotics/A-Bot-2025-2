@@ -4,7 +4,7 @@
 
 ## Hardware Configuration
 - Drive Train: Swerve Drive
-- Motor Controllers: 
+- Motor Controllers:
   - Swerve Drive: REV NEO motors with SPARKS MAX
   - Swerve Rotation: REV NEO 550 motors with SPARKS MAX
 - Sensors:
