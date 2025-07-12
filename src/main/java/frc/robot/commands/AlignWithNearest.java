@@ -6,19 +6,26 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Robot;
 import frc.robot.subsystems.AllianceFlipUtil;
+import frc.robot.Constants.ReefScorePositions;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
   public Pose2d getSelectedPose() {
+    @SuppressWarnings("unchecked")
+    SendableChooser<ReefScorePositions> chooser = Robot.getDesiredScoreSendableChooser();
+    ReefScorePositions selected = chooser.getSelected();
+    if (selected == null) {
+      Logger.getGlobal().log(Level.WARNING, "No pose selected in SendableChooser");
+      return new Pose2d(); // Return default pose
+    }
     Logger.getGlobal()
-        .log(
-            Level.INFO,
-            "Getting pose for tag: " + Robot.desiredScoreSendableChooser.getSelected().toString());
-    return AllianceFlipUtil.apply(Robot.desiredScoreSendableChooser.getSelected().scorePosition);
+        .log(Level.INFO, "Getting pose for tag: " + selected.toString());
+    return AllianceFlipUtil.apply(selected.scorePosition);
   }
 
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
@@ -81,6 +88,14 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void initialize() {
+    @SuppressWarnings("unchecked")
+    SendableChooser<ReefScorePositions> chooser = Robot.getDesiredScoreSendableChooser();
+    ReefScorePositions selected = chooser.getSelected();
+    if (selected == null) {
+      Logger.getGlobal().log(Level.WARNING, "No pose selected, using default");
+      return;
+    }
+
     Pose2d selectedPosition = getSelectedPose();
 
     targetPose =

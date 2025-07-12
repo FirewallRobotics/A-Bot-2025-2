@@ -45,8 +45,18 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
 
-  public static final SendableChooser<ReefScorePositions> desiredScoreSendableChooser =
-      new SendableChooser<>();
+  public static SendableChooser<ReefScorePositions> desiredScoreSendableChooser;
+
+  @SuppressWarnings("unchecked")
+  public static SendableChooser<ReefScorePositions> getDesiredScoreSendableChooser() {
+    if (desiredScoreSendableChooser == null) {
+      desiredScoreSendableChooser = new SendableChooser<>();
+      // Initialize with default options if needed
+      ReefScorePositions defaultPosition = new ReefScorePositions(new Pose2d());
+      desiredScoreSendableChooser.setDefaultOption("Default", defaultPosition);
+    }
+    return desiredScoreSendableChooser;
+  }
 
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
@@ -221,7 +231,7 @@ public class Robot extends TimedRobot {
     // Will constantly get the position of the elevator,
     // so that when we go into tele, we have an offset to
     // adjust to
-    //RobotContainer.getStart();
+    // RobotContainer.getStart();
   }
 
   @Override

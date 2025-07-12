@@ -62,87 +62,11 @@ public final class Constants {
         Rotation2d.fromDegrees(-90)) // this is processer, angle could be inaccurate
   };
 
-  public enum ReefScorePositions {
-    FRONT(
-        new Pose2d(
-            Math.cos(reefFaces[0].getRotation().getRadians()) * distanceAway
-                + reefFaces[0].getTranslation().getX(),
-            Math.sin(reefFaces[0].getRotation().getRadians()) * distanceAway
-                + reefFaces[0].getTranslation().getY(),
-            reefFaces[0].getRotation()),
-        18),
-    FRONTLEFT(
-        new Pose2d(
-            Math.cos(reefFaces[1].getRotation().getRadians()) * distanceAway
-                + reefFaces[1].getTranslation().getX(),
-            Math.sin(reefFaces[1].getRotation().getRadians()) * distanceAway
-                + reefFaces[1].getTranslation().getY(),
-            reefFaces[1].getRotation()),
-        19),
-
-    BACKLEFT(
-        new Pose2d(
-            Math.cos(reefFaces[2].getRotation().getRadians()) * distanceAway
-                + reefFaces[2].getTranslation().getX(),
-            Math.sin(reefFaces[2].getRotation().getRadians()) * distanceAway
-                + reefFaces[2].getTranslation().getY(),
-            reefFaces[2].getRotation()),
-        20),
-    BACK(
-        new Pose2d(
-            Math.cos(reefFaces[3].getRotation().getRadians()) * distanceAway
-                + reefFaces[3].getTranslation().getX(),
-            Math.sin(reefFaces[3].getRotation().getRadians()) * distanceAway
-                + reefFaces[3].getTranslation().getY(),
-            reefFaces[3].getRotation()),
-        21),
-    BACKRIGHT(
-        new Pose2d(
-            Math.cos(reefFaces[4].getRotation().getRadians()) * distanceAway
-                + reefFaces[4].getTranslation().getX(),
-            Math.sin(reefFaces[4].getRotation().getRadians()) * distanceAway
-                + reefFaces[4].getTranslation().getY(),
-            reefFaces[4].getRotation()),
-        22),
-    FRONTRIGHT(
-        new Pose2d(
-            Math.cos(reefFaces[5].getRotation().getRadians()) * distanceAway
-                + reefFaces[5].getTranslation().getX(),
-            Math.sin(reefFaces[5].getRotation().getRadians()) * distanceAway
-                + reefFaces[5].getTranslation().getY(),
-            reefFaces[5].getRotation()),
-        17),
-    RIGHTSOURCE(
-        new Pose2d(
-            Math.cos(reefFaces[6].getRotation().getRadians()) * distanceAway
-                + reefFaces[6].getTranslation().getX(),
-            Math.sin(reefFaces[6].getRotation().getRadians()) * distanceAway
-                + reefFaces[6].getTranslation().getY(),
-            reefFaces[6].getRotation()),
-        12),
-    LEFTSOURCE(
-        new Pose2d(
-            Math.cos(reefFaces[7].getRotation().getRadians()) * distanceAway
-                + reefFaces[7].getTranslation().getX(),
-            Math.sin(reefFaces[7].getRotation().getRadians()) * distanceAway
-                + reefFaces[7].getTranslation().getY(),
-            reefFaces[7].getRotation()),
-        13),
-    PROCESSER(
-        new Pose2d(
-            Math.cos(reefFaces[8].getRotation().getRadians()) * distanceAway
-                + reefFaces[8].getTranslation().getX(),
-            Math.sin(reefFaces[8].getRotation().getRadians()) * distanceAway
-                + reefFaces[8].getTranslation().getY(),
-            reefFaces[8].getRotation()),
-        16);
-
+  public static class ReefScorePositions {
     public Pose2d scorePosition;
-    public int aprilTagID;
 
-    private ReefScorePositions(Pose2d pose, int aprilTagID) {
-      this.scorePosition = pose;
-      this.aprilTagID = aprilTagID;
+    public ReefScorePositions(Pose2d position) {
+      this.scorePosition = position;
     }
   }
 

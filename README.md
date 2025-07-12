@@ -4,7 +4,7 @@
 
 ## Hardware Configuration
 - Drive Train: Swerve Drive
-- Motor Controllers: 
+- Motor Controllers:
   - Swerve Drive: REV NEO motors with SPARKS MAX
   - Swerve Rotation: REV NEO 550 motors with SPARKS MAX
 - Sensors:
@@ -68,7 +68,24 @@ VisionSubsystem features:
   - `subsystems/`: Robot subsystems
   - `commands/`: Robot commands
 
+## Documentation Organization
+All documentation files should be placed in the `./doc` folder with clear naming:
 
+1. Test-related docs: `TESTING.md`
+2. Vision system docs: `VISION_CHANGES_FOR_TESTING.md`
+3. Architecture docs: `ARCHITECTURE.md`
+
+## Best Practices
+- Use consistent file paths in documentation
+- Keep docs close to code
+- Use relative links between docs
+- Maintain a clear structure
+
+## Note to Copilot
+When creating documentation:
+1. Always use `/doc` folder
+2. Use consistent filepath comments
+3. Follow existing naming patterns
 
 [![CI](https://github.com/FirewallRobotics/A-Bot-2025-2/actions/workflows/main.yml/badge.svg)](https://github.com/FirewallRobotics/A-Bot-2025-2/actions/workflows/main.yml)
 

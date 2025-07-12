@@ -13,6 +13,9 @@ repositories {
     maven {
         url 'https://maven.reduxrobotics.com'
     }
+    maven {
+        url 'https://frcmaven.wpi.edu/artifactory/release'
+    }
 }
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
@@ -77,17 +80,61 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     // JUnit 5 dependencies
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 
-    // Add Mockito dependency for mocking
-    testImplementation 'org.mockito:mockito-core:3.12.4'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+    // Update Mockito dependencies to compatible versions
+    testImplementation 'org.mockito:mockito-core:4.5.1'
+    testImplementation 'org.mockito:mockito-inline:4.5.1'
+    
+    // Remove explicit ByteBuddy dependencies as they're included with Mockito
+    // testImplementation 'net.bytebuddy:byte-buddy:1.14.5'
+    // testImplementation 'net.bytebuddy:byte-buddy-agent:1.14.5'
+
+    // Add HAL dependency for simulation
+    testImplementation "edu.wpi.first.hal:hal-java:${wpi.platforms.desktop}"
+    testImplementation "edu.wpi.first.wpiutil:wpiutil-java:${wpi.platforms.desktop}"
+
+    // Update WPILib test dependencies with correct version reference
+    testImplementation "edu.wpi.first.wpilibj:wpilibj-java:${wpi.platforms.desktop}"
+    testImplementation "edu.wpi.first.hal:hal-java:${wpi.platforms.desktop}"
+    testImplementation "edu.wpi.first.wpiutil:wpiutil-java:${wpi.platforms.desktop}"
+    
+    // Remove problematic simulation dependencies that aren't needed
+    // testImplementation "edu.wpi.first.wpilibj:wpilibj-java-simulation:${wpi.platforms.roborio}"
+    // testImplementation "edu.wpi.first.halsim:halsim_ds_socket:${wpi.platforms.roborio}"
+    
+    // Include main project classes in tests
+    testImplementation project(':')
+}
+
+sourceSets {
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+    }
 }
 
 test {
     useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+
+    // Add this to help debug class loading issues
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+
+    // Set system properties for tests
+    systemProperties = [
+        'java.library.path': './build/jni'
+    ]
 }
 
 // Simulation configuration (e.g. environment variables).
