@@ -1,13 +1,12 @@
 package frc.robot.commands;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.AllianceFlipUtil;
+import frc.robot.subsystems.VisionSubsystem;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,8 +23,8 @@ public class AlignWithNearest extends Command {
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
   private Command pathCommand;
 
-  private Pose2d targetPose;
-  private double distanceAway = -0.55;
+  // private Pose2d targetPose;
+  // private double distanceAway = -0.55;
 
   public static Pose2d[] TagPos = {
     new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712)),
@@ -81,8 +80,9 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void initialize() {
-    Pose2d selectedPosition = getSelectedPose();
+    // Pose2d selectedPosition = getSelectedPose();
 
+    /*
     targetPose =
         new Pose2d(
             Math.cos(selectedPosition.getRotation().getRadians()) * distanceAway
@@ -96,6 +96,14 @@ public class AlignWithNearest extends Command {
             selectedPosition.getRotation());
 
     pathCommand = AutoBuilder.pathfindToPose(targetPose, new PathConstraints(1, 1, 180, 180));
+    */
+    if (VisionSubsystem.DistanceToReef() != -1) {
+      // RobotContainer.drivebase.drive(new Translation2d(0,0),
+      // VisionSubsystem.getReefLocation()[0]/3, false);
+      pathCommand =
+          RobotContainer.drivebase.driveCommand(
+              () -> 0.0, () -> 0.0, () -> VisionSubsystem.getReefLocation()[0]);
+    }
   }
 
   public void execute() {
