@@ -24,7 +24,7 @@ Why:
 ```java
 public static class ReefScorePositions {
     public Pose2d scorePosition;
-    
+
     public ReefScorePositions(Pose2d position) {
         this.scorePosition = position;
     }

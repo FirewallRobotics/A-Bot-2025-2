@@ -87,7 +87,7 @@ dependencies {
     // Update Mockito dependencies to compatible versions
     testImplementation 'org.mockito:mockito-core:4.5.1'
     testImplementation 'org.mockito:mockito-inline:4.5.1'
-    
+
     // Remove explicit ByteBuddy dependencies as they're included with Mockito
     // testImplementation 'net.bytebuddy:byte-buddy:1.14.5'
     // testImplementation 'net.bytebuddy:byte-buddy-agent:1.14.5'
@@ -99,11 +99,11 @@ dependencies {
     testImplementation "edu.wpi.first.wpilibj:wpilibj-java:${wpi.platforms.desktop}"
     testImplementation "edu.wpi.first.hal:hal-java:${wpi.platforms.desktop}"
     testImplementation "edu.wpi.first.wpiutil:wpiutil-java:${wpi.platforms.desktop}"
-    
+
     // Remove problematic simulation dependencies that aren't needed
     // testImplementation "edu.wpi.first.wpilibj:wpilibj-java-simulation:${wpi.platforms.roborio}"
     // testImplementation "edu.wpi.first.halsim:halsim_ds_socket:${wpi.platforms.roborio}"
-    
+
     // Include main project classes in tests
     testImplementation project(':')
 }

@@ -27,10 +27,10 @@
 void testExampleBehavior() {
     // 1. Setup - Prepare objects and data
     Command command = new ExampleCommand();
-    
+
     // 2. Execute - Run the code being tested
     command.initialize();
-    
+
     // 3. Verify - Check the results
     assertTrue(command.isFinished());
 }
@@ -46,14 +46,14 @@ void testCommandPattern() {
     // 1. Create command and mock dependencies
     ExampleCommand command = new ExampleCommand();
     Subsystem mockSubsystem = mock(Subsystem.class);
-    
+
     // 2. Set up expected behavior
     when(mockSubsystem.getValue()).thenReturn(42);
-    
+
     // 3. Run command methods
     command.initialize();
     command.execute();
-    
+
     // 4. Verify results
     verify(mockSubsystem).setValue(42);
 }
@@ -67,13 +67,13 @@ void testHardwarePattern() {
     // 1. Mock hardware components
     Motor mockMotor = mock(Motor.class);
     Encoder mockEncoder = mock(Encoder.class);
-    
+
     // 2. Set up sensor readings
     when(mockEncoder.getPosition()).thenReturn(10.0);
-    
+
     // 3. Run system under test
     subsystem.periodic();
-    
+
     // 4. Verify motor commands
     verify(mockMotor).set(0.5);
 }
@@ -108,7 +108,7 @@ testDrive()
 1. **Setting Context**
 ```java
 // TEST: Command that aligns robot with nearest scoring position
-// REQUIRES: 
+// REQUIRES:
 // - Robot position from drivetrain
 // - Vision system for AprilTag detection
 // - Path planning for movement
@@ -178,7 +178,7 @@ testDrive()
 class CommandTest {
     @Mock DriveSubsystem drive;
     @Mock VisionSubsystem vision;
-    
+
     @BeforeEach
     void setup() {
         // Initialize mocks

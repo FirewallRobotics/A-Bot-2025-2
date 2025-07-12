@@ -1,5 +1,9 @@
 [
   {
+    "game": "2025_GAME_NAME",
+    "field": "2025_Field.png"
+  },
+  {
     "time": 0.0,
     "pose": {
       "rotation": {

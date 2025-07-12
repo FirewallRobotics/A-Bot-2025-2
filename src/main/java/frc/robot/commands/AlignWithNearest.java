@@ -4,27 +4,32 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.Constants.ReefScorePositions;
 import frc.robot.Robot;
 import frc.robot.subsystems.AllianceFlipUtil;
-import frc.robot.Constants.ReefScorePositions;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
+  private static final Logger logger = Logger.getLogger(AlignWithNearest.class.getName());
+  private final DoubleLogEntry targetXLog;
+  private final DoubleLogEntry targetYLog;
+  private final DoubleLogEntry targetRotLog;
 
   public Pose2d getSelectedPose() {
     @SuppressWarnings("unchecked")
     SendableChooser<ReefScorePositions> chooser = Robot.getDesiredScoreSendableChooser();
     ReefScorePositions selected = chooser.getSelected();
     if (selected == null) {
-      Logger.getGlobal().log(Level.WARNING, "No pose selected in SendableChooser");
+      logger.log(Level.WARNING, "No pose selected in SendableChooser");
       return new Pose2d(); // Return default pose
     }
-    Logger.getGlobal()
-        .log(Level.INFO, "Getting pose for tag: " + selected.toString());
+    logger.log(Level.INFO, "Getting pose for tag: " + selected.toString());
     return AllianceFlipUtil.apply(selected.scorePosition);
   }
 
@@ -84,15 +89,23 @@ public class AlignWithNearest extends Command {
   public Command targetCommand;
 
   // add vision as a requirement to run
-  public AlignWithNearest() {}
+  public AlignWithNearest() {
+    // Initialize DataLog entries
+    targetXLog = new DoubleLogEntry(DataLogManager.getLog(), "/alignment/target/x");
+    targetYLog = new DoubleLogEntry(DataLogManager.getLog(), "/alignment/target/y");
+    targetRotLog = new DoubleLogEntry(DataLogManager.getLog(), "/alignment/target/rotation");
+  }
 
   @Override
   public void initialize() {
     @SuppressWarnings("unchecked")
     SendableChooser<ReefScorePositions> chooser = Robot.getDesiredScoreSendableChooser();
     ReefScorePositions selected = chooser.getSelected();
+    DataLogManager.log(String.format("AlignWithNearest starting - Selected pose: %s", 
+        selected != null ? selected.toString() : "null"));
+
     if (selected == null) {
-      Logger.getGlobal().log(Level.WARNING, "No pose selected, using default");
+      logger.log(Level.WARNING, "No pose selected, using default");
       return;
     }
 
@@ -110,21 +123,45 @@ public class AlignWithNearest extends Command {
                 + selectedPosition.getTranslation().getY(),
             selectedPosition.getRotation());
 
+    if (targetPose != null) {
+      // Log target position data
+      targetXLog.append(targetPose.getX());
+      targetYLog.append(targetPose.getY());
+      targetRotLog.append(targetPose.getRotation().getDegrees());
+      
+      // Log to SmartDashboard for real-time visualization
+      SmartDashboard.putNumber("Alignment/Target/X", targetPose.getX());
+      SmartDashboard.putNumber("Alignment/Target/Y", targetPose.getY());
+      SmartDashboard.putNumber("Alignment/Target/Rotation", targetPose.getRotation().getDegrees());
+    }
+
     pathCommand = AutoBuilder.pathfindToPose(targetPose, new PathConstraints(1, 1, 180, 180));
   }
 
   public void execute() {
-    // robotPose = VisionSubsystem.getRobotPoseInFieldSpace().toPose2d();
-
-    // if (!robotPose.equals(new Pose2d())) RobotContainer.drivebase.driveToPose(robotPose);
-
-    Logger.getGlobal().log(Level.WARNING, "Scheduling path");
-    pathCommand.schedule();
+    if (pathCommand != null) {
+      DataLogManager.log("Executing path to target");
+      pathCommand.schedule();
+    } else {
+      DataLogManager.log("WARNING: No path command available");
+    }
   }
 
   @Override
   public void end(boolean inter) {
-    pathCommand.end(inter);
+    if (pathCommand != null) {
+      pathCommand.end(inter);
+    }
+    DataLogManager.log(String.format("AlignWithNearest ended. Interrupted: %b", inter));
+    
+    // Log final position if available
+    if (targetPose != null) {
+      SmartDashboard.putString("Alignment/FinalState", 
+          String.format("X:%.2f Y:%.2f R:%.2f", 
+              targetPose.getX(), 
+              targetPose.getY(), 
+              targetPose.getRotation().getDegrees()));
+    }
   }
 
   @Override
