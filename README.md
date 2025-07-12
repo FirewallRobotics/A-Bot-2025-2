@@ -81,11 +81,6 @@ All documentation files should be placed in the `./doc` folder with clear naming
 - Use relative links between docs
 - Maintain a clear structure
 
-## Note to Copilot
-When creating documentation:
-1. Always use `/doc` folder
-2. Use consistent filepath comments
-3. Follow existing naming patterns
 
 [![CI](https://github.com/FirewallRobotics/A-Bot-2025-2/actions/workflows/main.yml/badge.svg)](https://github.com/FirewallRobotics/A-Bot-2025-2/actions/workflows/main.yml)
 

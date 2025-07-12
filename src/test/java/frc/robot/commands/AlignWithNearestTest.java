@@ -36,7 +36,6 @@ class AlignWithNearestTest extends TestBase {
         mockPosition = new ReefScorePositions(testPose);
         mockChooser.setDefaultOption("Test Position", mockPosition);
         mockChooser.addOption("Test Position", mockPosition);
-        mockChooser.setDefaultOption("Test Position", mockPosition);
     }
 
     private void setupTestMocks(MockedStatic<Robot> robotStatic, 

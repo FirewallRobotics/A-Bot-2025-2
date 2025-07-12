@@ -7,8 +7,8 @@ import frc.robot.Robot;
 import org.mockito.MockedStatic;
 
 public class TestUtils {
-    public static void setupRobotMocks(MockedStatic<Robot> robotStatic, SendableChooser<ReefScorePositions> mockChooser, ReefScorePositions mockPosition) {
-        // Setup Robot's static accessor method
+    public static void setupRobotMocks(MockedStatic<Robot> robotStatic, SendableChooser<ReefScorePositions> mockChooser) {
+        // Setup Robot's static accessor method with the mock chooser
         robotStatic.when(Robot::getDesiredScoreSendableChooser).thenReturn(mockChooser);
     }
 

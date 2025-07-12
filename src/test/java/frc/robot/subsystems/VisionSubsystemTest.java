@@ -14,6 +14,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class VisionSubsystemTest extends TestBase {
+    // Pipeline indices
+    private static final int APRILTAG_PIPELINE_INDEX = 0;
+    private static final int REEF_PIPELINE_INDEX = 1;
+    private static final int CORAL_PIPELINE_INDEX = 2;
+    private static final int ALGAE_PIPELINE_INDEX = 3;
+
     private VisionSubsystem visionSubsystem;
 
     @BeforeEach
@@ -61,8 +67,8 @@ class VisionSubsystemTest extends TestBase {
 
             assertEquals(2.5, VisionSubsystem.DistanceToReef(), 0.01);
             
-            // Verify the pipeline was set
-            mockedStatic.verify(() -> LimelightHelpers.setPipelineIndex(anyString(), eq(0)));
+            // Verify the pipeline was set to AprilTag pipeline
+            mockedStatic.verify(() -> LimelightHelpers.setPipelineIndex(anyString(), eq(APRILTAG_PIPELINE_INDEX)));
         }
     }
 

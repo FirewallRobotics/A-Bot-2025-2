@@ -93,8 +93,7 @@ dependencies {
     // testImplementation 'net.bytebuddy:byte-buddy-agent:1.14.5'
 
     // Add HAL dependency for simulation
-    testImplementation "edu.wpi.first.hal:hal-java:${wpi.platforms.desktop}"
-    testImplementation "edu.wpi.first.wpiutil:wpiutil-java:${wpi.platforms.desktop}"
+    // Removed duplicate HAL and WPIUtil dependencies
 
     // Update WPILib test dependencies with correct version reference
     testImplementation "edu.wpi.first.wpilibj:wpilibj-java:${wpi.platforms.desktop}"
