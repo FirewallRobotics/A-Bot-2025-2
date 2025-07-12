@@ -245,12 +245,6 @@ public class RobotContainer {
 
     coralController.y().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel3(elevatorSubsystem)));
 
-    // DO NOT TOUCH
-    // NEEDS WORK
-    // KATHERINE I WILL KILL YOU
-    // OR AIDEN
-    // I WILL STAB
-
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
     // Will make it so pressing right on the controller will put the position to the logger. this
