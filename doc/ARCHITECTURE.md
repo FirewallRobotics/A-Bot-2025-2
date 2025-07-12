@@ -1,13 +1,37 @@
-Collecting workspace information
+# Robot Architecture Overview
 
-Here's how the architecture works in this codebase:
+## Drive System
+1. **YAGSL (Yet Another Generic Swerve Library)**
+- Current implementation uses YAGSL for swerve drive control
+- Key components:
+  ```java
+  SwerveSubsystem - Primary drive control
+  SwerveInputStream - Processes driver inputs
+  ```
+- Located in RobotContainer.java:
+  ```java
+  public static final SwerveSubsystem drivebase = new SwerveSubsystem(
+    new File(Filesystem.getDeployDirectory(), "swerve/neo")
+  );
+  ```
 
+2. **Legacy Code Note**
+- Files in /commands/swervedrive/* are from 2024 drive system
+- These files used different hardware configuration
+- Current robot movement uses YAGSL methods:
+  ```java
+  drivebase.drive(xSpeed, ySpeed, rotation, fieldRelative, openLoop)
+  drivebase.driveFieldOriented(inputStream)
+  drivebase.centerModulesCommand()
+  ```
+
+## Core Framework
 1. **TimedRobot Framework**
-- 
+-
 
 Robot
 
- extends 
+ extends
 
 TimedRobot
 
@@ -20,8 +44,9 @@ TimedRobot
   testPeriodic() // During test mode
   ```
 
+## Vision System
 2. **Limelight Integration**
-- 
+-
 
 LimelightHelpers
 
@@ -34,8 +59,9 @@ LimelightHelpers
   ```
 - Data flows through NetworkTables to Driver Station
 
+## Path Planning
 3. **PathPlanner**
-- Located in 
+- Located in
 
 pathplanner
 
@@ -48,6 +74,7 @@ pathplanner
   }
   ```
 
+## Visualization
 4. **AdvantageScope**
 - Receives data through NetworkTables for visualization
 - Key data points:
@@ -56,6 +83,7 @@ pathplanner
   - Autonomous paths
   - Subsystem states
 
+## Control Systems
 5. **Driver Station Integration**
 - Sends data through SmartDashboard:
   ```java
@@ -69,6 +97,7 @@ pathplanner
   CommandScheduler.getInstance().run()
   ```
 
+## Data Flow
 The data flow is:
 ```
 Sensors (Limelight, Encoders) -> NetworkTables -> Driver Station/AdvantageScope
