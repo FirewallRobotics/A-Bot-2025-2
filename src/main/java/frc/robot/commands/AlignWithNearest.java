@@ -141,10 +141,13 @@ public class AlignWithNearest extends Command {
   public void initialize() {
     Pose3d reeflocation = VisionSubsystem.getReefLocationPose3d();
     if (reeflocation != null) {
+      // pathCommand = RobotContainer.drivebase.driveCommand(() -> reeflocation.getX(), () ->
+      // reeflocation.getY()-0.1, () -> reeflocation.getRotation().getAngle());
       pathCommand =
           RobotContainer.drivebase.driveToPose(
               getReefLocationInFieldSpaceWithOffset(-0.1, reeflocation));
-      pathCommand.schedule();
+      // Fallback. Will cancel the command if the back button is pressed
+      pathCommand.until(() -> RobotContainer.driverXbox.back().getAsBoolean()).schedule();
     } else {
       Logger.getGlobal().log(Level.WARNING, "Reef location is null");
     }
