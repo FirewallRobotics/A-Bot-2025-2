@@ -6,10 +6,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import frc.robot.LimelightHelpers;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.AllianceFlipUtil;
 import frc.robot.subsystems.VisionSubsystem;
 import java.util.function.DoubleSupplier;
 import java.util.logging.Level;
@@ -17,16 +16,7 @@ import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
-  public Pose2d getSelectedPose() {
-    Logger.getGlobal()
-        .log(
-            Level.INFO,
-            "Getting pose for tag: " + Robot.desiredScoreSendableChooser.getSelected().toString());
-    return AllianceFlipUtil.apply(Robot.desiredScoreSendableChooser.getSelected().scorePosition);
-  }
-
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
-  private Command pathCommand;
 
   // private Pose2d targetPose;
   // private double distanceAway = -0.55;
@@ -37,7 +27,7 @@ public class AlignWithNearest extends Command {
     new Pose2d(11.434, 7.398, new Rotation2d(1.570796)),
     new Pose2d(0, 0, new Rotation2d(0)),
     new Pose2d(0, 0, new Rotation2d(0)),
-    new Pose2d(13.787, 2.811, new Rotation2d(2.094395)),
+    new Pose2d(13.69, 2.4, new Rotation2d(2.146755)),
     new Pose2d(14.261, 2.220, new Rotation2d(Math.toRadians(125))),
     new Pose2d(13.840, 5.217, new Rotation2d(-2.111848)),
     new Pose2d(12.365, 5.165, new Rotation2d(-1.012291)),
@@ -71,7 +61,7 @@ public class AlignWithNearest extends Command {
   public static Pose2d Tag21 = new Pose2d(5.538, 3.969, new Rotation2d(3.141593));
   public static Pose2d Tag22 = new Pose2d(4.787, 2.811, new Rotation2d(2.094395));
 
-  public static Pose2d Tag6 = new Pose2d(13.787, 2.811, new Rotation2d(2.094395));
+  public static Pose2d Tag6 = new Pose2d(13.69, 2.4, new Rotation2d(2.146755));
   public static Pose2d Tag7 = new Pose2d(14.538, 3.969, new Rotation2d(3.141593));
   public static Pose2d Tag8 = new Pose2d(13.840, 5.217, new Rotation2d(-2.111848));
   public static Pose2d Tag9 = new Pose2d(12.365, 5.165, new Rotation2d(-1.012291));
@@ -137,29 +127,92 @@ public class AlignWithNearest extends Command {
   // add vision as a requirement to run
   public AlignWithNearest() {}
 
+  int TagAligningToo;
+  ConditionalCommand conditionalDriveCommand;
+
   @Override
   public void initialize() {
-    Pose3d reeflocation = VisionSubsystem.getReefLocationPose3d();
-    if (reeflocation != null) {
-      // pathCommand = RobotContainer.drivebase.driveCommand(() -> reeflocation.getX(), () ->
-      // reeflocation.getY()-0.1, () -> reeflocation.getRotation().getAngle());
-      pathCommand =
-          RobotContainer.drivebase.driveToPose(
-              getReefLocationInFieldSpaceWithOffset(-0.1, reeflocation));
-      // Fallback. Will cancel the command if the back button is pressed
-      pathCommand.until(() -> RobotContainer.driverXbox.back().getAsBoolean()).schedule();
+    int[] tags = VisionSubsystem.getTags();
+    if (tags.length > 0) {
+      TagAligningToo = tags[0];
+      // Provides direct connection that bypasses pathplanner (more accurate)
+      // If we use this, put it in execute and have it change constantly to update as data streams
+      // in.
+      Pose2d TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
+      if (TagLocation != null) {
+        Logger.getGlobal()
+            .log(
+                Level.INFO,
+                (TagLocation.getX())
+                    + " "
+                    + (TagLocation.getY())
+                    + " "
+                    + (TagLocation.getRotation().getRotations()));
+        // RobotContainer.drivebase.drive(new Translation2d(0.5, 0), 0, false);
+        Command driveCommand =
+            RobotContainer.drivebase.driveCommand(
+                () -> -(TagLocation.getX()),
+                () -> -(TagLocation.getY()),
+                () -> -(TagLocation.getRotation().getRotations()));
+        conditionalDriveCommand =
+            driveCommand.unless(
+                () ->
+                    (RobotContainer.driverXbox.back().getAsBoolean()
+                        || RobotContainer.coralController.back().getAsBoolean()));
+        conditionalDriveCommand.schedule();
+      }
     } else {
-      Logger.getGlobal().log(Level.WARNING, "Reef location is null");
+      Command driveCommand = RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
+      conditionalDriveCommand =
+          driveCommand.unless(
+              () ->
+                  (RobotContainer.driverXbox.back().getAsBoolean()
+                          || RobotContainer.coralController.back().getAsBoolean())
+                      || !RobotContainer.coralController.rightBumper().getAsBoolean());
+      conditionalDriveCommand.schedule();
     }
   }
 
   @Override
-  public void end(boolean inter) {
-    pathCommand.end(inter);
+  public void execute() {
+    int[] tags = VisionSubsystem.getTags();
+    if (tags.length > 0 && conditionalDriveCommand.isFinished()) {
+      TagAligningToo = tags[0];
+      // Provides direct connection that bypasses pathplanner (more accurate)
+      // If we use this, put it in execute and have it change constantly to update as data streams
+      // in.
+      Pose2d TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
+      if (TagLocation != null) {
+        Logger.getGlobal()
+            .log(
+                Level.INFO,
+                (TagLocation.getX())
+                    + " "
+                    + (TagLocation.getY())
+                    + " "
+                    + (TagLocation.getRotation().getRotations()));
+        // RobotContainer.drivebase.drive(new Translation2d(0.5, 0), 0, false);
+        Command driveCommand =
+            RobotContainer.drivebase.driveCommand(
+                () -> -(TagLocation.getX()),
+                () -> -(TagLocation.getY()),
+                () -> -(TagLocation.getRotation().getRotations()));
+        conditionalDriveCommand =
+            driveCommand.unless(
+                () ->
+                    (RobotContainer.driverXbox.back().getAsBoolean()
+                            || RobotContainer.coralController.back().getAsBoolean())
+                        || !RobotContainer.coralController.rightBumper().getAsBoolean());
+        conditionalDriveCommand.schedule();
+      }
+    }
   }
 
   @Override
   public boolean isFinished() {
-    return pathCommand.isFinished();
+    return !VisionSubsystem.CanSeeTag(TagAligningToo)
+        || (RobotContainer.driverXbox.back().getAsBoolean()
+            || RobotContainer.coralController.back().getAsBoolean())
+        || !RobotContainer.coralController.rightBumper().getAsBoolean();
   }
 }

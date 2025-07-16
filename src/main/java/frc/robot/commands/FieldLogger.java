@@ -12,7 +12,7 @@ public class FieldLogger extends Command {
     m_VisionSubsystem = v_Subsystem;
   }
 
-  public void LogFieldPosition() {
+  public void initialize() {
     m_VisionSubsystem.getPose3d();
   }
 }

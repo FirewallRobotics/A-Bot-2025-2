@@ -1,10 +1,7 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
@@ -12,15 +9,13 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
-import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.RobotContainer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
 
   public static String name = frc.robot.Constants.VisionSubsystemConstants.limelightName;
-
-  private final SwerveSubsystem m_SwerveSubsystem;
 
   // pipeline layout:
   // 0 - april tags
@@ -30,7 +25,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   // Purely from limelight's stuff
 
-  private final SwerveDrivePoseEstimator m_poseEstimator;
+  // private final SwerveDrivePoseEstimator m_poseEstimator;
 
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
@@ -38,25 +33,28 @@ public class VisionSubsystem extends SubsystemBase {
   private static int[] bargeTags = {4, 5, 14, 15};
   boolean doRejectUpdate;
 
-  public VisionSubsystem(SwerveSubsystem s_Subsystem) {
+  public VisionSubsystem() {
 
-    m_SwerveSubsystem = s_Subsystem;
-
-    m_poseEstimator =
-        new SwerveDrivePoseEstimator(
-            m_SwerveSubsystem.getKinematics(),
-            m_SwerveSubsystem.getGyro().getRotation3d().toRotation2d(),
-            m_SwerveSubsystem.getSwerveDrive().getModulePositions(),
-            new Pose2d(),
-            VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-            VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+    // m_poseEstimator =
+    //    new SwerveDrivePoseEstimator(
+    //        m_SwerveSubsystem.getKinematics(),
+    //        m_SwerveSubsystem.getGyro().getRotation3d().toRotation2d(),
+    //        m_SwerveSubsystem.getSwerveDrive().getModulePositions(),
+    //        new Pose2d(),
+    //        VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+    //        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
   }
 
   /** Updates our position on the field using seen AprilTags */
   public void UpdatePositionOnField() {
 
-    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
 
+    if (mt1.tagCount == 0) {
+      doRejectUpdate = true;
+    } else {
+      doRejectUpdate = false;
+    }
     if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
       if (mt1.rawFiducials[0].ambiguity > .7) {
         doRejectUpdate = true;
@@ -65,13 +63,9 @@ public class VisionSubsystem extends SubsystemBase {
         doRejectUpdate = true;
       }
     }
-    if (mt1.tagCount == 0) {
-      doRejectUpdate = true;
-    }
 
     if (!doRejectUpdate) {
-      m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.5, .5, 9999999));
-      m_poseEstimator.addVisionMeasurement(mt1.pose, mt1.timestampSeconds);
+      RobotContainer.drivebase.addVisionReading(mt1.pose, mt1.timestampSeconds);
     }
 
     /*
@@ -99,9 +93,9 @@ public class VisionSubsystem extends SubsystemBase {
         .log(
             Level.WARNING,
             "QWERT Current position is - X: "
-                + LimelightHelpers.getBotPose3d("").getX()
+                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getX()
                 + " Y: "
-                + LimelightHelpers.getBotPose3d("").getY());
+                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getY());
   }
 
   /**
@@ -133,6 +127,17 @@ public class VisionSubsystem extends SubsystemBase {
     return fiducials[0].distToRobot;
   }
 
+  public static Pose2d getTagPose2d(int tag) {
+    LimelightTarget_Fiducial[] fiducials =
+        LimelightHelpers.getLatestResults(name).targets_Fiducials;
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == tag) {
+        return fiducials[i].getTargetPose_RobotSpace2D();
+      }
+    }
+    return null;
+  }
+
   /**
    * Gets the Pose2D information of the lowest seen AprilTag
    *
@@ -159,6 +164,8 @@ public class VisionSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("ReefDistance", VisionSubsystem.DistanceToReef());
     SmartDashboard.putNumber("CoralStationDistance", VisionSubsystem.DistanceToCoralStation());
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
+
+    UpdatePositionOnField();
 
     // LimelightHelpers.SetRobotOrientation(
     //    name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);
