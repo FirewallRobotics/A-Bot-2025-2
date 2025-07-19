@@ -46,6 +46,7 @@ import org.json.simple.parser.ParseException;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.imu.SwerveIMU;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -72,6 +73,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param directory Directory of swerve drive config files.
    */
   public SwerveSubsystem(File directory) {
+
     // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being
     // created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
@@ -235,6 +237,29 @@ public class SwerveSubsystem extends SubsystemBase {
     PathConstraints constraints =
         new PathConstraints(
             5, 4.0, swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
+
+    // Since AutoBuilder is configured, we can use it to build pathfinding commands
+    return AutoBuilder.pathfindToPose(
+        pose,
+        constraints,
+        edu.wpi.first.units.Units.MetersPerSecond.of(0) // Goal end velocity in meters/sec
+        );
+  }
+
+  /**
+   * Use PathPlanner Path finding to go to a point on the field.
+   *
+   * @param pose Target {@link Pose2d} to go to.
+   * @return PathFinding command
+   */
+  public Command driveToPose(Pose2d pose, double maxVelocityMPS, double maxAccelerationMPSSq) {
+    // Create the constraints to use while pathfinding
+    PathConstraints constraints =
+        new PathConstraints(
+            maxVelocityMPS,
+            maxAccelerationMPSSq,
+            swerveDrive.getMaximumChassisAngularVelocity(),
+            Units.degreesToRadians(720));
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return AutoBuilder.pathfindToPose(
@@ -481,6 +506,11 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public SwerveDriveKinematics getKinematics() {
     return swerveDrive.kinematics;
+  }
+
+  public SwerveIMU getGyro() {
+
+    return swerveDrive.getGyro();
   }
 
   /**

@@ -10,6 +10,8 @@ import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -21,15 +23,52 @@ public class VisionSubsystem extends SubsystemBase {
   // 2 - Coral Station Target
   // 3 - Color for Algae
 
+  // Purely from limelight's stuff
+
+  // private final SwerveDrivePoseEstimator m_poseEstimator;
+
   private static int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
   private static int[] coralTags = {1, 2, 12, 13};
   private static int[] processorTags = {3, 16};
   private static int[] bargeTags = {4, 5, 14, 15};
   boolean doRejectUpdate;
 
+  public VisionSubsystem() {
+
+    // m_poseEstimator =
+    //    new SwerveDrivePoseEstimator(
+    //        m_SwerveSubsystem.getKinematics(),
+    //        m_SwerveSubsystem.getGyro().getRotation3d().toRotation2d(),
+    //        m_SwerveSubsystem.getSwerveDrive().getModulePositions(),
+    //        new Pose2d(),
+    //        VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+    //        VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+  }
+
   /** Updates our position on the field using seen AprilTags */
   public void UpdatePositionOnField() {
 
+    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
+
+    if (mt1.tagCount == 0) {
+      doRejectUpdate = true;
+    } else {
+      doRejectUpdate = false;
+    }
+    if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
+      if (mt1.rawFiducials[0].ambiguity > .7) {
+        doRejectUpdate = true;
+      }
+      if (mt1.rawFiducials[0].distToCamera > 3) {
+        doRejectUpdate = true;
+      }
+    }
+
+    if (!doRejectUpdate) {
+      RobotContainer.drivebase.addVisionReading(mt1.pose, mt1.timestampSeconds);
+    }
+
+    /*
     // use seen tags to find our position using megaTag2
     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
 
@@ -45,8 +84,18 @@ public class VisionSubsystem extends SubsystemBase {
       // add a vision reading to YAGSL if everything is in check
       if (!doRejectUpdate) {
         RobotContainer.drivebase.addVisionReading(mt2.pose, mt2.timestampSeconds);
-      }
-    }
+      }*/
+  }
+
+  public void getPose3d() {
+    // Get the 3d position of the robot on the field to the logger.
+    Logger.getGlobal()
+        .log(
+            Level.WARNING,
+            "QWERT Current position is - X: "
+                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getX()
+                + " Y: "
+                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getY());
   }
 
   /**
@@ -78,6 +127,17 @@ public class VisionSubsystem extends SubsystemBase {
     return fiducials[0].distToRobot;
   }
 
+  public static Pose2d getTagPose2d(int tag) {
+    LimelightTarget_Fiducial[] fiducials =
+        LimelightHelpers.getLatestResults(name).targets_Fiducials;
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == tag) {
+        return fiducials[i].getTargetPose_RobotSpace2D();
+      }
+    }
+    return null;
+  }
+
   /**
    * Gets the Pose2D information of the lowest seen AprilTag
    *
@@ -104,6 +164,8 @@ public class VisionSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("ReefDistance", VisionSubsystem.DistanceToReef());
     SmartDashboard.putNumber("CoralStationDistance", VisionSubsystem.DistanceToCoralStation());
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
+
+    UpdatePositionOnField();
 
     // LimelightHelpers.SetRobotOrientation(
     //    name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);

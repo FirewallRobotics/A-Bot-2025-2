@@ -23,11 +23,15 @@ public class SearchForTag extends Command {
   private static final Logger logger = Logger.getLogger(SearchForTag.class.getName());
   private final SwerveSubsystem swerveDrive; // Change type to SwerveSubsystem
   private final Timer timer = new Timer();
+  private final edu.wpi.first.networktables.NetworkTable table;
+  private final edu.wpi.first.networktables.NetworkTableEntry tagEntries;
   private static final double TIME_THRESHOLD = 0.03; // 30 milliseconds
 
   public SearchForTag(SwerveSubsystem swerveDrive) { // Change parameter type to SwerveSubsystem
     this.swerveDrive = swerveDrive;
     addRequirements(swerveDrive);
+    this.table = NetworkTableInstance.getDefault().getTable("limelight");
+    this.tagEntries = table.getEntry("aprilTags");
   }
 
   @Override
@@ -39,8 +43,7 @@ public class SearchForTag extends Command {
 
   @Override
   public void execute() {
-    var table = NetworkTableInstance.getDefault().getTable("limelight");
-    var tagEntries = table.getEntry("aprilTags");
+    // Use cached table and tagEntries
     var lastUpdateTime = tagEntries.getLastChange() / 1e6; // Convert to seconds
 
     if (Timer.getFPGATimestamp() - lastUpdateTime > TIME_THRESHOLD) {

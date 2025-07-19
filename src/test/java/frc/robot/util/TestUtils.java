@@ -1,19 +1,20 @@
 package frc.robot.util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import frc.robot.Constants.ReefScorePositions;
+import static org.mockito.Mockito.*;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import org.mockito.MockedStatic;
 
 public class TestUtils {
-  public static void setupRobotMocks(
-      MockedStatic<Robot> robotStatic, SendableChooser<ReefScorePositions> mockChooser) {
-    // Setup Robot's static accessor method with the mock chooser
-    robotStatic.when(Robot::getDesiredScoreSendableChooser).thenReturn(mockChooser);
+  /** Sets up basic robot static mocks for testing. */
+  public static void setupRobotMocks(MockedStatic<Robot> robotStatic) {
+    // Add any needed Robot static method mocks here
   }
 
-  public static ReefScorePositions createMockReefPosition(Pose2d pose) {
-    return new ReefScorePositions(pose);
+  /** Sets up SmartDashboard mocks for testing. */
+  public static void setupDashboardMocks(MockedStatic<SmartDashboard> dashboard) {
+    // Setup SmartDashboard defaults
+    dashboard.when(() -> SmartDashboard.getNumber(anyString(), anyDouble())).thenReturn(0.0);
   }
 }
