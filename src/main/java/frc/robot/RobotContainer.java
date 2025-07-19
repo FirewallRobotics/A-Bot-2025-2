@@ -145,6 +145,9 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    SmartDashboard.putNumber("X-Stop-Dist", 0.04);
+    SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
+    SmartDashboard.putNumber("Rot-Stop-Dist", 5);
     // keyboard = new KeyboardInput();
     configureBindings();
     flexAutoSubsystem = new FlexAutoSubsystem();

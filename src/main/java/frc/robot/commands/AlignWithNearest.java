@@ -1,16 +1,13 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import frc.robot.LimelightHelpers;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
-import java.util.function.DoubleSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,150 +66,180 @@ public class AlignWithNearest extends Command {
   public static Pose2d Tag11 = new Pose2d(12.390, 2.790, new Rotation2d(1.012291));
 
   public Command targetCommand;
-
-  /**
-   * Gets the location of a reef tag in field space with an offset
-   *
-   * @return The location of the nearest reef tag in field space
-   */
-  public Pose2d getReefLocationInFieldSpaceWithOffset(double yOffset, Pose3d reeflocation) {
-
-    double robotrot;
-    double reefrot;
-
-    // get reef location in robot space
-    Pose2d reefLocationpPose2d = reeflocation.toPose2d();
-    Pose2d RobotFieldSpace;
-
-    // if we dont have the reefs location find it by spinning slowly
-    if (reefLocationpPose2d == null) {
-      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
-    } else {
-      // if we do have the reefs location then convert it
-      // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0).schedule();
-
-      // get the robots location in field space
-      RobotFieldSpace = LimelightHelpers.getBotPose2d(name);
-
-      if (reefLocationpPose2d.getRotation().getDegrees() > 180) {
-        reefrot = reefLocationpPose2d.getRotation().getDegrees() - 360;
-      } else {
-        reefrot = reefLocationpPose2d.getRotation().getDegrees();
-      }
-
-      if (RobotFieldSpace.getRotation().getDegrees() > 180) {
-        robotrot = RobotFieldSpace.getRotation().getDegrees() - 360;
-      } else {
-        robotrot = RobotFieldSpace.getRotation().getDegrees();
-      }
-
-      // do the math to find the location of the reef by adding together the values
-      double xActual = ((-reefLocationpPose2d.getX()) + RobotFieldSpace.getX());
-      double yActual = ((-(reefLocationpPose2d.getY() + yOffset)) + RobotFieldSpace.getY());
-      double rotActual = ((-reefrot) + robotrot);
-
-      if (rotActual < 0) {
-        rotActual += 360;
-      }
-
-      // return the values
-      SmartDashboard.putNumberArray("LocationCalcu", new Double[] {xActual, yActual, rotActual});
-      return new Pose2d(new Translation2d(xActual, yActual), new Rotation2d(rotActual));
-    }
-    return null;
-  }
-
-  // add vision as a requirement to run
-  public AlignWithNearest() {}
+  PIDController rController;
 
   int TagAligningToo;
-  ConditionalCommand conditionalDriveCommand;
+  ParallelRaceGroup conditionalDriveCommand;
+  Pose2d TagLocation;
+  int GraceFrames;
+
+  // add vision as a requirement to run
+  public AlignWithNearest() {
+    rController = new PIDController(0.58, 0, 0);
+    TagLocation = new Pose2d(0, 0, new Rotation2d(0));
+  }
 
   @Override
   public void initialize() {
-    int[] tags = VisionSubsystem.getTags();
-    if (tags.length > 0) {
-      TagAligningToo = tags[0];
-      // Provides direct connection that bypasses pathplanner (more accurate)
-      // If we use this, put it in execute and have it change constantly to update as data streams
-      // in.
-      Pose2d TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
-      if (TagLocation != null) {
-        Logger.getGlobal()
-            .log(
-                Level.INFO,
-                (TagLocation.getX())
-                    + " "
-                    + (TagLocation.getY())
-                    + " "
-                    + (TagLocation.getRotation().getRotations()));
-        // RobotContainer.drivebase.drive(new Translation2d(0.5, 0), 0, false);
-        Command driveCommand =
-            RobotContainer.drivebase.driveCommand(
-                () -> -(TagLocation.getX()),
-                () -> -(TagLocation.getY()),
-                () -> -(TagLocation.getRotation().getRotations()));
-        conditionalDriveCommand =
-            driveCommand.unless(
-                () ->
-                    (RobotContainer.driverXbox.back().getAsBoolean()
-                        || RobotContainer.coralController.back().getAsBoolean()));
-        conditionalDriveCommand.schedule();
-      }
-    } else {
-      Command driveCommand = RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
-      conditionalDriveCommand =
-          driveCommand.unless(
-              () ->
-                  (RobotContainer.driverXbox.back().getAsBoolean()
-                          || RobotContainer.coralController.back().getAsBoolean())
-                      || !RobotContainer.coralController.rightBumper().getAsBoolean());
-      conditionalDriveCommand.schedule();
-    }
+    rController.setSetpoint(0);
+    rController.setTolerance(1);
   }
 
   @Override
   public void execute() {
     int[] tags = VisionSubsystem.getTags();
-    if (tags.length > 0 && conditionalDriveCommand.isFinished()) {
+    //False means it's not null
+    //True means that it is null
+    boolean isNullDoubleTest = false;
+
+    if (tags.length > 0) {
       TagAligningToo = tags[0];
       // Provides direct connection that bypasses pathplanner (more accurate)
       // If we use this, put it in execute and have it change constantly to update as data streams
       // in.
-      Pose2d TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
-      if (TagLocation != null) {
-        Logger.getGlobal()
-            .log(
-                Level.INFO,
-                (TagLocation.getX())
-                    + " "
-                    + (TagLocation.getY())
-                    + " "
-                    + (TagLocation.getRotation().getRotations()));
-        // RobotContainer.drivebase.drive(new Translation2d(0.5, 0), 0, false);
-        Command driveCommand =
+      TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
+      isNullDoubleTest = VisionSubsystem.getNullDoubleTest();
+
+      //TagLocation != null
+      //    && TagLocation.getTranslation() != null
+      //    && TagLocation.getRotation() != null
+
+      if (isNullDoubleTest == false) {
+
+        Command driveCommand;
+
+        SmartDashboard.putNumberArray(
+            "Calculated pos",
+            new double[] {
+              TagLocation.getY(),
+              TagLocation.getX(),
+              TagLocation.getRotation().getDegrees(),
+              rController.calculate(TagLocation.getRotation().getDegrees())
+            });
+
+        driveCommand =
             RobotContainer.drivebase.driveCommand(
-                () -> -(TagLocation.getX()),
                 () -> -(TagLocation.getY()),
-                () -> -(TagLocation.getRotation().getRotations()));
+                () -> -(TagLocation.getX()),
+                () -> (rController.calculate(TagLocation.getRotation().getDegrees())),
+                false);
+
         conditionalDriveCommand =
-            driveCommand.unless(
+            driveCommand.until(
                 () ->
-                    (RobotContainer.driverXbox.back().getAsBoolean()
+                    Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+                        || !VisionSubsystem.CanSeeTag(TagAligningToo)
+                        || (RobotContainer.driverXbox.back().getAsBoolean()
                             || RobotContainer.coralController.back().getAsBoolean())
                         || !RobotContainer.coralController.rightBumper().getAsBoolean());
-        conditionalDriveCommand.schedule();
+
+        if (Math.abs(TagLocation.getY()) > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)) {
+
+          // Logger.getGlobal().log(Level.INFO, "Too far");
+
+          if (VisionSubsystem.CanSeeTag(TagAligningToo)) {
+
+            // Logger.getGlobal().log(Level.INFO, "Can see tag");
+
+            if ((!RobotContainer.driverXbox.back().getAsBoolean()
+                && !RobotContainer.coralController.back().getAsBoolean())) {
+
+              // Logger.getGlobal().log(Level.INFO, "No back buttons");
+
+              if (RobotContainer.coralController.rightBumper().getAsBoolean()) {
+
+                conditionalDriveCommand.schedule();
+                // Logger.getGlobal()
+                //    .log(
+                //        Level.INFO,
+                //        "Move too: " + -(TagLocation.getY()) + " " + -(TagLocation.getX()));
+              } else {
+                Logger.getGlobal().log(Level.WARNING, "Button release cancel");
+                if (conditionalDriveCommand != null) {
+                  conditionalDriveCommand.cancel();
+                }
+              }
+            } else {
+              Logger.getGlobal().log(Level.WARNING, "Back button cancel");
+              if (conditionalDriveCommand != null) {
+                conditionalDriveCommand.cancel();
+              }
+            }
+          } else {
+            Logger.getGlobal().log(Level.WARNING, "Cannot see tag cancel");
+            if (conditionalDriveCommand != null) {
+              conditionalDriveCommand.cancel();
+            }
+          }
+        } else {
+          Logger.getGlobal().log(Level.WARNING, "Too close cancel");
+          if (conditionalDriveCommand != null) {
+            conditionalDriveCommand.cancel();
+          }
+        }
+
+        // Logger.getGlobal()
+        //     .log(Level.WARNING, "CanSee: " + VisionSubsystem.CanSeeTag(TagAligningToo));
+        // Logger.getGlobal()
+        //    .log(
+        //        Level.WARNING,
+        //        "TooFar: "
+        //            + (Math.abs(TagLocation.getX())
+        //                > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)));
+        // Logger.getGlobal().log(Level.WARNING, "DistValue: " + (Math.abs(TagLocation.getX())));
+      } else {
+        Logger.getGlobal().log(Level.WARNING, "Null location cancel");
+        if (conditionalDriveCommand != null) {
+          conditionalDriveCommand.cancel();
+        }
       }
+    } else if(GraceFrames > 10) {
+      Logger.getGlobal().log(Level.WARNING, "No tags cancel");
+      if (conditionalDriveCommand != null) {
+        conditionalDriveCommand.cancel();
+      }
+    }else{
+      GraceFrames += 1;
     }
   }
 
   @Override
   public boolean isFinished() {
-    return !VisionSubsystem.CanSeeTag(TagAligningToo)
-        || (RobotContainer.driverXbox.back().getAsBoolean()
+
+    if (!VisionSubsystem.CanSeeTag(TagAligningToo) && conditionalDriveCommand != null && GraceFrames > 10) {
+      conditionalDriveCommand.cancel();
+      Logger.getGlobal().log(Level.WARNING, "Cannot see tag exit");
+      return true;
+    }
+
+    if ((RobotContainer.driverXbox.back().getAsBoolean()
             || RobotContainer.coralController.back().getAsBoolean())
-        || !RobotContainer.coralController.rightBumper().getAsBoolean();
+        && conditionalDriveCommand != null) {
+      conditionalDriveCommand.cancel();
+      Logger.getGlobal().log(Level.WARNING, "Back button exit");
+      return true;
+    }
+
+    if (!RobotContainer.coralController.rightBumper().getAsBoolean()
+        && conditionalDriveCommand != null) {
+      conditionalDriveCommand.cancel();
+      Logger.getGlobal().log(Level.WARNING, "Button release exit");
+      return true;
+    }
+
+    if (TagLocation != null) {
+      if (Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+          && conditionalDriveCommand != null) {
+        conditionalDriveCommand.cancel();
+        Logger.getGlobal().log(Level.WARNING, "Too close exit");
+        return true;
+      }
+    } else if (conditionalDriveCommand != null) {
+      conditionalDriveCommand.cancel();
+      Logger.getGlobal().log(Level.WARNING, "Cannot get position exit");
+      return true;
+    }
+
+    return false;
   }
 }

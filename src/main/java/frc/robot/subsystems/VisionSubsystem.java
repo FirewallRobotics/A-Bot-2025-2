@@ -128,14 +128,31 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   public static Pose2d getTagPose2d(int tag) {
-    LimelightTarget_Fiducial[] fiducials =
-        LimelightHelpers.getLatestResults(name).targets_Fiducials;
+    LimelightResults  results = LimelightHelpers.getLatestResults(name);
+    LimelightTarget_Fiducial[] fiducials = results.targets_Fiducials;
+    if(!results.valid){
+      return null;
+    }
     for (int i = 0; i < fiducials.length; i++) {
       if (fiducials[i].fiducialID == tag) {
         return fiducials[i].getTargetPose_RobotSpace2D();
       }
     }
     return null;
+  }
+
+  /**If true is returned then the null SHOULD be false
+  * If false is returned, then we have a good value
+  @author Cate
+  */
+  public static boolean getNullDoubleTest(){
+    LimelightResults  results = LimelightHelpers.getLatestResults(name);
+
+    if(!results.valid){
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -150,11 +167,6 @@ public class VisionSubsystem extends SubsystemBase {
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults(name);
 
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // get the first listed aprilTag and return its pose in robot space
     return results.targets_Fiducials[0].getTargetPose_RobotSpace2D();
   }
@@ -166,6 +178,11 @@ public class VisionSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
 
     UpdatePositionOnField();
+
+    // Pose2d pose = getTagPose2d(7);
+    // if(pose != null){
+    //  Logger.getGlobal().log(Level.WARNING, pose.getX()+" "+pose.getY());
+    // }
 
     // LimelightHelpers.SetRobotOrientation(
     //    name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);
@@ -199,11 +216,6 @@ public class VisionSubsystem extends SubsystemBase {
     // get the results from the limelight
     LimelightResults results = LimelightHelpers.getLatestResults(name);
 
-    // if the results are not valid poll the limelight till they are
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // create an array with the length being the amount of AprilTags we can see
     int[] temp = new int[results.targets_Fiducials.length];
 
@@ -229,11 +241,6 @@ public class VisionSubsystem extends SubsystemBase {
 
     // get the results from the LimeLight
     LimelightResults results = LimelightHelpers.getLatestResults(name);
-
-    // if the results we have are not valid then poll the LimeLight till they are
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
 
     // look through all AprilTags we can see to find the tag we are looking for
     for (LimelightTarget_Fiducial SeenTag : results.targets_Fiducials) {
@@ -264,11 +271,6 @@ public class VisionSubsystem extends SubsystemBase {
 
       // get the results from the LimeLight
       LimelightResults results = LimelightHelpers.getLatestResults(name);
-
-      // if the limelights intel is bad then poll it till its good
-      while (!results.valid) {
-        results = LimelightHelpers.getLatestResults(name);
-      }
 
       // get the first tag we can see
       LimelightTarget_Fiducial tag = results.targets_Fiducials[0];
@@ -319,11 +321,6 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
 
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
 
@@ -367,11 +364,6 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
 
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
 
@@ -414,11 +406,6 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
 
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
 
@@ -459,11 +446,6 @@ public class VisionSubsystem extends SubsystemBase {
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
-
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
 
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
@@ -506,11 +488,6 @@ public class VisionSubsystem extends SubsystemBase {
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
 
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
-
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
 
@@ -551,11 +528,6 @@ public class VisionSubsystem extends SubsystemBase {
     // get the results
     LimelightResults results = LimelightHelpers.getLatestResults(name);
     Pose3d tagPoseRobot = null;
-
-    // if the limelights intel is good look for reef tag
-    while (!results.valid) {
-      results = LimelightHelpers.getLatestResults(name);
-    }
 
     // loop through all tags in the view of limelight
     for (LimelightTarget_Fiducial tag : results.targets_Fiducials) {
