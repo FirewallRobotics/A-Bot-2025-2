@@ -1,8 +1,10 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -67,29 +69,42 @@ public class AlignWithNearest extends Command {
 
   public Command targetCommand;
   PIDController rController;
+  PIDController xController;
+  PIDController yController;
 
   int TagAligningToo;
   ParallelRaceGroup conditionalDriveCommand;
   Pose2d TagLocation;
   int GraceFrames;
+  VisionSubsystem visionSubsystem;
 
   // add vision as a requirement to run
   public AlignWithNearest() {
-    rController = new PIDController(0.58, 0, 0);
+    // P = speed
+    // I = smoothing
+    // D = time
+    xController = new PIDController(1.14, 0, 0);
+    yController = new PIDController(1.14, 0, 0);
+    rController = new PIDController(0.27, 0, 0.2);
     TagLocation = new Pose2d(0, 0, new Rotation2d(0));
+    visionSubsystem = new VisionSubsystem();
   }
 
   @Override
   public void initialize() {
+    xController.setSetpoint(0);
+    xController.setTolerance(1);
+    yController.setSetpoint(0);
+    yController.setTolerance(1);
     rController.setSetpoint(0);
     rController.setTolerance(1);
   }
 
   @Override
   public void execute() {
-    int[] tags = VisionSubsystem.getTags();
-    //False means it's not null
-    //True means that it is null
+    int[] tags = visionSubsystem.getTagsUnchanging();
+    // False means it's not null
+    // True means that it is null
     boolean isNullDoubleTest = false;
 
     if (tags.length > 0) {
@@ -97,10 +112,9 @@ public class AlignWithNearest extends Command {
       // Provides direct connection that bypasses pathplanner (more accurate)
       // If we use this, put it in execute and have it change constantly to update as data streams
       // in.
-      TagLocation = VisionSubsystem.getTagPose2d(TagAligningToo);
-      isNullDoubleTest = VisionSubsystem.getNullDoubleTest();
+      TagLocation = visionSubsystem.getTagPose2dUnchanging(TagAligningToo);
 
-      //TagLocation != null
+      // TagLocation != null
       //    && TagLocation.getTranslation() != null
       //    && TagLocation.getRotation() != null
 
@@ -112,23 +126,28 @@ public class AlignWithNearest extends Command {
             "Calculated pos",
             new double[] {
               TagLocation.getY(),
+              yController.calculate(TagLocation.getY()),
               TagLocation.getX(),
-              TagLocation.getRotation().getDegrees(),
-              rController.calculate(TagLocation.getRotation().getDegrees())
+              xController.calculate(TagLocation.getX()),
+              MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180),
+              rController.calculate(
+                  MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180))
             });
 
         driveCommand =
             RobotContainer.drivebase.driveCommand(
-                () -> -(TagLocation.getY()),
-                () -> -(TagLocation.getX()),
-                () -> (rController.calculate(TagLocation.getRotation().getDegrees())),
-                false);
+                new ChassisSpeeds(
+                    (yController.calculate(TagLocation.getY())),
+                    (xController.calculate(TagLocation.getX())),
+                    (rController.calculate(
+                        MathUtil.inputModulus(
+                            TagLocation.getRotation().getDegrees(), -180, 180)))));
 
         conditionalDriveCommand =
             driveCommand.until(
                 () ->
                     Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
-                        || !VisionSubsystem.CanSeeTag(TagAligningToo)
+                        || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                         || (RobotContainer.driverXbox.back().getAsBoolean()
                             || RobotContainer.coralController.back().getAsBoolean())
                         || !RobotContainer.coralController.rightBumper().getAsBoolean());
@@ -137,7 +156,8 @@ public class AlignWithNearest extends Command {
 
           // Logger.getGlobal().log(Level.INFO, "Too far");
 
-          if (VisionSubsystem.CanSeeTag(TagAligningToo)) {
+          if (visionSubsystem.CanSeeTagUnchanging(TagAligningToo)) {
+            GraceFrames = 0;
 
             // Logger.getGlobal().log(Level.INFO, "Can see tag");
 
@@ -179,7 +199,8 @@ public class AlignWithNearest extends Command {
         }
 
         // Logger.getGlobal()
-        //     .log(Level.WARNING, "CanSee: " + VisionSubsystem.CanSeeTag(TagAligningToo));
+        //     .log(Level.WARNING, "CanSee: " +
+        // visionSubsystem.CanSeeTagUnchanging(TagAligningToo));
         // Logger.getGlobal()
         //    .log(
         //        Level.WARNING,
@@ -193,12 +214,12 @@ public class AlignWithNearest extends Command {
           conditionalDriveCommand.cancel();
         }
       }
-    } else if(GraceFrames > 10) {
+    } else if (GraceFrames > 10) {
       Logger.getGlobal().log(Level.WARNING, "No tags cancel");
       if (conditionalDriveCommand != null) {
         conditionalDriveCommand.cancel();
       }
-    }else{
+    } else {
       GraceFrames += 1;
     }
   }
@@ -206,7 +227,9 @@ public class AlignWithNearest extends Command {
   @Override
   public boolean isFinished() {
 
-    if (!VisionSubsystem.CanSeeTag(TagAligningToo) && conditionalDriveCommand != null && GraceFrames > 10) {
+    if (!visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
+        && conditionalDriveCommand != null
+        && GraceFrames > 10) {
       conditionalDriveCommand.cancel();
       Logger.getGlobal().log(Level.WARNING, "Cannot see tag exit");
       return true;

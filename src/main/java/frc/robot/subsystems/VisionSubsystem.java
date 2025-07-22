@@ -33,6 +33,8 @@ public class VisionSubsystem extends SubsystemBase {
   private static int[] bargeTags = {4, 5, 14, 15};
   boolean doRejectUpdate;
 
+  LimelightResults cachedLimelightResults;
+
   public VisionSubsystem() {
 
     // m_poseEstimator =
@@ -50,22 +52,24 @@ public class VisionSubsystem extends SubsystemBase {
 
     LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
 
-    if (mt1.tagCount == 0) {
-      doRejectUpdate = true;
-    } else {
-      doRejectUpdate = false;
-    }
-    if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
-      if (mt1.rawFiducials[0].ambiguity > .7) {
+    if (mt1 != null) {
+      if (mt1.tagCount == 0) {
         doRejectUpdate = true;
+      } else {
+        doRejectUpdate = false;
       }
-      if (mt1.rawFiducials[0].distToCamera > 3) {
-        doRejectUpdate = true;
+      if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
+        if (mt1.rawFiducials[0].ambiguity > .7) {
+          doRejectUpdate = true;
+        }
+        if (mt1.rawFiducials[0].distToCamera > 3) {
+          doRejectUpdate = true;
+        }
       }
-    }
 
-    if (!doRejectUpdate) {
-      RobotContainer.drivebase.addVisionReading(mt1.pose, mt1.timestampSeconds);
+      if (!doRejectUpdate) {
+        RobotContainer.drivebase.addVisionReading(mt1.pose, mt1.timestampSeconds);
+      }
     }
 
     /*
@@ -127,10 +131,9 @@ public class VisionSubsystem extends SubsystemBase {
     return fiducials[0].distToRobot;
   }
 
-  public static Pose2d getTagPose2d(int tag) {
-    LimelightResults  results = LimelightHelpers.getLatestResults(name);
-    LimelightTarget_Fiducial[] fiducials = results.targets_Fiducials;
-    if(!results.valid){
+  public Pose2d getTagPose2dUnchanging(int tag) {
+    LimelightTarget_Fiducial[] fiducials = cachedLimelightResults.targets_Fiducials;
+    if (!cachedLimelightResults.valid) {
       return null;
     }
     for (int i = 0; i < fiducials.length; i++) {
@@ -141,14 +144,30 @@ public class VisionSubsystem extends SubsystemBase {
     return null;
   }
 
-  /**If true is returned then the null SHOULD be false
-  * If false is returned, then we have a good value
-  @author Cate
-  */
-  public static boolean getNullDoubleTest(){
-    LimelightResults  results = LimelightHelpers.getLatestResults(name);
+  public static Pose2d getTagPose2d(int tag) {
+    LimelightResults results = LimelightHelpers.getLatestResults(name);
+    LimelightTarget_Fiducial[] fiducials = results.targets_Fiducials;
+    if (!results.valid) {
+      return null;
+    }
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == tag) {
+        return fiducials[i].getTargetPose_RobotSpace2D();
+      }
+    }
+    return null;
+  }
 
-    if(!results.valid){
+  /**
+   * If true is returned then the null SHOULD be false If false is returned, then we have a good
+   * value
+   *
+   * @author Cate
+   */
+  public static boolean getNullDoubleTest() {
+    LimelightResults results = LimelightHelpers.getLatestResults(name);
+
+    if (!results.valid) {
       return true;
     }
 
@@ -178,6 +197,8 @@ public class VisionSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("ProcessorDistance", VisionSubsystem.DistanceToProcessor());
 
     UpdatePositionOnField();
+
+    cachedLimelightResults = LimelightHelpers.getLatestResults(name);
 
     // Pose2d pose = getTagPose2d(7);
     // if(pose != null){
@@ -229,6 +250,26 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   /**
+   * Gets the IDs of all in view AprilTags. This version of getTags is not static and will not
+   * change
+   *
+   * @return Tag IDs of all seen AprilTags
+   */
+  public int[] getTagsUnchanging() {
+
+    // create an array with the length being the amount of AprilTags we can see
+    int[] temp = new int[cachedLimelightResults.targets_Fiducials.length];
+
+    // put all the in sight AprilTags into the array created above
+    for (int i = 0; i < cachedLimelightResults.targets_Fiducials.length; i++) {
+      temp[i] = (int) cachedLimelightResults.targets_Fiducials[i].fiducialID;
+    }
+
+    // return that array
+    return temp;
+  }
+
+  /**
    * Checks to see if we can see an AprilTag
    *
    * @param int Tag ID to look for
@@ -244,6 +285,29 @@ public class VisionSubsystem extends SubsystemBase {
 
     // look through all AprilTags we can see to find the tag we are looking for
     for (LimelightTarget_Fiducial SeenTag : results.targets_Fiducials) {
+
+      // if we find the ID in the list then we can see it and can return true
+      if (SeenTag.fiducialID == tag) {
+        return true;
+      }
+    }
+
+    // if we have made it to the end of the list and have not found the ID
+    // then we must not be able to see it and should return false
+    return false;
+  }
+
+  /**
+   * Checks to see if we can see an AprilTag This version of CanSeeTag is not static and will not
+   * change
+   *
+   * @param int Tag ID to look for
+   * @return If we can see it
+   */
+  public boolean CanSeeTagUnchanging(int tag) {
+
+    // look through all AprilTags we can see to find the tag we are looking for
+    for (LimelightTarget_Fiducial SeenTag : cachedLimelightResults.targets_Fiducials) {
 
       // if we find the ID in the list then we can see it and can return true
       if (SeenTag.fiducialID == tag) {

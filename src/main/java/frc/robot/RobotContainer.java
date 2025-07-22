@@ -250,6 +250,8 @@ public class RobotContainer {
 
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
+    // coralController.a().onTrue(new ParallelCommandGroup(new
+    // SequentialCommandGroup(drivebase.driveCommand(() -> 0, () -> 0, () -> 0.2))));
     // Will make it so pressing right on the controller will put the position to the logger. this
     // means that we won't flood our logs with information and cause me to go nuts.
     coralController.povRight().whileTrue(new GoToCommand(6));

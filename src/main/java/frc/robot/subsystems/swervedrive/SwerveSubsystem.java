@@ -442,6 +442,22 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
+   * Command to drive the robot using translative values and heading as angular velocity.
+   *
+   * @param translationX Translation in the X direction. Cubed for smoother controls.
+   * @param translationY Translation in the Y direction. Cubed for smoother controls.
+   * @param angularRotationX Angular velocity of the robot to set. Cubed for smoother controls.
+   * @return Drive command.
+   */
+  public Command driveCommand(ChassisSpeeds chassisSpeeds) {
+    return run(
+        () -> {
+          // Make the robot move
+          swerveDrive.drive(chassisSpeeds);
+        });
+  }
+
+  /**
    * Command to drive the robot using translative values and heading as a setpoint.
    *
    * @param translationX Translation in the X direction. Cubed for smoother controls.
