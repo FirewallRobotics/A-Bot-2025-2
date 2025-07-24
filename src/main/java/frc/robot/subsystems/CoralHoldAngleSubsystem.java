@@ -49,7 +49,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public double finalPos;
 
   //0 - Straight on
-  private double[] levels = {5.919, 5.8, -2.9};
+  private double[] levels = {-3.0, 5.8, -2.9};
 
   public CoralHoldAngleSubsystem() {
     motor =
