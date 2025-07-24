@@ -85,9 +85,6 @@ public class RobotContainer {
   private MechanismLigament2d m_wrist;
   private MechanismLigament2d m_wrist2;
 
-  public static PathConstraints Pathconstraints;
-  public static FlexAutoSubsystem flexAutoSubsystem;
-
   // private final KeyboardInput keyboard;
 
   // public Command repeatWristDown = new RepeatCommand(new WristDown(coralHoldAngleSubsystem));
@@ -149,15 +146,10 @@ public class RobotContainer {
     SmartDashboard.putNumber("X-Stop-Dist", 0.04);
     SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
     SmartDashboard.putNumber("Rot-Stop-Dist", 5);
+
     // keyboard = new KeyboardInput();
     configureBindings();
-    flexAutoSubsystem = new FlexAutoSubsystem();
-    Pathconstraints =
-        new PathConstraints(
-            drivebase.getMaximumChassisVelocity(),
-            4.0,
-            drivebase.getMaximumChassisAngularVelocity(),
-            Units.degreesToRadians(720));
+
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
     NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorSubsystem, 0.5));
