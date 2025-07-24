@@ -192,19 +192,16 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     // } else{
     //   setPoint = levels[levelNeeded - 1];
     // }
-
     double setPoint = levels[levelNeeded - 1];
-
-    State levelState = new State(setPoint, 0);
-
-    double ff = feedforward.calculate(levelState.position * 2 * Math.PI, levelState.velocity);
 
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pidf(0.0001f, 0f, 0f, 0.3f, ClosedLoopSlot.kSlot0);
+        .pidf(0.000001f, 0f, 0f, 0.3f, ClosedLoopSlot.kSlot0);
 
-    controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
+    motor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+
+    controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
   }
 
   public boolean atLevel(int levlNeeded) {
@@ -251,8 +248,9 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-    State setPoint = new State(getPositionEncoder(), 0);
-    holdUp(setPoint);
+    wantedPos = encoder.getPosition();
+    state = new State(wantedPos, 0);
+    holdUp(state);
     // State setPoint = new State(getPositionEncoder(), 0);
     // double ff = feedforward.calculate(setPoint.position * 2 * Math.PI, setPoint.velocity);
     // controller.setReference(

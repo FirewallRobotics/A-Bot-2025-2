@@ -338,7 +338,7 @@ public class RobotContainer {
     return elevatorSubsystem.getOgPOSgotten();
   }
 
-  public Command getCoralPathCommand(String chooser) {
+  public static Command getCoralPathCommand(String chooser) {
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.get() == Alliance.Blue) {
       if (chooser.equals("left")) {

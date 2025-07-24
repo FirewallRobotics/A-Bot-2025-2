@@ -147,14 +147,24 @@ public class AlignWithNearest extends Command {
                         MathUtil.inputModulus(
                             TagLocation.getRotation().getDegrees(), -180, 180)))));
 
-        conditionalDriveCommand =
-            driveCommand.until(
-                () ->
-                    Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
-                        || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
-                        || (RobotContainer.driverXbox.back().getAsBoolean()
-                            || RobotContainer.coralController.back().getAsBoolean())
-                        || !trigger.getAsBoolean());
+        if (trigger != null) {
+          conditionalDriveCommand =
+              driveCommand.until(
+                  () ->
+                      Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+                          || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
+                          || (RobotContainer.driverXbox.back().getAsBoolean()
+                              || RobotContainer.coralController.back().getAsBoolean())
+                          || !trigger.getAsBoolean());
+        } else {
+          conditionalDriveCommand =
+              driveCommand.until(
+                  () ->
+                      Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+                          || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
+                          || (RobotContainer.driverXbox.back().getAsBoolean()
+                              || RobotContainer.coralController.back().getAsBoolean()));
+        }
 
         if (Math.abs(TagLocation.getY()) > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)) {
 
@@ -170,19 +180,24 @@ public class AlignWithNearest extends Command {
 
               // Logger.getGlobal().log(Level.INFO, "No back buttons");
 
-              if (trigger.getAsBoolean()) {
+              if (trigger != null) {
+                if (trigger.getAsBoolean()) {
 
-                conditionalDriveCommand.schedule();
-                // Logger.getGlobal()
-                //    .log(
-                //        Level.INFO,
-                //        "Move too: " + -(TagLocation.getY()) + " " + -(TagLocation.getX()));
-              } else {
-                Logger.getGlobal().log(Level.WARNING, "Button release cancel");
-                if (conditionalDriveCommand != null) {
-                  conditionalDriveCommand.cancel();
+                  conditionalDriveCommand.schedule();
+                  // Logger.getGlobal()
+                  //    .log(
+                  //        Level.INFO,
+                  //        "Move too: " + -(TagLocation.getY()) + " " + -(TagLocation.getX()));
+                } else {
+                  Logger.getGlobal().log(Level.WARNING, "Button release cancel");
+                  if (conditionalDriveCommand != null) {
+                    conditionalDriveCommand.cancel();
+                  }
                 }
+              } else {
+                conditionalDriveCommand.schedule();
               }
+
             } else {
               Logger.getGlobal().log(Level.WARNING, "Back button cancel");
               if (conditionalDriveCommand != null) {
@@ -247,10 +262,12 @@ public class AlignWithNearest extends Command {
       return true;
     }
 
-    if (!trigger.getAsBoolean() && conditionalDriveCommand != null) {
-      conditionalDriveCommand.cancel();
-      Logger.getGlobal().log(Level.WARNING, "Button release exit");
-      return true;
+    if (trigger != null) {
+      if (!trigger.getAsBoolean() && conditionalDriveCommand != null) {
+        conditionalDriveCommand.cancel();
+        Logger.getGlobal().log(Level.WARNING, "Button release exit");
+        return true;
+      }
     }
 
     if (TagLocation != null) {
