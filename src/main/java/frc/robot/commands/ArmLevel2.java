@@ -15,9 +15,9 @@ public class ArmLevel2 extends Command {
   }
 
   public void execute() {
-    coralHold.setLevel(2);
+    coralHold.setLevel(1);
 
-    if (coralHold.atLevel(2)) {
+    if (coralHold.atLevel(1)) {
 
       // Logger.getGlobal().log(Level.INFO, "found level");
       coralHold.stopTilt();
@@ -26,7 +26,7 @@ public class ArmLevel2 extends Command {
 
   @Override
   public boolean isFinished() {
-    if (coralHold.atLevel(2)) {
+    if (coralHold.atLevel(1)) {
       Logger.getGlobal().log(Level.INFO, "found level");
       coralHold.stopTilt();
       return true;

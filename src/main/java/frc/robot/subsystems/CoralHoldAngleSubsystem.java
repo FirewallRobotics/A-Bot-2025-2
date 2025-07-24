@@ -47,10 +47,9 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
   public static final double shooter = 4.82;
   public double finalPos;
-  private double ogPos;
-  private double setPoint = 21.97;
 
-  private double[] levels = {0, -5.8, -2.9};
+  //0 - Straight on
+  private double[] levels = {5.919, 5.8, -2.9};
 
   public CoralHoldAngleSubsystem() {
     motor =
@@ -63,15 +62,19 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     motorConfig = new SparkFlexConfig();
 
     motorConfig.idleMode(IdleMode.kBrake);
+    motorConfig.encoder.positionConversionFactor(1);
+    motorConfig.encoder.velocityConversionFactor(1);
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pidf(0f, 0f, 0f, 0f, ClosedLoopSlot.kSlot0);
 
-    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     // encoder = new Encoder(1, 1); // Assign encoder ports
     wantedPos = encoder.getPosition();
     state = new State(wantedPos, 0);
+
+    Logger.getGlobal().log(Level.INFO, "Wrist starts at: " + getEncoder());
     // 0.73 L2-L3
     // 0.90 Recieve
   }
@@ -96,7 +99,8 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public void tiltedDown() {
     buttonPressed = true;
 
-    Logger.getGlobal().log(Level.INFO, "DOWN " + getPositionEncoder());
+    Logger.getGlobal().log(Level.INFO, "Wrist going down: " + getEncoder());
+
     motorConfig.inverted(true);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -141,8 +145,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public void tiltUp() {
     buttonPressed = true;
 
-    Logger.getGlobal().log(Level.INFO, "UP: " + getPositionEncoder());
-
+    Logger.getGlobal().log(Level.INFO, "Wrist going up: " + getEncoder());
     motorConfig.inverted(false);
     motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -155,7 +158,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
    * @return Encoder Position
    */
   public double getEncoder() {
-    return motor.getEncoder().getPosition();
+    return encoder.getPosition();
   }
 
   /*public void holdUp() {
@@ -175,10 +178,6 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
     return encoder.getPosition();
   }
 
-  public void setOGPos() {
-    ogPos = encoder.getPosition();
-  }
-
   public double getFinalPos() {
     return finalPos;
   }
@@ -196,12 +195,16 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
 
     double setPoint = levels[levelNeeded - 1];
 
+    State levelState = new State(setPoint, 0);
+
+    double ff = feedforward.calculate(levelState.position * 2 * Math.PI, levelState.velocity);
+
     motorConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pidf(0.0001f, 0f, 0f, 0.3f, ClosedLoopSlot.kSlot0);
 
-    controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.1);
+    controller.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
   }
 
   public boolean atLevel(int levlNeeded) {

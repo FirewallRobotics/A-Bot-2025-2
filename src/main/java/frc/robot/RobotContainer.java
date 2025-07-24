@@ -29,6 +29,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ArmLevel2;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -254,13 +255,20 @@ public class RobotContainer {
     // SequentialCommandGroup(drivebase.driveCommand(() -> 0, () -> 0, () -> 0.2))));
     // Will make it so pressing right on the controller will put the position to the logger. this
     // means that we won't flood our logs with information and cause me to go nuts.
+    coralController.leftBumper().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.povRight().whileTrue(new GoToCommand(6));
+    coralController
+        .rightTrigger()
+        .onTrue(
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel2(elevatorSubsystem),
+                new AlignWithNearest(0.15, coralController.rightTrigger())));
     coralController
         .rightBumper()
         .onTrue(
             new SequentialCommandGroup(
-                new ElevatorMoveLevel2(elevatorSubsystem), new AlignWithNearest()));
-
+                new ElevatorMoveLevel2(elevatorSubsystem),
+                new AlignWithNearest(-0.15, coralController.rightBumper())));
     // coralController
     //     .b()
     //     .onTrue(
@@ -324,18 +332,6 @@ public class RobotContainer {
   public Command getAutonomousCommand(String pathString) {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand(pathString);
-  }
-
-  // On the disablement of auto, or the start of tele if we
-  // don't do auto, this will get the starting position of the elevator.
-  // Basically- through out auto, this will keep the elevators position.
-  // When it moves to tele, that position is now it's zero.
-  // The means we now know our offset.
-  public static void getStart() {
-
-    elevatorSubsystem.getStartPos();
-    coralHoldAngleSubsystem.setOGPos();
-    elevatorSubsystem.setOgPOSgotten();
   }
 
   public static boolean gottenStart() {

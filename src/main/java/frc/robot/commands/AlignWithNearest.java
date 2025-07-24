@@ -8,6 +8,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
 import java.util.logging.Level;
@@ -77,27 +78,33 @@ public class AlignWithNearest extends Command {
   Pose2d TagLocation;
   int GraceFrames;
   VisionSubsystem visionSubsystem;
+  double offset;
+  Trigger trigger;
 
   // add vision as a requirement to run
-  public AlignWithNearest() {
+  public AlignWithNearest(double offset, Trigger trigger) {
     // P = speed
     // I = smoothing
     // D = time
-    xController = new PIDController(1.14, 0, 0);
-    yController = new PIDController(1.14, 0, 0);
+    xController = new PIDController(4.5, 0, 0);
+    yController = new PIDController(4.5, 0, 0);
     rController = new PIDController(0.27, 0, 0.2);
     TagLocation = new Pose2d(0, 0, new Rotation2d(0));
+
     visionSubsystem = new VisionSubsystem();
+
+    this.offset = offset;
+    this.trigger = trigger;
   }
 
   @Override
   public void initialize() {
     xController.setSetpoint(0);
-    xController.setTolerance(1);
+    xController.setTolerance(0.5);
     yController.setSetpoint(0);
-    yController.setTolerance(1);
+    yController.setTolerance(0.5);
     rController.setSetpoint(0);
-    rController.setTolerance(1);
+    rController.setTolerance(0.5);
   }
 
   @Override
@@ -125,11 +132,8 @@ public class AlignWithNearest extends Command {
         SmartDashboard.putNumberArray(
             "Calculated pos",
             new double[] {
-              TagLocation.getY(),
               yController.calculate(TagLocation.getY()),
-              TagLocation.getX(),
-              xController.calculate(TagLocation.getX()),
-              MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180),
+              xController.calculate(TagLocation.getX() + offset),
               rController.calculate(
                   MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180))
             });
@@ -138,7 +142,7 @@ public class AlignWithNearest extends Command {
             RobotContainer.drivebase.driveCommand(
                 new ChassisSpeeds(
                     (yController.calculate(TagLocation.getY())),
-                    (xController.calculate(TagLocation.getX())),
+                    (xController.calculate(TagLocation.getX() + offset)),
                     (rController.calculate(
                         MathUtil.inputModulus(
                             TagLocation.getRotation().getDegrees(), -180, 180)))));
@@ -150,7 +154,7 @@ public class AlignWithNearest extends Command {
                         || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                         || (RobotContainer.driverXbox.back().getAsBoolean()
                             || RobotContainer.coralController.back().getAsBoolean())
-                        || !RobotContainer.coralController.rightBumper().getAsBoolean());
+                        || !trigger.getAsBoolean());
 
         if (Math.abs(TagLocation.getY()) > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)) {
 
@@ -166,7 +170,7 @@ public class AlignWithNearest extends Command {
 
               // Logger.getGlobal().log(Level.INFO, "No back buttons");
 
-              if (RobotContainer.coralController.rightBumper().getAsBoolean()) {
+              if (trigger.getAsBoolean()) {
 
                 conditionalDriveCommand.schedule();
                 // Logger.getGlobal()
@@ -243,8 +247,7 @@ public class AlignWithNearest extends Command {
       return true;
     }
 
-    if (!RobotContainer.coralController.rightBumper().getAsBoolean()
-        && conditionalDriveCommand != null) {
+    if (!trigger.getAsBoolean() && conditionalDriveCommand != null) {
       conditionalDriveCommand.cancel();
       Logger.getGlobal().log(Level.WARNING, "Button release exit");
       return true;
