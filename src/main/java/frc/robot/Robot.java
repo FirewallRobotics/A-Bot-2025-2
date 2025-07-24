@@ -46,15 +46,6 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
-    SmartDashboard.putBoolean("", false);
-    SmartDashboard.putBoolean("", false);
-    SmartDashboard.putNumber("AssistMinDistance", 40);
-    SmartDashboard.putNumber("AutoMoveSpeed", 5);
-    SmartDashboard.putNumber("AutoScanSpeed", 5);
-    SmartDashboard.putNumber("Elevator-P", 0);
-    SmartDashboard.putNumber("Elevator-I", 0);
-    SmartDashboard.putNumber("Elevator-D", 0);
-    SmartDashboard.putNumber("Elevator-F", 0);
 
     instance = this;
     m_chooser.setDefaultOption("Our Cage 1", "Default Drop C");

@@ -48,7 +48,7 @@ public class CoralHoldAngleSubsystem extends SubsystemBase {
   public static final double shooter = 4.82;
   public double finalPos;
 
-  //0 - Straight on
+  // 0 - Straight on
   private double[] levels = {-3.0, 5.8, -2.9};
 
   public CoralHoldAngleSubsystem() {
