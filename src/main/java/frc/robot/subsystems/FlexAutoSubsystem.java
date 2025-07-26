@@ -8,9 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.LimelightHelpers.LimelightTarget_Retro;
 import frc.robot.RobotContainer;
 import frc.robot.commands.*;
@@ -199,13 +197,13 @@ public class FlexAutoSubsystem extends SubsystemBase {
     if (!CoralStationChoose.equals("stop")) {
 
       Optional<Alliance> ally = DriverStation.getAlliance();
-      if (ally.get() == Alliance.Blue) {
+      /*if (ally.get() == Alliance.Blue) {
         new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
                 new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(RobotContainer.coralWristSubsystem),
                 new WaitCommand(0.05),
-                new WristStop(RobotContainer.coralHoldAngleSubsystem),
+                new WristStop(RobotContainer.coralWristSubsystem),
                 new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
                 new WaitCommand(2),
                 new RobotContainer()
@@ -223,9 +221,9 @@ public class FlexAutoSubsystem extends SubsystemBase {
         new SequentialCommandGroup(
                 new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
                 new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralHoldAngleSubsystem),
+                new WristUp(RobotContainer.coralWristSubsystem),
                 new WaitCommand(0.05),
-                new WristStop(RobotContainer.coralHoldAngleSubsystem),
+                new WristStop(RobotContainer.coralWristSubsystem),
                 new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
                 new WaitCommand(2),
                 new RobotContainer()
@@ -239,7 +237,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
                     .drivebase.driveToPose(
                         new Pose2d(14, 5.4, new Rotation2d(Math.toRadians(-122)))))
             .schedule();
-      }
+      }*/
       // if we are not going to go to the coral station then we are doing algae cycles
     }
     /*

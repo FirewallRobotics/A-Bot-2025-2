@@ -29,7 +29,9 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
 import frc.robot.commands.AlignWithNearest;
-import frc.robot.commands.ArmLevel2;
+import frc.robot.commands.ArmSetToCoralAccept;
+import frc.robot.commands.ArmSetToMiddle;
+import frc.robot.commands.ArmSetToScore;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
@@ -48,8 +50,8 @@ import frc.robot.commands.WristUp;
 import frc.robot.commands.algaeStopIntake;
 import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
-import frc.robot.subsystems.CoralHoldAngleSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
+import frc.robot.subsystems.CoralWristSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -120,7 +122,7 @@ public class RobotContainer {
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
   public static AlgaeSubsystem algaeSubsystem = new AlgaeSubsystem();
-  public static CoralHoldAngleSubsystem coralHoldAngleSubsystem = new CoralHoldAngleSubsystem();
+  public static CoralWristSubsystem coralWristSubsystem = new CoralWristSubsystem();
 
   /** Clone's the angular velocity input stream and converts it to a robotRelative input stream. */
   SwerveInputStream driveRobotOriented =
@@ -167,9 +169,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("ElevatorLevel4", new ElevatorMoveLevel4(elevatorSubsystem));
     NamedCommands.registerCommand("Wait0.25", new WaitCommand(0.25));
     NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
-    NamedCommands.registerCommand("WristDown", new WristDown(coralHoldAngleSubsystem));
-    NamedCommands.registerCommand("WristUp", new WristUp(coralHoldAngleSubsystem));
-    NamedCommands.registerCommand("WristStop", new WristStop(coralHoldAngleSubsystem));
+    NamedCommands.registerCommand("WristDown", new WristDown(coralWristSubsystem));
+    NamedCommands.registerCommand("WristUp", new WristUp(coralWristSubsystem));
+    NamedCommands.registerCommand("WristStop", new WristStop(coralWristSubsystem));
     NamedCommands.registerCommand(
         "CoralShootCommand", new CoralShootCommand(coralHoldSubsystem, this));
     NamedCommands.registerCommand("CoralStop", new stopCoralIntake(coralHoldSubsystem));
@@ -192,7 +194,7 @@ public class RobotContainer {
 
   public void Periodic() {
     m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
-    m_wrist.setAngle(coralHoldAngleSubsystem.getEncoder());
+    m_wrist.setAngle(coralWristSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
 
@@ -255,7 +257,7 @@ public class RobotContainer {
     // SequentialCommandGroup(drivebase.driveCommand(() -> 0, () -> 0, () -> 0.2))));
     // Will make it so pressing right on the controller will put the position to the logger. this
     // means that we won't flood our logs with information and cause me to go nuts.
-    coralController.leftBumper().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
+    // coralController.leftBumper().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.povRight().whileTrue(new GoToCommand(6));
     coralController
         .rightTrigger()
@@ -269,6 +271,11 @@ public class RobotContainer {
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorSubsystem),
                 new AlignWithNearest(-0.15, coralController.rightBumper())));
+
+    coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
+    coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));
+    coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
+
     // coralController
     //     .b()
     //     .onTrue(
@@ -306,10 +313,10 @@ public class RobotContainer {
     driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.64));
     driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    driverXbox.povUp().onTrue(new WristUp(coralHoldAngleSubsystem));
-    driverXbox.povDown().onTrue(new WristDown(coralHoldAngleSubsystem));
-    driverXbox.povUp().onFalse(new WristStop(coralHoldAngleSubsystem));
-    driverXbox.povDown().onFalse(new WristStop(coralHoldAngleSubsystem));
+    driverXbox.povUp().onTrue(new WristUp(coralWristSubsystem));
+    driverXbox.povDown().onTrue(new WristDown(coralWristSubsystem));
+    driverXbox.povUp().onFalse(new WristStop(coralWristSubsystem));
+    driverXbox.povDown().onFalse(new WristStop(coralWristSubsystem));
 
     driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
     driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));

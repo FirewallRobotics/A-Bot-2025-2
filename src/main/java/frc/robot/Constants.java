@@ -87,5 +87,9 @@ public final class Constants {
     public static final double kGVolts = 0.29175;
     public static final double kVVoltSecondPerRad = 1.5928;
     public static final double kAVoltSecondSquaredPerRad = 0.030171;
+
+    public static final double speed = 0.1;
+
+    public static final double[] levels = {-2.88, -5.0, -1.0};
   }
 }

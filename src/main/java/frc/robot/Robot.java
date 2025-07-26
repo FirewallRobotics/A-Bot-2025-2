@@ -144,7 +144,7 @@ public class Robot extends TimedRobot {
     disabledTimer.reset();
     disabledTimer.start();
     RobotContainer.elevatorSubsystem.stop();
-    RobotContainer.coralHoldAngleSubsystem.stopTilt();
+    RobotContainer.coralWristSubsystem.stopWrist();
     // RobotContainer.climberSubsystem.stop();
 
     // centerModules.ignoringDisable(true);
