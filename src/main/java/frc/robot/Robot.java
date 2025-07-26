@@ -177,6 +177,8 @@ public class Robot extends TimedRobot {
         autonomousCommand.addCommands(
             RobotContainer.getCoralPathCommand(CoralStationChooser.getSelected()));
       }
+    } else if (m_autoSelected.equals("wait") && SmartDashboard.getBoolean("FlexAuto", false)) {
+      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null

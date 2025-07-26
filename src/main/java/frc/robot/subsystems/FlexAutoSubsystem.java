@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -21,6 +19,8 @@ import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.GoToCommand;
 import frc.robot.commands.WristToL1;
 import frc.robot.commands.algaeStopIntake;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FlexAutoSubsystem extends SubsystemBase {
 
@@ -53,6 +53,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
   /**
    * Auto that scores L2 -> remove algae -> get coral -> scores L3 -> goes to the PANIC point
+   *
    * @param maxTicksBeforePanic Ticks till Flex panics
    * @param PANICPose2d Location for Flex to goto when in the midst of a panic
    */
@@ -61,8 +62,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
     this.PANICPose2d = PANICPose2d;
   }
 
-  public boolean CHECKPANIC(){
-    if(counter >= maxTicksBeforePanic){
+  public boolean CHECKPANIC() {
+    if (counter >= maxTicksBeforePanic) {
       Logger.getGlobal().log(Level.WARNING, "OMG ITS HAPPENING AHHHHHHHHHH! GOING TO PANIC POINT!");
       RobotContainer.drivebase.driveToPose(PANICPose2d).schedule();
       return true;
@@ -78,57 +79,57 @@ public class FlexAutoSubsystem extends SubsystemBase {
   public boolean isNewPathAvailable() {
     switch (stage) {
       case 0:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return moveCommand.isFinished();
       case 1:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 2:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 3:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 4:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return moveCommand.isFinished();
       case 5:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 6:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return moveCommand.isFinished();
       case 7:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 8:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return moveCommand.isFinished();
       case 9:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
       case 10:
-        if(CHECKPANIC()){
+        if (CHECKPANIC()) {
           return true;
         }
         return sequentialMoveCommand.isFinished();
@@ -206,9 +207,10 @@ public class FlexAutoSubsystem extends SubsystemBase {
         moveCommand.schedule();
         break;
       case 7:
-        sequentialMoveCommand = new SequentialCommandGroup(
-          new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-          new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
+                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
         sequentialMoveCommand.schedule();
         break;
       case 8:
@@ -217,20 +219,21 @@ public class FlexAutoSubsystem extends SubsystemBase {
         break;
       case 9:
         sequentialMoveCommand =
-        new SequentialCommandGroup(
-          new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
-          // TODO: Placeholder for level wrist command
-          new ArmLevel2(RobotContainer.coralHoldAngleSubsystem),
-          new AlignWithNearest(-0.15, null));
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
+                // TODO: Placeholder for level wrist command
+                new ArmLevel2(RobotContainer.coralHoldAngleSubsystem),
+                new AlignWithNearest(-0.15, null));
         sequentialMoveCommand.schedule();
         break;
       case 10:
         sequentialMoveCommand =
-        new SequentialCommandGroup(
-          new ArmLevel2(RobotContainer.coralHoldAngleSubsystem),
-          new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+            new SequentialCommandGroup(
+                new ArmLevel2(RobotContainer.coralHoldAngleSubsystem),
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem));
         sequentialMoveCommand.schedule();
         break;
     }
+    stage += 1;
   }
 }
