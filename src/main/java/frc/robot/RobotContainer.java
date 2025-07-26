@@ -5,10 +5,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -53,7 +51,6 @@ import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.CoralWristSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.FlexAutoSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -86,9 +83,6 @@ public class RobotContainer {
   private MechanismLigament2d m_elevator;
   private MechanismLigament2d m_wrist;
   private MechanismLigament2d m_wrist2;
-
-  public static PathConstraints Pathconstraints;
-  public static FlexAutoSubsystem flexAutoSubsystem;
 
   // private final KeyboardInput keyboard;
 
@@ -151,15 +145,10 @@ public class RobotContainer {
     SmartDashboard.putNumber("X-Stop-Dist", 0.04);
     SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
     SmartDashboard.putNumber("Rot-Stop-Dist", 5);
+
     // keyboard = new KeyboardInput();
     configureBindings();
-    flexAutoSubsystem = new FlexAutoSubsystem();
-    Pathconstraints =
-        new PathConstraints(
-            drivebase.getMaximumChassisVelocity(),
-            4.0,
-            drivebase.getMaximumChassisAngularVelocity(),
-            Units.degreesToRadians(720));
+
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
     NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorSubsystem, 0.5));
@@ -345,7 +334,7 @@ public class RobotContainer {
     return elevatorSubsystem.getOgPOSgotten();
   }
 
-  public Command getCoralPathCommand(String chooser) {
+  public static Command getCoralPathCommand(String chooser) {
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.get() == Alliance.Blue) {
       if (chooser.equals("left")) {

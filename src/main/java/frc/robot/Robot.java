@@ -4,10 +4,9 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -42,19 +41,10 @@ public class Robot extends TimedRobot {
 
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private final SendableChooser<String> m_CoralStationChooser = new SendableChooser<>();
+  public static final SendableChooser<String> CoralStationChooser = new SendableChooser<>();
 
   public Robot() {
     SmartDashboard.putBoolean("FlexAuto", false);
-    SmartDashboard.putBoolean("", false);
-    SmartDashboard.putBoolean("", false);
-    SmartDashboard.putNumber("AssistMinDistance", 40);
-    SmartDashboard.putNumber("AutoMoveSpeed", 5);
-    SmartDashboard.putNumber("AutoScanSpeed", 5);
-    SmartDashboard.putNumber("Elevator-P", 0);
-    SmartDashboard.putNumber("Elevator-I", 0);
-    SmartDashboard.putNumber("Elevator-D", 0);
-    SmartDashboard.putNumber("Elevator-F", 0);
 
     instance = this;
     m_chooser.setDefaultOption("Our Cage 1", "Default Drop C");
@@ -69,10 +59,10 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("Wait", "wait");
     SmartDashboard.putData(m_chooser);
 
-    m_CoralStationChooser.addOption("LeftCoralStation", "left");
-    m_CoralStationChooser.addOption("RightCoralStation", "right");
-    m_CoralStationChooser.setDefaultOption("Stop", "stop");
-    SmartDashboard.putData(m_CoralStationChooser);
+    CoralStationChooser.addOption("LeftCoralStation", "left");
+    CoralStationChooser.addOption("RightCoralStation", "right");
+    CoralStationChooser.setDefaultOption("Stop", "stop");
+    SmartDashboard.putData(CoralStationChooser);
 
     DataLogManager.start();
   }
@@ -91,7 +81,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-    flexAutoSubsystem = new FlexAutoSubsystem();
+    flexAutoSubsystem = new FlexAutoSubsystem(500, new Pose2d(4.5, 7.35, new Rotation2d(90)));
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot
     // stop
@@ -178,19 +168,21 @@ public class Robot extends TimedRobot {
     // }
 
     // schedule the autonomous command
-    if (!m_CoralStationChooser.getSelected().equals("stop")) {
+    if (!CoralStationChooser.getSelected().equals("stop")) {
       if (m_autoSelected.equals("wait")) {
         autonomousCommand =
             new SequentialCommandGroup(
-                m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
+                RobotContainer.getCoralPathCommand(CoralStationChooser.getSelected()));
       } else {
         autonomousCommand.addCommands(
-            m_robotContainer.getCoralPathCommand(m_CoralStationChooser.getSelected()));
+            RobotContainer.getCoralPathCommand(CoralStationChooser.getSelected()));
       }
+    } else if (m_autoSelected.equals("wait") && SmartDashboard.getBoolean("FlexAuto", false)) {
+      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null
-        && !(m_CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
+        && !(CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
     }
   }
@@ -203,16 +195,9 @@ public class Robot extends TimedRobot {
     // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
     SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
     if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
-      // create robots constraints
-      PathConstraints constraints =
-          new PathConstraints(
-              RobotContainer.drivebase.getMaximumChassisVelocity(),
-              4.0,
-              RobotContainer.drivebase.getMaximumChassisAngularVelocity(),
-              Units.degreesToRadians(720));
 
       // have flex create points to follow
-      flexAutoSubsystem.CreatePath(constraints, m_CoralStationChooser.getSelected());
+      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
     }
     // Will constantly get the position of the elevator,
     // so that when we go into tele, we have an offset to

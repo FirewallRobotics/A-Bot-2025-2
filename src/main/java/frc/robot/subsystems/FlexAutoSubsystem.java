@@ -1,347 +1,239 @@
 package frc.robot.subsystems;
 
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.LimelightHelpers.LimelightTarget_Retro;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
-import frc.robot.commands.*;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
+import frc.robot.commands.AlgaeIntakeCommand;
+import frc.robot.commands.AlgaeShootCommand;
+import frc.robot.commands.AlignWithNearest;
+import frc.robot.commands.ArmSetToCoralAccept;
+import frc.robot.commands.ArmSetToMiddle;
+import frc.robot.commands.ArmSetToScore;
+import frc.robot.commands.CoralIntakeCommand;
+import frc.robot.commands.CoralShootCommand;
+import frc.robot.commands.ElevatorMoveLevel2;
+import frc.robot.commands.ElevatorMoveLevel3;
+import frc.robot.commands.GoToCommand;
+import frc.robot.commands.algaeStopIntake;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FlexAutoSubsystem extends SubsystemBase {
 
-  List<Pose2d> returnPose2ds;
-  double[] RobotSpaceCoralLocation;
-  double[] RobotSpaceAlgaeLocation;
-  double[] ReefLocation;
-  double[] ProcLocation;
-  Pose2d RobotFieldSpace;
-
-  // create a selector for flex auto modes
-  private final SendableChooser<String> m_AutoObjChooser = new SendableChooser<>();
+  // create a counter as a last resort override
   private int counter = 0;
 
-  public FlexAutoSubsystem() {
-    SmartDashboard.putNumber("FlexCounter", counter);
-    // add selections for flex auto to smartdashboard
-    m_AutoObjChooser.setDefaultOption("Coral", "coral");
-    m_AutoObjChooser.addOption("Algae", "algae");
-    SmartDashboard.putData("Auto Obj choices", m_AutoObjChooser);
-    SmartDashboard.putNumber("AutoScanSpeed", 1.0);
-    SmartDashboard.putNumber("Ultrasonics Coral", 50);
-    SmartDashboard.putNumber("Ultrasonics Algae", 50);
-    SmartDashboard.putNumber("AutoMoveSpeed", 1.0);
-    SmartDashboard.putNumber("AutoRotateSpeed", 1.0);
+  // Create a variable for the stage of auto we are in
+  // 0 - move to reef (pathplanner)
+  // 1 - align with reef
+  // 2 - shoot (L2)
+  // 3 - realign with center
+  // 4 - grab algae
+  // 5 - spit out
+  // 6 - goto coral station
+  // 7 - intake
+  // 8 - move to reef (pathplanner)
+  // 9 - align with reef
+  // 10 - shoot(L3)
+
+  private int stage = 0;
+
+  public int getStage() {
+    return stage;
   }
 
+  // After max ticks we give up on the action and goto a "PANIC" location
+  private int maxTicksBeforePanic = 500;
+
+  private Pose2d PANICPose2d;
+
   /**
-   * Check to see if a new path is available based on if we are not moving and flex has had enough
-   * time to cycle
+   * Auto that scores L2 -> remove algae -> get coral -> scores L3 -> goes to the PANIC point
    *
-   * @return If we are not moving and the cycle counter is high enough
+   * @param maxTicksBeforePanic Ticks till Flex panics
+   * @param PANICPose2d Location for Flex to goto when in the midst of a panic
    */
-  public boolean isNewPathAvailable() {
-    // new path is avaliable if we are not moving
-    if (RobotContainer.drivebase.getRobotVelocity().vxMetersPerSecond < 0.05
-        && RobotContainer.drivebase.getRobotVelocity().vyMetersPerSecond < 0.05
-        && counter >= 400) {
-      counter = 0;
+  public FlexAutoSubsystem(int maxTicksBeforePanic, Pose2d PANICPose2d) {
+    this.maxTicksBeforePanic = maxTicksBeforePanic;
+    this.PANICPose2d = PANICPose2d;
+  }
+
+  public boolean CHECKPANIC() {
+    if (counter >= maxTicksBeforePanic) {
+      Logger.getGlobal().log(Level.WARNING, "OMG ITS HAPPENING AHHHHHHHHHH! GOING TO PANIC POINT!");
+      RobotContainer.drivebase.driveToPose(PANICPose2d).schedule();
       return true;
     }
-    SmartDashboard.putNumber("FlexCounter", counter);
-    counter += 1;
     return false;
   }
 
   /**
-   * Gets the location of a reef tag in field space
+   * Check to see if a new path is available
    *
-   * @return The location of the nearest reef tag in field space
+   * @return If we are not moving and the cycle counter is high enough
    */
-  public static Pose2d getReefLocationInFieldSpace() {
-
-    double robotrot;
-    double reefrot;
-
-    // get reef location in robot space
-    Pose2d reefLocationpPose2d = VisionSubsystem.getReefLocationPose3d().toPose2d();
-    Pose2d RobotFieldSpace;
-
-    // if we dont have the reefs location find it by spinning slowly
-    if (reefLocationpPose2d == null) {
-      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed).schedule();
-    } else {
-      // if we do have the reefs location then convert it
-      // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0).schedule();
-
-      // get the robots location in field space
-      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-
-      if (reefLocationpPose2d.getRotation().getDegrees() > 180) {
-        reefrot = reefLocationpPose2d.getRotation().getDegrees() - 360;
-      } else {
-        reefrot = reefLocationpPose2d.getRotation().getDegrees();
-      }
-
-      if (RobotFieldSpace.getRotation().getDegrees() > 180) {
-        robotrot = RobotFieldSpace.getRotation().getDegrees() - 360;
-      } else {
-        robotrot = RobotFieldSpace.getRotation().getDegrees();
-      }
-
-      // do the math to find the location of the reef by adding together the values
-      double xActual = reefLocationpPose2d.getX() + RobotFieldSpace.getX();
-      double yActual = reefLocationpPose2d.getY() + RobotFieldSpace.getY();
-      double rotActual = reefrot + robotrot;
-
-      if (rotActual < 0) {
-        rotActual += 360;
-      }
-
-      // return the values
-      return new Pose2d(new Translation2d(xActual, yActual), new Rotation2d(rotActual));
+  public boolean isNewPathAvailable() {
+    switch (stage) {
+      case 0:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return moveCommand.isFinished();
+      case 1:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 2:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 3:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 4:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return moveCommand.isFinished();
+      case 5:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 6:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return moveCommand.isFinished();
+      case 7:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 8:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return moveCommand.isFinished();
+      case 9:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
+      case 10:
+        if (CHECKPANIC()) {
+          return true;
+        }
+        return sequentialMoveCommand.isFinished();
     }
-    return null;
+    // failsafe end the command
+    return true;
   }
 
-  /**
-   * Gets the location of a Coral Station tag in field space
-   *
-   * @return The location of the nearest Coral Station tag in field space
-   */
-  public Translation2d getCoralStationLocationInFieldSpace() {
-
-    // get reef location in robot space
-    ReefLocation = VisionSubsystem.getCoralStationLocation();
-
-    // if we dont have the reefs location find it by spinning slowly
-    if (ReefLocation[0] == -1 && ReefLocation[1] == -1) {
-      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, scanspeed);
-    } else {
-      // if we do have the reefs location then convert it
-      // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 0);
-
-      // get the robots location in field space
-      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-
-      // do the math to find the location of the reef by adding together the values
-      double xActual = ReefLocation[0] + RobotFieldSpace.getX();
-      double yActual = ReefLocation[1] + RobotFieldSpace.getY();
-
-      // return the values
-      return new Translation2d(xActual, yActual);
-    }
-    return null;
-  }
-
-  /**
-   * Gets the location of a Processor tag in field space
-   *
-   * @return The location of the nearest Processor tag in field space
-   */
-  public Translation2d getProcessorLocationInFieldSpace() {
-
-    // get Processor location in robot space
-    ProcLocation = VisionSubsystem.getProcessorLocation();
-
-    // if we dont have its location find it by spinning slowly
-    if (ProcLocation[0] == -1 && ProcLocation[1] == -1) {
-      DoubleSupplier scanspeed = () -> SmartDashboard.getNumber("AutoScanSpeed", 1.0);
-      RobotContainer.drivebase.driveCommand(null, null, scanspeed);
-    } else {
-      // if we do have its location then convert it
-      // first zero the drivecommand so the math stays right
-      RobotContainer.drivebase.driveCommand(null, null, null);
-
-      // get the robots location in field space
-      RobotFieldSpace = LimelightTarget_Retro.getRobotPose_FieldSpace2D();
-
-      // do the math to find the location of it by adding together the values
-      double xActual = ProcLocation[0] + RobotFieldSpace.getX();
-      double yActual = ProcLocation[1] + RobotFieldSpace.getY();
-
-      // return the values
-      return new Translation2d(xActual, yActual);
-    }
-    return null;
-  }
-
-  int elevatorSearch = 0;
+  Command moveCommand;
+  SequentialCommandGroup sequentialMoveCommand;
 
   /**
    * Creates and follows a path based on what we can see with vision goals: Auto can do 2 things 1)
    * drop off preloaded coral and do cycles between coral station and reef 2) drop off preloaded
    * coral and do cycles between reef(algae) and processor
    *
-   * @implNote Currently Algae cycles have been commented out as we do not plan to do them and thus
-   *     I will not support it
-   * @param constraints The Constraints of the robot
    * @param CoralStationChoose The current prefered Coral Station (We will cycle to and from this)
    */
-  @SuppressWarnings("static-access")
-  public void CreatePath(PathConstraints constraints, String CoralStationChoose) {
-
-    // if our plan is to go to the coral station then were doing coral station cycles
-    if (!CoralStationChoose.equals("stop")) {
-
-      Optional<Alliance> ally = DriverStation.getAlliance();
-      /*if (ally.get() == Alliance.Blue) {
-        new SequentialCommandGroup(
-                new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
-                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralWristSubsystem),
-                new WaitCommand(0.05),
-                new WristStop(RobotContainer.coralWristSubsystem),
-                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-                new WaitCommand(2),
-                new RobotContainer()
-                    .drivebase.driveToPose(
-                        new Pose2d(3.7, 5.4, new Rotation2d(Math.toRadians(-60)))),
-                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new CoralShootCommand(RobotContainer.coralHoldSubsystem),
-                new WaitCommand(1),
-                new stopCoralIntake(RobotContainer.coralHoldSubsystem),
-                new RobotContainer()
-                    .drivebase.driveToPose(
-                        new Pose2d(1.5, 6.85, new Rotation2d(Math.toRadians(124)))))
-            .schedule();
-      } else {
-        new SequentialCommandGroup(
-                new ElevatorMoveLevel1(RobotContainer.elevatorSubsystem),
-                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new WristUp(RobotContainer.coralWristSubsystem),
-                new WaitCommand(0.05),
-                new WristStop(RobotContainer.coralWristSubsystem),
-                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-                new WaitCommand(2),
-                new RobotContainer()
-                    .drivebase.driveToPose(
-                        new Pose2d(3.5, 5.4, new Rotation2d(Math.toRadians(50)))),
-                new WristToL1(RobotContainer.coralHoldAngleSubsystem),
-                new CoralShootCommand(RobotContainer.coralHoldSubsystem),
-                new WaitCommand(1),
-                new stopCoralIntake(RobotContainer.coralHoldSubsystem),
-                new RobotContainer()
-                    .drivebase.driveToPose(
-                        new Pose2d(14, 5.4, new Rotation2d(Math.toRadians(-122)))))
-            .schedule();
-      }*/
-      // if we are not going to go to the coral station then we are doing algae cycles
+  public void CreatePath(String CoralStationChoose) {
+    switch (stage) {
+        // move to reef (pathplanner)
+      case 0:
+        moveCommand = new GoToCommand(6);
+        moveCommand.schedule();
+        break;
+      case 1:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel2(RobotContainer.elevatorSubsystem),
+                // TODO: Placeholder for level wrist command
+                new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+                new AlignWithNearest(-0.15, null));
+        sequentialMoveCommand.schedule();
+        break;
+      case 2:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new ArmSetToScore(RobotContainer.coralWristSubsystem),
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+        sequentialMoveCommand.schedule();
+        break;
+      case 3:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                RobotContainer.drivebase.driveToDistanceCommand(-0.25, 0),
+                // TODO: Switch with level command for elevator and arm getting Algae between L2 and
+                // L3
+                new ParallelCommandGroup(
+                    new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
+                    new ArmSetToScore(RobotContainer.coralWristSubsystem)),
+                new AlignWithNearest(0, null));
+        sequentialMoveCommand.schedule();
+        break;
+      case 4:
+        moveCommand = new AlgaeIntakeCommand(RobotContainer.algaeSubsystem);
+        moveCommand.schedule();
+        break;
+      case 5:
+        Command rotCommand = RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 2);
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                rotCommand,
+                new WaitCommand(0.5),
+                run(
+                    () -> {
+                      rotCommand.cancel();
+                    }),
+                new AlgaeShootCommand(RobotContainer.algaeSubsystem),
+                new WaitCommand(0.25),
+                new algaeStopIntake(RobotContainer.algaeSubsystem));
+        sequentialMoveCommand.schedule();
+        break;
+      case 6:
+        moveCommand = RobotContainer.getCoralPathCommand(CoralStationChoose);
+        moveCommand.schedule();
+        break;
+      case 7:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+                new CoralIntakeCommand(RobotContainer.coralHoldSubsystem));
+        sequentialMoveCommand.schedule();
+        break;
+      case 8:
+        moveCommand = new GoToCommand(6);
+        moveCommand.schedule();
+        break;
+      case 9:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
+                // TODO: Placeholder for level wrist command
+                new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+                new AlignWithNearest(-0.15, null));
+        sequentialMoveCommand.schedule();
+        break;
+      case 10:
+        sequentialMoveCommand =
+            new SequentialCommandGroup(
+                new ArmSetToScore(RobotContainer.coralWristSubsystem),
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+        sequentialMoveCommand.schedule();
+        break;
     }
-    /*
-    else {
-
-      // if a new path is available AKA we are not moving
-      if (isNewPathAvailable()) {
-
-        // The algae we can take is on the reef and placed randomly
-        // if we can see an Algae then
-        if (VisionSubsystem.CanSeeAlgae()) {
-
-          // grab an algae and wait a second to the commands stack
-          Robot.autonomousCommand.addCommands(
-              new AlgaeIntakeCommand(RobotContainer.algaeSubsystem), new WaitCommand(1));
-
-          // get our Alliance
-          Optional<Alliance> ally = DriverStation.getAlliance();
-          if (ally.get() == Alliance.Blue) {
-            // drive to blue processor if blue
-            Robot.autonomousCommand.addCommands(
-                RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[3]));
-          } else {
-            // drive to red processor if red
-            Robot.autonomousCommand.addCommands(
-                RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[16]));
-          }
-
-          // then shoot that algae and wait a second
-          // finally schedule the thing
-          Robot.autonomousCommand.addCommands(
-              new AlgaeShootCommand(RobotContainer.algaeSubsystem), new WaitCommand(1));
-          Robot.autonomousCommand.schedule();
-
-          // wait for the command to finish running
-          while (!Robot.autonomousCommand.isFinished()) {
-            System.out.println("Running our Course");
-          }
-
-          // turn around to find the reef
-          RobotContainer.drivebase.drive(new Translation2d(0, 0), 180, false);
-
-          // find the reef
-          Translation2d temp2 = getReefLocationInFieldSpace();
-
-          // if we can't then wait till we can
-          while (temp2 == null) {
-            temp2 = getReefLocationInFieldSpace();
-          }
-
-          // drive to the reef if we can see it
-          Robot.autonomousCommand =
-              new SequentialCommandGroup(
-                  RobotContainer.drivebase.driveToPose(
-                      new Pose2d(temp2.getX(), temp2.getY(), new Rotation2d(135))));
-
-          // if we can't see an algae
-        } else {
-
-          // move the elevator
-          RobotContainer.elevatorSubsystem.setLevel(elevatorSearch);
-
-          // wait for its movement
-          while (!RobotContainer.elevatorSubsystem.isFinished(elevatorSearch)) {
-            System.out.println("Waiting for elevator");
-          }
-
-          // move the elevator up if we are not at the top of its reach
-          if (elevatorSearch != ElevatorSubsystem.levels.length) {
-            elevatorSearch++;
-
-            // if the elevator is at the top then move to the next reef location to continue search
-          } else {
-            while (VisionSubsystem.DistanceToReef() == -1) {
-              // move backwards till we can see tags
-              RobotContainer.drivebase.drive(new Translation2d(-1, 0), 0, false);
-            }
-
-            // get that tags ID and add 1 to it to find the next
-            int tag = VisionSubsystem.getTags()[0] + 1;
-
-            // to prevent an overflow sending us to narnia or an error
-            if (tag == 23) {
-              tag = 17;
-            }
-            if (tag == 12) {
-              tag = 6;
-            }
-
-            // then move to the corresponding position given to us via the grace of me hardcoding
-            // values into Drive Assistance
-            // also schedule the entire movement
-            Robot.autonomousCommand.addCommands(
-                RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[tag]));
-            Robot.autonomousCommand.schedule();
-            // wait for movement to be done
-            while (!Robot.autonomousCommand.isFinished()) {
-              System.out.println("Waiting for movement");
-            }
-            elevatorSearch = 0;
-          }
-        }
-      }
-    }
-      */
+    stage += 1;
   }
 }
