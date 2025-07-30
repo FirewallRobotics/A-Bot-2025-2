@@ -83,9 +83,13 @@ public class AlignWithNearest extends Command {
   double offset;
   Trigger trigger;
   CommandXboxController driveXboxController;
+  int rotCounter;
+  double rotValue;
+  double rotValueAvg;
 
   // add vision as a requirement to run
-  public AlignWithNearest(double offset, Trigger trigger, CommandXboxController driveXboxController) {
+  public AlignWithNearest(
+      double offset, Trigger trigger, CommandXboxController driveXboxController) {
     // P = speed
     // I = smoothing
     // D = time
@@ -119,6 +123,17 @@ public class AlignWithNearest extends Command {
     yController.setTolerance(0.1);
     rController.setSetpoint(0);
     rController.setTolerance(0.01);
+
+    int[] tags = visionSubsystem.getTagsUnchanging();
+
+    if(tags.length > 0){
+      TagAligningToo = tags[0];
+      TagLocation = visionSubsystem.getTagPose2dUnchanging(TagAligningToo);
+
+      if (TagLocation != null) {
+        rotValueAvg = TagLocation.getRotation().getDegrees();
+      }
+    }
   }
 
   @Override
@@ -127,9 +142,6 @@ public class AlignWithNearest extends Command {
     SmartDashboard.putNumber("GraceFrames", GraceFrames);
 
     int[] tags = visionSubsystem.getTagsUnchanging();
-    // False means it's not null
-    // True means that it is null
-    boolean isNullDoubleTest = false;
 
     if (tags.length > 0) {
       TagAligningToo = tags[0];
@@ -142,21 +154,28 @@ public class AlignWithNearest extends Command {
       //    && TagLocation.getTranslation() != null
       //    && TagLocation.getRotation() != null
 
-      if (isNullDoubleTest == false) {
+      if (TagLocation != null) {
+
+        if(rotCounter != 5){
+          rotValue += TagLocation.getRotation().getDegrees();
+          rotCounter++;
+        }else{
+          rotValueAvg = rotValue / 5;
+          rotValue = 0;
+          rotCounter = 0;
+        }
 
         Command driveCommand = null;
 
-        /*
-        SmartDashboard.putNumberArray(
-            "Calculated pos",
-            new double[] {
-              yController.calculate(
-                  TagLocation.getY() + SmartDashboard.getNumber("Y-Stop-Dist", 0.025)),
-              xController.calculate(TagLocation.getX()),
-              rController.calculate(
-                  MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180))
-            });
-            */
+        // SmartDashboard.putNumberArray(
+        //     "Calculated pos",
+        //     new double[] {
+        //       yController.calculate(
+        //           TagLocation.getY() + SmartDashboard.getNumber("Y-Stop-Dist", 0.025)),
+        //       xController.calculate(TagLocation.getX()),
+        //       rController.calculate(
+        //           MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180))
+        //     });
 
         driveCommand =
             RobotContainer.drivebase.driveCommand(
@@ -164,7 +183,7 @@ public class AlignWithNearest extends Command {
                     (yController.calculate(
                         TagLocation.getY() + SmartDashboard.getNumber("Y-Stop-Dist", 0.025))),
                     (xController.calculate(
-                      TagLocation.getX() + SmartDashboard.getNumber("X-Stop-Dist", 0.025))),
+                        TagLocation.getX() + SmartDashboard.getNumber("X-Stop-Dist", 0.025))),
                     (rController.calculate(
                         MathUtil.inputModulus(
                             TagLocation.getRotation().getDegrees(), -180, 180)))));
@@ -185,6 +204,10 @@ public class AlignWithNearest extends Command {
                                   && TagLocation.getX()
                                       > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
                                           - SmartDashboard.getNumber("xError", 0.1)))
+                              && ((TagLocation.getRotation().getDegrees()
+                                      < SmartDashboard.getNumber("rError", 1))
+                                  && (TagLocation.getRotation().getDegrees()
+                                      > -SmartDashboard.getNumber("rError", 1)))
                           || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                           || (RobotContainer.driverXbox.back().getAsBoolean()
                               || RobotContainer.coralController.back().getAsBoolean())
@@ -205,6 +228,10 @@ public class AlignWithNearest extends Command {
                                   && TagLocation.getX()
                                       > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
                                           - SmartDashboard.getNumber("xError", 0.1)))
+                              && ((TagLocation.getRotation().getDegrees()
+                                      < SmartDashboard.getNumber("rError", 1))
+                                  && (TagLocation.getRotation().getDegrees()
+                                      > -SmartDashboard.getNumber("rError", 1)))
                           || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                           || (RobotContainer.driverXbox.back().getAsBoolean()
                               || RobotContainer.coralController.back().getAsBoolean()));
@@ -221,7 +248,10 @@ public class AlignWithNearest extends Command {
                         + SmartDashboard.getNumber("xError", 0.1))
                 || TagLocation.getX()
                     < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
-                        - SmartDashboard.getNumber("xError", 0.1)))) {
+                        - SmartDashboard.getNumber("xError", 0.1)))
+            || ((TagLocation.getRotation().getDegrees() > SmartDashboard.getNumber("rError", 1))
+                || (TagLocation.getRotation().getDegrees()
+                    < -SmartDashboard.getNumber("rError", 1)))) {
 
           // Logger.getGlobal().log(Level.INFO, "Too far");
 
@@ -239,7 +269,7 @@ public class AlignWithNearest extends Command {
                 if (trigger.getAsBoolean()) {
 
                   conditionalDriveCommand.schedule();
-                  if(driveXboxController != null){
+                  if (driveXboxController != null) {
                     driveXboxController.setRumble(RumbleType.kBothRumble, 1);
                   }
 
@@ -256,7 +286,7 @@ public class AlignWithNearest extends Command {
                 }
               } else {
                 conditionalDriveCommand.schedule();
-                if(driveXboxController != null){
+                if (driveXboxController != null) {
                   driveXboxController.setRumble(RumbleType.kBothRumble, 1);
                 }
               }
@@ -315,7 +345,8 @@ public class AlignWithNearest extends Command {
 
     if ((RobotContainer.driverXbox.back().getAsBoolean()
             || RobotContainer.coralController.back().getAsBoolean())
-        && conditionalDriveCommand != null && driveXboxController != null) {
+        && conditionalDriveCommand != null
+        && driveXboxController != null) {
       conditionalDriveCommand.cancel();
       driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       Logger.getGlobal().log(Level.WARNING, "Back button exit");
@@ -323,7 +354,9 @@ public class AlignWithNearest extends Command {
     }
 
     if (trigger != null) {
-      if (!trigger.getAsBoolean() && conditionalDriveCommand != null && driveXboxController != null) {
+      if (!trigger.getAsBoolean()
+          && conditionalDriveCommand != null
+          && driveXboxController != null) {
         conditionalDriveCommand.cancel();
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
         Logger.getGlobal().log(Level.WARNING, "Button release exit");
@@ -339,7 +372,8 @@ public class AlignWithNearest extends Command {
               && TagLocation.getY()
                   > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
                       - SmartDashboard.getNumber("yError", 0.1)))
-          && conditionalDriveCommand != null && driveXboxController != null) {
+          && conditionalDriveCommand != null
+          && driveXboxController != null) {
         Logger.getGlobal().log(Level.INFO, "Y Satisfied");
         if ((TagLocation.getX()
                 < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
@@ -347,13 +381,17 @@ public class AlignWithNearest extends Command {
             && TagLocation.getX()
                 > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
                     - SmartDashboard.getNumber("xError", 0.1)))) {
-          conditionalDriveCommand.cancel();
-          driveXboxController.setRumble(RumbleType.kBothRumble, 0);
-          Logger.getGlobal().log(Level.WARNING, "Y + X Satisfied");
-          return true;
+          Logger.getGlobal().log(Level.INFO, "Y + X Satisfied");
+          if ((TagLocation.getRotation().getDegrees() < SmartDashboard.getNumber("rError", 1))
+              && (TagLocation.getRotation().getDegrees()
+                  > -SmartDashboard.getNumber("rError", 1))) {
+            conditionalDriveCommand.cancel();
+            driveXboxController.setRumble(RumbleType.kBothRumble, 0);
+            Logger.getGlobal().log(Level.WARNING, "Y, X, Rot Satisfied");
+            return true;
+          }
         }
       }
-    //TODO: Add null checks for driverxbox
     } else if (conditionalDriveCommand != null && driveXboxController != null) {
       conditionalDriveCommand.cancel();
       driveXboxController.setRumble(RumbleType.kBothRumble, 0);
