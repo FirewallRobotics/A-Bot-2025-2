@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -142,9 +143,12 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    SmartDashboard.putNumber("X-Stop-Dist", 0.04);
-    SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
+    // SmartDashboard.putNumber("X-Stop-Dist", -0.26);
+    SmartDashboard.putNumber("X-Stop-Dist", 0);
+    SmartDashboard.putNumber("Y-Stop-Dist", 0.34);
     SmartDashboard.putNumber("Rot-Stop-Dist", 5);
+    SmartDashboard.putNumber("yError", 0.03);
+    SmartDashboard.putNumber("xError", 0.03);
 
     // keyboard = new KeyboardInput();
     configureBindings();
@@ -253,13 +257,13 @@ public class RobotContainer {
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorSubsystem),
-                new AlignWithNearest(0.15, coralController.rightTrigger())));
+                new AlignWithNearest(-0.32, coralController.rightTrigger())));
     coralController
         .rightBumper()
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorSubsystem),
-                new AlignWithNearest(-0.15, coralController.rightBumper())));
+                new AlignWithNearest(-0.32, coralController.rightBumper())));
 
     coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
     coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));

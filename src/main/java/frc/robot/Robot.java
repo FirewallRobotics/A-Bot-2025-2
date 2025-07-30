@@ -111,6 +111,10 @@ public class Robot extends TimedRobot {
     }
     frc.robot.RobotContainer.elevatorSubsystem.Periodic();
 
+    if (DriverStation.isDSAttached()) {
+      SmartDashboard.putNumber("Aprox-Timer", DriverStation.getMatchTime());
+    }
+
     // to set the levels
     // SmartDashboard.putNumber("ElevEncoder:",
     // RobotContainer.elevatorSubsystem.getPositionEncoder());

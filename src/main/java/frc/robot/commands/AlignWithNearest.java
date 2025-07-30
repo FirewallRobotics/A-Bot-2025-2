@@ -86,10 +86,14 @@ public class AlignWithNearest extends Command {
     // P = speed
     // I = smoothing
     // D = time
-    xController = new PIDController(4.5, 0, 0);
-    yController = new PIDController(4.5, 0, 0);
-    rController = new PIDController(0.27, 0, 0.2);
+    xController = new PIDController(4, 0, 0);
+    yController = new PIDController(8, 0, 0);
+    rController = new PIDController(0.27, 0, 0);
     TagLocation = new Pose2d(0, 0, new Rotation2d(0));
+
+    SmartDashboard.putData("xController", xController);
+    SmartDashboard.putData("yController", yController);
+    SmartDashboard.putData("rController", rController);
 
     visionSubsystem = new VisionSubsystem();
 
@@ -99,16 +103,25 @@ public class AlignWithNearest extends Command {
 
   @Override
   public void initialize() {
+
+    Logger.getGlobal().log(Level.INFO, "Init Alignment");
+    xController = (PIDController) SmartDashboard.getData("xController");
+    yController = (PIDController) SmartDashboard.getData("yController");
+    rController = (PIDController) SmartDashboard.getData("rController");
+
     xController.setSetpoint(0);
-    xController.setTolerance(0.5);
+    xController.setTolerance(0.1);
     yController.setSetpoint(0);
-    yController.setTolerance(0.5);
+    yController.setTolerance(0.1);
     rController.setSetpoint(0);
-    rController.setTolerance(0.5);
+    rController.setTolerance(0.01);
   }
 
   @Override
   public void execute() {
+
+    SmartDashboard.putNumber("GraceFrames", GraceFrames);
+
     int[] tags = visionSubsystem.getTagsUnchanging();
     // False means it's not null
     // True means that it is null
@@ -127,22 +140,26 @@ public class AlignWithNearest extends Command {
 
       if (isNullDoubleTest == false) {
 
-        Command driveCommand;
+        Command driveCommand = null;
 
+        /*
         SmartDashboard.putNumberArray(
             "Calculated pos",
             new double[] {
-              yController.calculate(TagLocation.getY()),
-              xController.calculate(TagLocation.getX() + offset),
+              yController.calculate(
+                  TagLocation.getY() + SmartDashboard.getNumber("Y-Stop-Dist", 0.025)),
+              xController.calculate(TagLocation.getX()),
               rController.calculate(
                   MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180))
             });
+            */
 
         driveCommand =
             RobotContainer.drivebase.driveCommand(
                 new ChassisSpeeds(
-                    (yController.calculate(TagLocation.getY())),
-                    (xController.calculate(TagLocation.getX() + offset)),
+                    (yController.calculate(
+                        TagLocation.getY() + SmartDashboard.getNumber("Y-Stop-Dist", 0.025))),
+                    (xController.calculate(TagLocation.getX())),
                     (rController.calculate(
                         MathUtil.inputModulus(
                             TagLocation.getRotation().getDegrees(), -180, 180)))));
@@ -151,7 +168,18 @@ public class AlignWithNearest extends Command {
           conditionalDriveCommand =
               driveCommand.until(
                   () ->
-                      Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+                      (TagLocation.getY()
+                                      < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                          + SmartDashboard.getNumber("yError", 0.1))
+                                  && TagLocation.getY()
+                                      > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                          - SmartDashboard.getNumber("yError", 0.1)))
+                              && (TagLocation.getX()
+                                      < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                          + SmartDashboard.getNumber("xError", 0.1))
+                                  && TagLocation.getX()
+                                      > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                          - SmartDashboard.getNumber("xError", 0.1)))
                           || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                           || (RobotContainer.driverXbox.back().getAsBoolean()
                               || RobotContainer.coralController.back().getAsBoolean())
@@ -160,13 +188,35 @@ public class AlignWithNearest extends Command {
           conditionalDriveCommand =
               driveCommand.until(
                   () ->
-                      Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+                      (TagLocation.getY()
+                                      < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                          + SmartDashboard.getNumber("yError", 0.1))
+                                  && TagLocation.getY()
+                                      > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                          - SmartDashboard.getNumber("yError", 0.1)))
+                              && (TagLocation.getX()
+                                      < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                          + SmartDashboard.getNumber("xError", 0.1))
+                                  && TagLocation.getX()
+                                      > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                          - SmartDashboard.getNumber("xError", 0.1)))
                           || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
                           || (RobotContainer.driverXbox.back().getAsBoolean()
                               || RobotContainer.coralController.back().getAsBoolean()));
         }
 
-        if (Math.abs(TagLocation.getY()) > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)) {
+        if ((TagLocation.getY()
+                    > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                        + SmartDashboard.getNumber("yError", 0.1))
+                || TagLocation.getY()
+                    < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                        - SmartDashboard.getNumber("yError", 0.1)))
+            || (TagLocation.getX()
+                    > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                        + SmartDashboard.getNumber("xError", 0.1))
+                || TagLocation.getX()
+                    < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                        - SmartDashboard.getNumber("xError", 0.1)))) {
 
           // Logger.getGlobal().log(Level.INFO, "Too far");
 
@@ -216,24 +266,13 @@ public class AlignWithNearest extends Command {
             conditionalDriveCommand.cancel();
           }
         }
-
-        // Logger.getGlobal()
-        //     .log(Level.WARNING, "CanSee: " +
-        // visionSubsystem.CanSeeTagUnchanging(TagAligningToo));
-        // Logger.getGlobal()
-        //    .log(
-        //        Level.WARNING,
-        //        "TooFar: "
-        //            + (Math.abs(TagLocation.getX())
-        //                > SmartDashboard.getNumber("Y-Stop-Dist", 0.025)));
-        // Logger.getGlobal().log(Level.WARNING, "DistValue: " + (Math.abs(TagLocation.getX())));
       } else {
         Logger.getGlobal().log(Level.WARNING, "Null location cancel");
         if (conditionalDriveCommand != null) {
           conditionalDriveCommand.cancel();
         }
       }
-    } else if (GraceFrames > 10) {
+    } else if (GraceFrames > SmartDashboard.getNumber("MaxGraceFrames", 10)) {
       Logger.getGlobal().log(Level.WARNING, "No tags cancel");
       if (conditionalDriveCommand != null) {
         conditionalDriveCommand.cancel();
@@ -248,7 +287,7 @@ public class AlignWithNearest extends Command {
 
     if (!visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
         && conditionalDriveCommand != null
-        && GraceFrames > 10) {
+        && GraceFrames > SmartDashboard.getNumber("MaxGraceFrames", 10)) {
       conditionalDriveCommand.cancel();
       Logger.getGlobal().log(Level.WARNING, "Cannot see tag exit");
       return true;
@@ -271,11 +310,25 @@ public class AlignWithNearest extends Command {
     }
 
     if (TagLocation != null) {
-      if (Math.abs(TagLocation.getY()) < SmartDashboard.getNumber("Y-Stop-Dist", 0.025)
+
+      if ((TagLocation.getY()
+                  < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                      + SmartDashboard.getNumber("yError", 0.1))
+              && TagLocation.getY()
+                  > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                      - SmartDashboard.getNumber("yError", 0.1)))
           && conditionalDriveCommand != null) {
-        conditionalDriveCommand.cancel();
-        Logger.getGlobal().log(Level.WARNING, "Too close exit");
-        return true;
+        Logger.getGlobal().log(Level.INFO, "Y Satisfied");
+        if ((TagLocation.getX()
+                < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                    + SmartDashboard.getNumber("xError", 0.1))
+            && TagLocation.getX()
+                > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                    - SmartDashboard.getNumber("xError", 0.1)))) {
+          conditionalDriveCommand.cancel();
+          Logger.getGlobal().log(Level.WARNING, "Y + X Satisfied");
+          return true;
+        }
       }
     } else if (conditionalDriveCommand != null) {
       conditionalDriveCommand.cancel();

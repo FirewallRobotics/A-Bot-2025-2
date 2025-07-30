@@ -95,7 +95,6 @@ public class CoralWristSubsystem extends SubsystemBase {
     if (!buttonPressed) {
       wantedPos = encoder.getPosition();
       state = new State(wantedPos, 0);
-      // Logger.getGlobal().log(Level.INFO, "(PERIODIC) Hold up trying to get: " + wantedPos);
       holdUp(state);
     }
   }
@@ -130,7 +129,6 @@ public class CoralWristSubsystem extends SubsystemBase {
 
   // Hold up at a position
   public void holdUp(TrapezoidProfile.State setpoint) {
-    // Logger.getGlobal().log(Level.INFO, "(FUNCTION) Hold up trying to get: " + setpoint.position);
     double ff = feedforward.calculate(setpoint.position * 2 * Math.PI, setpoint.velocity);
     controller.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
   }
