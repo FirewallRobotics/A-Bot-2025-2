@@ -160,7 +160,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(RobotContainer.elevatorSubsystem),
                 new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-                new AlignWithNearest(-0.15, null));
+                new AlignWithNearest(-0.15, null, null));
         sequentialMoveCommand.schedule();
         break;
       case 2:
@@ -177,7 +177,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
                 new ParallelCommandGroup(
                     new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
                     new ArmSetToScore(RobotContainer.coralWristSubsystem)),
-                new AlignWithNearest(0, null));
+                new AlignWithNearest(0, null, null));
         sequentialMoveCommand.schedule();
         break;
       case 4:
@@ -219,7 +219,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new SequentialCommandGroup(
                 new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
                 new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-                new AlignWithNearest(-0.15, null));
+                new AlignWithNearest(-0.15, null, null));
         sequentialMoveCommand.schedule();
         break;
       case 10:
