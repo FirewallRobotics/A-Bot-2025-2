@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -140,12 +141,18 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    SmartDashboard.putNumber("X-Stop-Dist", 0.04);
-    SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
-    SmartDashboard.putNumber("Rot-Stop-Dist", 5);
+    // SmartDashboard.putNumber("X-Stop-Dist", -0.26);
+    SmartDashboard.putNumber("X-Stop-Dist", -0.09);
+    SmartDashboard.putNumber("Y-Stop-Dist", 0.31);
+    SmartDashboard.putNumber("yError", 0.017);
+    SmartDashboard.putNumber("xError", 0.017);
+    SmartDashboard.putNumber("rError", 0.02);
 
     // keyboard = new KeyboardInput();
     configureBindings();
+
+    // Reset rumble incase its not 0
+    driverXbox.setRumble(RumbleType.kBothRumble, 0);
 
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -251,13 +258,13 @@ public class RobotContainer {
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorCoralSubsystem),
-                new AlignWithNearest(0.15, coralController.rightTrigger())));
+                new AlignWithNearest(-0.32, coralController.rightTrigger(), driverXbox)));
     coralController
         .rightBumper()
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorCoralSubsystem),
-                new AlignWithNearest(-0.15, coralController.rightBumper())));
+                new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
 
     coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
     coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));
