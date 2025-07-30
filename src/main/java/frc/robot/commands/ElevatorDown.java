@@ -1,27 +1,24 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ElevatorCoralSubsystem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ElevatorDown extends Command {
-  private ElevatorSubsystem m_subsystem;
+  private ElevatorCoralSubsystem elevatorSubsystem;
 
-  private double position;
-
-  public ElevatorDown(ElevatorSubsystem subsystem, double speed) {
-    m_subsystem = subsystem;
+  public ElevatorDown(ElevatorCoralSubsystem e_Subsystem) {
+    elevatorSubsystem = e_Subsystem;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(subsystem);
-    this.position = speed;
+    addRequirements(e_Subsystem);
   }
 
   @Override
   public void initialize() {
-    m_subsystem.setSpeed(position);
+    Logger.getGlobal().log(Level.INFO, "Manual Elevator down");
+    elevatorSubsystem.ElevatorDown();
   }
-
-  @Override
-  public void execute() {}
 
   @Override
   public boolean isFinished() {

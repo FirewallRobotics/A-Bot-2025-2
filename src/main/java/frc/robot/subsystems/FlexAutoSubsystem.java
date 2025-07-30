@@ -158,7 +158,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
       case 1:
         sequentialMoveCommand =
             new SequentialCommandGroup(
-                new ElevatorMoveLevel2(RobotContainer.elevatorSubsystem),
+                new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
                 // TODO: Placeholder for level wrist command
                 new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
                 new AlignWithNearest(-0.15, null));
@@ -178,7 +178,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
                 // TODO: Switch with level command for elevator and arm getting Algae between L2 and
                 // L3
                 new ParallelCommandGroup(
-                    new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
+                    new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
                     new ArmSetToScore(RobotContainer.coralWristSubsystem)),
                 new AlignWithNearest(0, null));
         sequentialMoveCommand.schedule();
@@ -220,7 +220,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
       case 9:
         sequentialMoveCommand =
             new SequentialCommandGroup(
-                new ElevatorMoveLevel3(RobotContainer.elevatorSubsystem),
+                new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
                 // TODO: Placeholder for level wrist command
                 new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
                 new AlignWithNearest(-0.15, null));

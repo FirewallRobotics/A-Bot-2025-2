@@ -1,41 +1,42 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ElevatorCoralSubsystem;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** An example command that uses an example subsystem. */
 public class ElevatorMoveLevel2 extends Command {
-  private final ElevatorSubsystem m_subsystem;
+  private final ElevatorCoralSubsystem elevatorSubsystem;
 
   /**
    * Creates a new ElevatorMoveLevel2.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public ElevatorMoveLevel2(ElevatorSubsystem subsystem) {
-    m_subsystem = subsystem;
+  public ElevatorMoveLevel2(ElevatorCoralSubsystem e_Subsystem) {
+    elevatorSubsystem = e_Subsystem;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(subsystem);
+    addRequirements(e_Subsystem);
   }
 
   @Override
   public void execute() {
-    m_subsystem.goToCoralLevel(2);
+    elevatorSubsystem.ToCoralLevel(2);
 
-    if (m_subsystem.atLevel(2)) {
+    if (elevatorSubsystem.atLevel(2)) {
 
       // Logger.getGlobal().log(Level.INFO, "found level");
-      m_subsystem.stop();
+      elevatorSubsystem.ElevatorStop();
     }
   }
 
   @Override
   public boolean isFinished() {
-    if (m_subsystem.atLevel(2)) {
+    if (elevatorSubsystem.atLevel(2)) {
       Logger.getGlobal().log(Level.INFO, "found level");
-      m_subsystem.stop();
+      elevatorSubsystem.ElevatorStop();
+
       return true;
     }
     return false;

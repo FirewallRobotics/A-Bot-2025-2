@@ -18,11 +18,11 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ElevatorSubsystemConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AlgaeIntakeCommand;
 import frc.robot.commands.AlgaeShootCommand;
@@ -33,10 +33,8 @@ import frc.robot.commands.ArmSetToScore;
 import frc.robot.commands.CoralIntakeCommand;
 import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
-import frc.robot.commands.ElevatorMoveLevel1;
 import frc.robot.commands.ElevatorMoveLevel2;
 import frc.robot.commands.ElevatorMoveLevel3;
-import frc.robot.commands.ElevatorMoveLevel4;
 import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
@@ -50,7 +48,7 @@ import frc.robot.commands.stopCoralIntake;
 import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.CoralHoldSubsystem;
 import frc.robot.subsystems.CoralWristSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ElevatorCoralSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -111,7 +109,7 @@ public class RobotContainer {
           .withControllerHeadingAxis(driverXbox::getRightX, driverXbox::getRightY)
           .headingWhile(true);
 
-  public static ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static ElevatorCoralSubsystem elevatorCoralSubsystem = new ElevatorCoralSubsystem();
   // public static ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static CoralHoldSubsystem coralHoldSubsystem = new CoralHoldSubsystem();
   public static VisionSubsystem visionSubsystem = new VisionSubsystem();
@@ -151,13 +149,11 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     DriverStation.silenceJoystickConnectionWarning(true);
-    NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorSubsystem, 0.5));
-    NamedCommands.registerCommand("ElevatorLevel1", new ElevatorMoveLevel1(elevatorSubsystem));
-    NamedCommands.registerCommand("ElevatorLevel2", new ElevatorMoveLevel2(elevatorSubsystem));
-    NamedCommands.registerCommand("ElevatorLevel3", new ElevatorMoveLevel3(elevatorSubsystem));
-    NamedCommands.registerCommand("ElevatorLevel4", new ElevatorMoveLevel4(elevatorSubsystem));
+    NamedCommands.registerCommand("ElevatorUp", new ElevatorUp(elevatorCoralSubsystem));
+    NamedCommands.registerCommand("ElevatorLevel2", new ElevatorMoveLevel2(elevatorCoralSubsystem));
+    NamedCommands.registerCommand("ElevatorLevel3", new ElevatorMoveLevel3(elevatorCoralSubsystem));
     NamedCommands.registerCommand("Wait0.25", new WaitCommand(0.25));
-    NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorSubsystem));
+    NamedCommands.registerCommand("ElevatorStop", new ElevatorStop(elevatorCoralSubsystem));
     NamedCommands.registerCommand("WristDown", new WristDown(coralWristSubsystem));
     NamedCommands.registerCommand("WristUp", new WristUp(coralWristSubsystem));
     NamedCommands.registerCommand("WristStop", new WristStop(coralWristSubsystem));
@@ -171,7 +167,9 @@ public class RobotContainer {
     Mechanism2d mech = new Mechanism2d(3, 3);
     MechanismRoot2d root = mech.getRoot("climber", 2, 0);
     m_elevator =
-        root.append(new MechanismLigament2d("elevator", ElevatorSubsystem.levels.length, 90));
+        root.append(
+            new MechanismLigament2d(
+                "elevator", ElevatorSubsystemConstants.elevatorLevels.length, 90));
     m_wrist =
         m_elevator.append(
             new MechanismLigament2d("Coral", 0.5, 90, 6, new Color8Bit(Color.kPurple)));
@@ -182,7 +180,7 @@ public class RobotContainer {
   }
 
   public void Periodic() {
-    m_elevator.setLength(elevatorSubsystem.getPositionEncoder());
+    m_elevator.setLength(elevatorCoralSubsystem.getPositionEncoder());
     m_wrist.setAngle(coralWristSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
     // m_wrist2.setAngle(climberSubsystem.getEncoder());
@@ -238,10 +236,10 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
 
-    coralController.y().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel3(elevatorSubsystem)));
+    coralController.y().onTrue(new ElevatorMoveLevel3(elevatorCoralSubsystem));
 
     // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
-    coralController.b().onTrue(new ParallelCommandGroup(new ElevatorMoveLevel2(elevatorSubsystem)));
+    coralController.b().onTrue(new ElevatorMoveLevel2(elevatorCoralSubsystem));
     // coralController.a().onTrue(new ParallelCommandGroup(new
     // SequentialCommandGroup(drivebase.driveCommand(() -> 0, () -> 0, () -> 0.2))));
     // Will make it so pressing right on the controller will put the position to the logger. this
@@ -252,13 +250,13 @@ public class RobotContainer {
         .rightTrigger()
         .onTrue(
             new SequentialCommandGroup(
-                new ElevatorMoveLevel2(elevatorSubsystem),
+                new ElevatorMoveLevel2(elevatorCoralSubsystem),
                 new AlignWithNearest(0.15, coralController.rightTrigger())));
     coralController
         .rightBumper()
         .onTrue(
             new SequentialCommandGroup(
-                new ElevatorMoveLevel2(elevatorSubsystem),
+                new ElevatorMoveLevel2(elevatorCoralSubsystem),
                 new AlignWithNearest(-0.15, coralController.rightBumper())));
 
     coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
@@ -296,11 +294,11 @@ public class RobotContainer {
     // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
 
     // driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
-    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorSubsystem));
-    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorSubsystem, 0.64));
-    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorSubsystem, 0.1));
+    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
+    driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorCoralSubsystem));
+    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorCoralSubsystem));
+    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorCoralSubsystem));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().onTrue(new WristUp(coralWristSubsystem));
     driverXbox.povDown().onTrue(new WristDown(coralWristSubsystem));
@@ -328,10 +326,6 @@ public class RobotContainer {
   public Command getAutonomousCommand(String pathString) {
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand(pathString);
-  }
-
-  public static boolean gottenStart() {
-    return elevatorSubsystem.getOgPOSgotten();
   }
 
   public static Command getCoralPathCommand(String chooser) {

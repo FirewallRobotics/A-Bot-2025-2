@@ -109,7 +109,7 @@ public class Robot extends TimedRobot {
     if (!DriverStation.isDisabled()) {
       m_robotContainer.Periodic();
     }
-    frc.robot.RobotContainer.elevatorSubsystem.Periodic();
+    frc.robot.RobotContainer.elevatorCoralSubsystem.Periodic();
 
     // to set the levels
     // SmartDashboard.putNumber("ElevEncoder:",
@@ -133,7 +133,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.setMotorBrake(true);
     disabledTimer.reset();
     disabledTimer.start();
-    RobotContainer.elevatorSubsystem.stop();
+    RobotContainer.elevatorCoralSubsystem.ElevatorStop();
     RobotContainer.coralWristSubsystem.stopWrist();
     // RobotContainer.climberSubsystem.stop();
 

@@ -59,6 +59,11 @@ public final class Constants {
     public static final double kGVolts = 0.29175;
     public static final double kVVoltSecondPerRad = 1.5928;
     public static final double kAVoltSecondSquaredPerRad = 0.030171;
+
+    public static final double elevatorUpSpeed = 0.64;
+    public static final double elevatorDownSpeed = 0.1;
+    public static final double[] elevatorLevels = {0.0, -16.0, -31.401};
+    public static final float[] elevatorPNumbers = {0.32f, 0.03f, 0f};
   }
 
   public static class ClimberSubsystemConstants {
