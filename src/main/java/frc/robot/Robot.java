@@ -189,6 +189,12 @@ public class Robot extends TimedRobot {
         && !(CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
     }
+
+    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
+
+      // have flex create points to follow
+      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
+    }
   }
 
   List<Pose2d> points;
@@ -200,11 +206,11 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
     }
-    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
+    // if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
 
-      // have flex create points to follow
-      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
-    }
+    //   // have flex create points to follow
+    //   flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
+    // }
     // Will constantly get the position of the elevator,
     // so that when we go into tele, we have an offset to
     // adjust to
