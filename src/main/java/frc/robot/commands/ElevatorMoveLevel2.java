@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 public class ElevatorMoveLevel2 extends Command {
   private final ElevatorCoralSubsystem elevatorSubsystem;
 
+  private boolean needsMovement;
+
   /**
    * Creates a new ElevatorMoveLevel2.
    *
@@ -19,24 +21,34 @@ public class ElevatorMoveLevel2 extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(e_Subsystem);
   }
+  @Override
+  public void initialize() {
+    Logger.getGlobal().log(Level.INFO, "initalized");
+    needsMovement = !elevatorSubsystem.atLevel(2);
+  }
 
   @Override
   public void execute() {
-    elevatorSubsystem.ToCoralLevel(2);
-
-    if (elevatorSubsystem.atLevel(2)) {
-
-      // Logger.getGlobal().log(Level.INFO, "found level");
-      elevatorSubsystem.ElevatorStop();
+    
+    if (needsMovement) {
+      Logger.getGlobal().log(Level.INFO, "Needs to move");
+      elevatorSubsystem.ToCoralLevel(2);
+    } else {
+      Logger.getGlobal().log(Level.INFO, "doesn't need to move");
+      
     }
+
   }
 
   @Override
   public boolean isFinished() {
-    if (elevatorSubsystem.atLevel(2)) {
+    if (elevatorSubsystem.atLevel(2) && needsMovement) {
       Logger.getGlobal().log(Level.INFO, "found level");
       elevatorSubsystem.ElevatorStop();
 
+      return true;
+    } else if (!needsMovement){
+      //elevatorSubsystem.ElevatorStop(true);
       return true;
     }
     return false;

@@ -102,6 +102,7 @@ public class ElevatorCoralSubsystem extends SubsystemBase {
         getPositionEncoder(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -0.3);
   }
 
+
   // Go up to a coral level
   public void ToCoralLevel(int level) {
 
