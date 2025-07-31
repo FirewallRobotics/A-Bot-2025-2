@@ -287,7 +287,7 @@ public class RobotContainer {
 
     // trigger and bumper
     driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
-    driverXbox.rightBumper().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    driverXbox.rightBumper().onTrue(new ArmSetToCoralAccept(coralWristSubsystem));
     driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
     driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorCoralSubsystem));
     driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorCoralSubsystem));
