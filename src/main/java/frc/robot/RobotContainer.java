@@ -250,7 +250,11 @@ public class RobotContainer {
 
     // Coral Controller D-pad
     coralController.povRight().whileTrue(new GoToCommand(6));
-    coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
+    coralController.povUp().onTrue(
+      new SequentialCommandGroup(
+          new ElevatorMoveLevel2(elevatorCoralSubsystem),
+          new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
+;
 
     // Coral controller trigger and bumpers
     coralController.rightBumper().onTrue(new CoralShootCommand(coralHoldSubsystem));
