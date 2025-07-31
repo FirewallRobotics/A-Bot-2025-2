@@ -126,36 +126,37 @@ public class FlexAutoSubsystem extends SubsystemBase {
     //         new ArmSetToScore(RobotContainer.coralWristSubsystem),
     //         new CoralShootCommand(RobotContainer.coralHoldSubsystem));
 
-    oneSequentialCommand = new SequentialCommandGroup(
-      RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
-      new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
-      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-      new AlignWithNearest(0, null, null),
-      new ArmSetToScore(RobotContainer.coralWristSubsystem),
-      new CoralShootCommand(RobotContainer.coralHoldSubsystem),
-      RobotContainer.drivebase.driveToDistanceCommand(-0.25, 0),
-      new ParallelCommandGroup(
-        new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-        new ArmSetToScore(RobotContainer.coralWristSubsystem)),
-      new AlignWithNearest(0, null, null),
-      rotCommand,
-      new WaitCommand(0.5),
-      run(
-          () -> {
-            rotCommand.cancel();
-          }),
-      new AlgaeShootCommand(RobotContainer.algaeSubsystem),
-      new WaitCommand(0.25),
-      new algaeStopIntake(RobotContainer.algaeSubsystem),
-      RobotContainer.getCoralPathCommand("left"),
-      new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
-      new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-      new GoToCommand(6),
-      new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-      new AlignWithNearest(-0.15, null, null),
-      new ArmSetToScore(RobotContainer.coralWristSubsystem),
-      new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+    oneSequentialCommand =
+        new SequentialCommandGroup(
+            RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
+            new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
+            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+            new AlignWithNearest(0, null, null),
+            new ArmSetToScore(RobotContainer.coralWristSubsystem),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+            RobotContainer.drivebase.driveToDistanceCommand(-0.25, 0),
+            new ParallelCommandGroup(
+                new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+                new ArmSetToScore(RobotContainer.coralWristSubsystem)),
+            new AlignWithNearest(0, null, null),
+            rotCommand,
+            new WaitCommand(0.5),
+            run(
+                () -> {
+                  rotCommand.cancel();
+                }),
+            new AlgaeShootCommand(RobotContainer.algaeSubsystem),
+            new WaitCommand(0.25),
+            new algaeStopIntake(RobotContainer.algaeSubsystem),
+            RobotContainer.getCoralPathCommand("left"),
+            new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+            new GoToCommand(6),
+            new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+            new AlignWithNearest(-0.15, null, null),
+            new ArmSetToScore(RobotContainer.coralWristSubsystem),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem));
   }
 
   /**
@@ -355,56 +356,56 @@ public class FlexAutoSubsystem extends SubsystemBase {
    * @param CoralStationChoose The current prefered Coral Station (We will cycle to and from this)
    */
   public void CreatePath(String CoralStationChoose) {
-  //   switch (stage) {
-  //       // move to reef (pathplanner)
-  //     case 0:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 0");
-  //       moveCommand0.schedule();
-  //       break;
-  //     case 1:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 1");
-  //       sequentialMoveCommand1.schedule();
-  //       break;
-  //     case 2:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 2");
-  //       sequentialMoveCommand2.schedule();
-  //       break;
-  //     case 3:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 3");
-  //       sequentialMoveCommand3.schedule();
-  //       break;
-  //     case 4:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 4");
-  //       moveCommand4 = new AlgaeIntakeCommand(RobotContainer.algaeSubsystem);
-  //       moveCommand4.schedule();
-  //       break;
-  //     case 5:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 5");
-  //       sequentialMoveCommand5.schedule();
-  //       break;
-  //     case 6:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 6");
-  //       moveCommand6 = RobotContainer.getCoralPathCommand(CoralStationChoose);
-  //       moveCommand6.schedule();
-  //       break;
-  //     case 7:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 7");
-  //       sequentialMoveCommand7.schedule();
-  //       break;
-  //     case 8:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 8");
-  //       moveCommand8 = new GoToCommand(6);
-  //       moveCommand8.schedule();
-  //       break;
-  //     case 9:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 9");
-  //       sequentialMoveCommand9.schedule();
-  //       break;
-  //     case 10:
-  //       Logger.getGlobal().log(Level.INFO, "Started Stage: 10");
-  //       sequentialMoveCommand10.schedule();
-  //       break;
-  //   }
+    //   switch (stage) {
+    //       // move to reef (pathplanner)
+    //     case 0:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 0");
+    //       moveCommand0.schedule();
+    //       break;
+    //     case 1:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 1");
+    //       sequentialMoveCommand1.schedule();
+    //       break;
+    //     case 2:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 2");
+    //       sequentialMoveCommand2.schedule();
+    //       break;
+    //     case 3:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 3");
+    //       sequentialMoveCommand3.schedule();
+    //       break;
+    //     case 4:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 4");
+    //       moveCommand4 = new AlgaeIntakeCommand(RobotContainer.algaeSubsystem);
+    //       moveCommand4.schedule();
+    //       break;
+    //     case 5:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 5");
+    //       sequentialMoveCommand5.schedule();
+    //       break;
+    //     case 6:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 6");
+    //       moveCommand6 = RobotContainer.getCoralPathCommand(CoralStationChoose);
+    //       moveCommand6.schedule();
+    //       break;
+    //     case 7:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 7");
+    //       sequentialMoveCommand7.schedule();
+    //       break;
+    //     case 8:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 8");
+    //       moveCommand8 = new GoToCommand(6);
+    //       moveCommand8.schedule();
+    //       break;
+    //     case 9:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 9");
+    //       sequentialMoveCommand9.schedule();
+    //       break;
+    //     case 10:
+    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 10");
+    //       sequentialMoveCommand10.schedule();
+    //       break;
+    //   }
     oneSequentialCommand.schedule();
   }
 }

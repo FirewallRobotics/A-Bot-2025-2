@@ -21,6 +21,7 @@ public class ElevatorMoveLevel2 extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(e_Subsystem);
   }
+
   @Override
   public void initialize() {
     Logger.getGlobal().log(Level.INFO, "initalized");
@@ -29,15 +30,13 @@ public class ElevatorMoveLevel2 extends Command {
 
   @Override
   public void execute() {
-    
+
     if (needsMovement) {
       Logger.getGlobal().log(Level.INFO, "Needs to move");
       elevatorSubsystem.ToCoralLevel(2);
     } else {
       Logger.getGlobal().log(Level.INFO, "doesn't need to move");
-      
     }
-
   }
 
   @Override
@@ -47,8 +46,8 @@ public class ElevatorMoveLevel2 extends Command {
       elevatorSubsystem.ElevatorStop();
 
       return true;
-    } else if (!needsMovement){
-      //elevatorSubsystem.ElevatorStop(true);
+    } else if (!needsMovement) {
+      // elevatorSubsystem.ElevatorStop(true);
       return true;
     }
     return false;

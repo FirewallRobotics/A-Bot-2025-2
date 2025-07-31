@@ -12,6 +12,7 @@ public class ArmSetToMiddle extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(cw_Subsystem);
   }
+
   @Override
   public void initialize() {
     needsMovement = !wristSubsystem.atLevel(1);
@@ -21,14 +22,13 @@ public class ArmSetToMiddle extends Command {
     if (needsMovement) {
       wristSubsystem.goToCoralWristLevel(1);
     }
-    
   }
 
   public boolean isFinished() {
     if (wristSubsystem.atLevel(1) && needsMovement) {
       wristSubsystem.stopWrist();
       return true;
-    } else if(!needsMovement){
+    } else if (!needsMovement) {
       return true;
     }
 

@@ -12,18 +12,17 @@ public class ArmSetToScore extends Command {
 
     addRequirements(cw_Subsystem);
   }
+
   @Override
   public void initialize() {
     needsMovement = !wristSubsystem.atLevel(2);
   }
-
 
   @Override
   public void execute() {
     if (needsMovement) {
       wristSubsystem.goToCoralWristLevel(2);
     }
-    
   }
 
   @Override
@@ -31,7 +30,7 @@ public class ArmSetToScore extends Command {
     if (wristSubsystem.atLevel(2) && needsMovement) {
       wristSubsystem.stopWrist();
       return true;
-    } else if (!needsMovement){
+    } else if (!needsMovement) {
       return true;
     }
 

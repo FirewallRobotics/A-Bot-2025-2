@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -37,7 +36,6 @@ import frc.robot.commands.CoralShootCommand;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorMoveLevel2;
 import frc.robot.commands.ElevatorMoveLevel3;
-import frc.robot.commands.ElevatorPrevPosition;
 import frc.robot.commands.ElevatorStop;
 import frc.robot.commands.ElevatorUp;
 import frc.robot.commands.GoToCommand;
@@ -244,82 +242,55 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveRobotOrientedAngularVelocity);
 
+    // Coral Controller ABYX buttons
     coralController.y().onTrue(new ElevatorMoveLevel3(elevatorCoralSubsystem));
-
-    // coralController.povDown().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
     coralController.b().onTrue(new ElevatorMoveLevel2(elevatorCoralSubsystem));
-    // coralController.a().onTrue(new ParallelCommandGroup(new
-    // SequentialCommandGroup(drivebase.driveCommand(() -> 0, () -> 0, () -> 0.2))));
-    // Will make it so pressing right on the controller will put the position to the logger. this
-    // means that we won't flood our logs with information and cause me to go nuts.
-    // coralController.leftBumper().onTrue(new ArmLevel2(coralHoldAngleSubsystem));
+    coralController.a().onTrue(new ArmSetToMiddle(coralWristSubsystem));
+    coralController.x().onTrue(new ArmSetToScore(coralWristSubsystem));
+
+    // Coral Controller D-pad
     coralController.povRight().whileTrue(new GoToCommand(6));
-    coralController
-        .rightTrigger()
-        .onTrue(
-            new SequentialCommandGroup(
-                new ElevatorMoveLevel2(elevatorCoralSubsystem),
-                new AlignWithNearest(-0.32, coralController.rightTrigger(), driverXbox)));
-    coralController
-        .rightBumper()
+    coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
+
+    // Coral controller trigger and bumpers
+    coralController.rightBumper().onTrue(new CoralShootCommand(coralHoldSubsystem));
+    coralController.rightBumper().onFalse(new stopCoralIntake(coralHoldSubsystem));
+
+    // first controller abyx
+    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverXbox.a().whileTrue(drivebase.centerModulesCommand());
+    driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
+    driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
+    driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
+    driverXbox
+        .x()
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorCoralSubsystem),
                 new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
 
-    coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
-    coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));
-    coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
-
-    // coralController
-    //     .b()
-    //     .onTrue(
-    //         new SequentialCommandGroup(
-    //             new ParallelCommandGroup(
-    //                 new ElevatorIntake(elevatorSubsystem), new
-    // ArmIntake(coralHoldAngleSubsystem)),
-    //             new WaitCommand(1),
-    //             new CoralIntakeCommand(coralHoldSubsystem)));
-    // // driverXbox.x().whileTrue(new AlignWithNearest());
-    /*driverXbox
-    .x()
-    .onTrue(
-      new SequentialCommandGroup(
-        new ParallelCommandGroup(
-          new ElevatorMoveLevel2(elevatorSubsystem),
-          new ArmLevel2(coralHoldAngleSubsystem)
-        ),
-        new WaitCommand(1),
-        new CoralShootCommand(coralHoldSubsystem)
-      )
-      );*/
-    driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    driverXbox.a().whileTrue(drivebase.centerModulesCommand());
-
+    // first controller d-pad
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
-    driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
-    // driverXbox.y().onFalse(new algaeStopIntake(algaeSubsystem));
-
-    // driverXbox.leftBumper().onTrue(new ElevatorMoveLevel3(elevatorSubsystem));
-    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
-    driverXbox.rightBumper().onTrue(new ElevatorPrevPosition(elevatorCoralSubsystem));
-    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
-    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorCoralSubsystem));
-    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorCoralSubsystem));
-    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     driverXbox.povUp().onTrue(new WristUp(coralWristSubsystem));
     driverXbox.povDown().onTrue(new WristDown(coralWristSubsystem));
     driverXbox.povUp().onFalse(new WristStop(coralWristSubsystem));
     driverXbox.povDown().onFalse(new WristStop(coralWristSubsystem));
-
-    driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
     driverXbox.povRight().onTrue(new CoralShootCommand(coralHoldSubsystem).withTimeout(0.5));
     driverXbox.povRight().onFalse(new stopCoralIntake(coralHoldSubsystem));
-    driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
     driverXbox.povLeft().onFalse(new stopCoralIntake(coralHoldSubsystem));
-    driverXbox.start().onTrue(new SlowMode());
     driverXbox.povRight().onFalse(new algaeStopIntake(algaeSubsystem));
+
+    // trigger and bumper
+    driverXbox.rightTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
+    driverXbox.rightBumper().onTrue(new CoralIntakeCommand(coralHoldSubsystem));
+    driverXbox.leftTrigger().onFalse(new ElevatorStop(elevatorCoralSubsystem));
+    driverXbox.leftTrigger().whileTrue(new ElevatorUp(elevatorCoralSubsystem));
+    driverXbox.rightTrigger().onTrue(new ElevatorDown(elevatorCoralSubsystem));
+
+    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+    driverXbox.start().onTrue(new SlowMode());
 
     // TEMP! Replace with the actual commands once we have the keyboard
     // assistGenericHID.button(0).onTrue(new SequentialCommandGroup(new GoToCommand(1), new

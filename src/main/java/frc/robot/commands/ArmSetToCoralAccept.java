@@ -23,8 +23,6 @@ public class ArmSetToCoralAccept extends Command {
     if (needsMovement) {
       wristSubsystem.goToCoralWristLevel(3);
     }
-    
-
   }
 
   @Override
@@ -32,7 +30,7 @@ public class ArmSetToCoralAccept extends Command {
     if (wristSubsystem.atLevel(3) && needsMovement) {
       wristSubsystem.stopWrist();
       return true;
-    } else if (!needsMovement){
+    } else if (!needsMovement) {
       return true;
     }
     return false;
