@@ -30,9 +30,9 @@ public class ElevatorMoveLevel2 extends Command {
 
   @Override
   public void execute() {
-
-    if (needsMovement) {
-      Logger.getGlobal().log(Level.INFO, "Needs to move");
+    
+    if (needsMovement && !elevatorSubsystem.atLevel(2)) {
+      Logger.getGlobal().log(Level.INFO, "Needs to move: " + elevatorSubsystem.getPositionEncoder());
       elevatorSubsystem.ToCoralLevel(2);
     } else {
       Logger.getGlobal().log(Level.INFO, "doesn't need to move");
@@ -42,7 +42,7 @@ public class ElevatorMoveLevel2 extends Command {
   @Override
   public boolean isFinished() {
     if (elevatorSubsystem.atLevel(2) && needsMovement) {
-      Logger.getGlobal().log(Level.INFO, "found level");
+      Logger.getGlobal().log(Level.INFO, "Elevator found level");
       elevatorSubsystem.ElevatorStop();
 
       return true;
@@ -50,6 +50,7 @@ public class ElevatorMoveLevel2 extends Command {
       // elevatorSubsystem.ElevatorStop(true);
       return true;
     }
+    Logger.getGlobal().log(Level.INFO, "Elevator fuck up");
     return false;
   }
 }

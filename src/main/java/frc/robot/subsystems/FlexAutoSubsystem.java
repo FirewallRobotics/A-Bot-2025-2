@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -126,37 +127,37 @@ public class FlexAutoSubsystem extends SubsystemBase {
     //         new ArmSetToScore(RobotContainer.coralWristSubsystem),
     //         new CoralShootCommand(RobotContainer.coralHoldSubsystem));
 
-    oneSequentialCommand =
-        new SequentialCommandGroup(
-            RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
-            new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
-            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-            new AlignWithNearest(0, null, null),
-            new ArmSetToScore(RobotContainer.coralWristSubsystem),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem),
-            RobotContainer.drivebase.driveToDistanceCommand(-0.25, 0),
-            new ParallelCommandGroup(
-                new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-                new ArmSetToScore(RobotContainer.coralWristSubsystem)),
-            new AlignWithNearest(0, null, null),
-            rotCommand,
-            new WaitCommand(0.5),
-            run(
-                () -> {
-                  rotCommand.cancel();
-                }),
-            new AlgaeShootCommand(RobotContainer.algaeSubsystem),
-            new WaitCommand(0.25),
-            new algaeStopIntake(RobotContainer.algaeSubsystem),
-            RobotContainer.getCoralPathCommand("left"),
-            new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
-            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-            new GoToCommand(6),
-            new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-            new AlignWithNearest(-0.15, null, null),
-            new ArmSetToScore(RobotContainer.coralWristSubsystem),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+    oneSequentialCommand = new SequentialCommandGroup(
+      RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
+      new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
+      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+      new AlignWithNearest(0, null, null),
+      //new ArmSetToScore(RobotContainer.coralWristSubsystem),
+      new ParallelRaceGroup(
+        new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+        new WaitCommand(0.25)),
+      RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
+      new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+      new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+      new AlignWithNearest(0, null, null),
+      rotCommand,
+      new WaitCommand(0.5),
+      run(
+          () -> {
+            rotCommand.cancel();
+          }),
+      new AlgaeShootCommand(RobotContainer.algaeSubsystem),
+      new WaitCommand(0.25),
+      new algaeStopIntake(RobotContainer.algaeSubsystem),
+      RobotContainer.getCoralPathCommand("left"),
+      new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+      new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+      new GoToCommand(6),
+      new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+      new AlignWithNearest(-0.15, null, null),
+      new ArmSetToScore(RobotContainer.coralWristSubsystem),
+      new CoralShootCommand(RobotContainer.coralHoldSubsystem));
   }
 
   /**
