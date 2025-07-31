@@ -271,13 +271,6 @@ public class RobotContainer {
     coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));
     coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
 
-    coralController.povDown().onTrue(
-      new ParallelCommandGroup(
-        new ArmSetToMiddle(coralWristSubsystem),
-        new ElevatorMoveLevel2(elevatorCoralSubsystem)
-      )
-    );
-
     // coralController
     //     .b()
     //     .onTrue(
