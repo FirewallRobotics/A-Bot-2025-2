@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -269,6 +270,13 @@ public class RobotContainer {
     coralController.leftBumper().whileTrue(new ArmSetToMiddle(coralWristSubsystem));
     coralController.leftTrigger().whileTrue(new ArmSetToScore(coralWristSubsystem));
     coralController.povUp().whileTrue(new ArmSetToCoralAccept(coralWristSubsystem));
+
+    coralController
+        .povDown()
+        .onTrue(
+            new ParallelCommandGroup(
+                new ElevatorMoveLevel2(elevatorCoralSubsystem),
+                new ArmSetToMiddle(coralWristSubsystem)));
 
     // coralController
     //     .b()

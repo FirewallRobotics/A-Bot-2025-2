@@ -34,7 +34,7 @@ public class AlignWithNearest extends Command {
     new Pose2d(13.840, 5.217, new Rotation2d(-2.111848)),
     new Pose2d(12.365, 5.165, new Rotation2d(-1.012291)),
     new Pose2d(11.638, 4.007, new Rotation2d(0)),
-    new Pose2d(12.390, 2.790, new Rotation2d(1.012291)),
+    new Pose2d(11.3, 2.8, new Rotation2d(1.012291)),
     new Pose2d(1.161, 1.048, new Rotation2d(-2.216568)),
     new Pose2d(1.131, 6.950, new Rotation2d(2.181662)),
     new Pose2d(0, 0, new Rotation2d(0)),
@@ -85,48 +85,49 @@ public class AlignWithNearest extends Command {
   /** Tag ID we are aligning too */
   int TagAligningToo;
 
-  /** Command that is actually scheduled.
-   * Adds a condition that stops us upon being done */
+  /** Command that is actually scheduled. Adds a condition that stops us upon being done */
   ParallelRaceGroup conditionalDriveCommand;
 
-  /** Location of the Tag updated every frame once and only once
-   * We found that the rotation is very inconsistant while the X and Y are more stable
+  /**
+   * Location of the Tag updated every frame once and only once We found that the rotation is very
+   * inconsistant while the X and Y are more stable
    */
   Pose2d TagLocation;
 
-  /** Amount of frames we cannot see the tag.
-   * We give some grace to losing the tag for a few frames
-  */
+  /**
+   * Amount of frames we cannot see the tag. We give some grace to losing the tag for a few frames
+   */
   int GraceFrames;
 
   VisionSubsystem visionSubsystem;
 
-  /** Button that has triggered this command  */
+  /** Button that has triggered this command */
   Trigger trigger;
 
   /** Controller that the driver holds */
   CommandXboxController driveXboxController;
 
-  /** Frames since last rot update.
-   * We avg 5 frames of rot data to make it more consistant
-   */
+  /** Frames since last rot update. We avg 5 frames of rot data to make it more consistant */
   int rotCounter;
 
-  /** Up to 5 frames of rot data added together.
-   * We avg 5 frames of rot data to make it more consistant
-  */
+  /**
+   * Up to 5 frames of rot data added together. We avg 5 frames of rot data to make it more
+   * consistant
+   */
   double rotValue;
 
-  /** The last avged value of the rot.
-   * At the start we set this to rot
-   * We avg 5 frames of rot data to make it more consistant
+  /**
+   * The last avged value of the rot. At the start we set this to rot We avg 5 frames of rot data to
+   * make it more consistant
    */
   double rotValueAvg;
 
   /**
    * Align with the nearest tag (offset to allow us to align with the left reef stick)
+   *
    * @param offset DEPRECADED UNUSED
-   * @param trigger Button that triggered this command (If the trigger is released we stop the command)
+   * @param trigger Button that triggered this command (If the trigger is released we stop the
+   *     command)
    * @param driveXboxController Controller that the driver holds (used for rumble)
    */
   public AlignWithNearest(
@@ -170,7 +171,7 @@ public class AlignWithNearest extends Command {
     // Get the first tags values and make sure we can see a tag
     int[] tags = visionSubsystem.getTagsUnchanging();
 
-    if(tags.length > 0){
+    if (tags.length > 0) {
       // The first tag we see is the tag we are aligning too
       TagAligningToo = tags[0];
 
@@ -202,12 +203,12 @@ public class AlignWithNearest extends Command {
       GraceFrames = 0;
 
       // if we have less the 5 frames of rotation data add another
-      if(rotCounter != 5){
+      if (rotCounter != 5) {
         rotValue += TagLocation.getRotation().getDegrees();
         rotCounter++;
 
-      // if we have 5 frames then avg and push the value for use
-      }else{
+        // if we have 5 frames then avg and push the value for use
+      } else {
         rotValueAvg = rotValue / 5;
         rotValue = 0;
         rotCounter = 0;
@@ -236,8 +237,7 @@ public class AlignWithNearest extends Command {
                   (xController.calculate(
                       TagLocation.getX() + SmartDashboard.getNumber("X-Stop-Dist", 0.025))),
                   (rController.calculate(
-                      MathUtil.inputModulus(
-                          TagLocation.getRotation().getDegrees(), -180, 180)))));
+                      MathUtil.inputModulus(TagLocation.getRotation().getDegrees(), -180, 180)))));
 
       // if we have a trigger (not in auto)
       if (trigger != null) {
@@ -287,41 +287,41 @@ public class AlignWithNearest extends Command {
             driveXboxController.setRumble(RumbleType.kBothRumble, 0);
           }
         }
-        } else {
-          // if we don't have a trigger then we should not add in the trigger release condition
-          conditionalDriveCommand =
-              driveCommand.until(
-                  () ->
-                      (TagLocation.getY()
-                                      < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
-                                          + SmartDashboard.getNumber("yError", 0.1))
-                                  && TagLocation.getY()
-                                      > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
-                                          - SmartDashboard.getNumber("yError", 0.1)))
-                              && (TagLocation.getX()
-                                      < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
-                                          + SmartDashboard.getNumber("xError", 0.1))
-                                  && TagLocation.getX()
-                                      > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
-                                          - SmartDashboard.getNumber("xError", 0.1)))
-                              && ((TagLocation.getRotation().getDegrees()
-                                      < SmartDashboard.getNumber("rError", 1))
-                                  && (TagLocation.getRotation().getDegrees()
-                                      > -SmartDashboard.getNumber("rError", 1)))
-                          || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
-                          || (RobotContainer.driverXbox.back().getAsBoolean()
-                              || RobotContainer.coralController.back().getAsBoolean()));
+      } else {
+        // if we don't have a trigger then we should not add in the trigger release condition
+        conditionalDriveCommand =
+            driveCommand.until(
+                () ->
+                    (TagLocation.getY()
+                                    < ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                        + SmartDashboard.getNumber("yError", 0.1))
+                                && TagLocation.getY()
+                                    > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
+                                        - SmartDashboard.getNumber("yError", 0.1)))
+                            && (TagLocation.getX()
+                                    < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                        + SmartDashboard.getNumber("xError", 0.1))
+                                && TagLocation.getX()
+                                    > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
+                                        - SmartDashboard.getNumber("xError", 0.1)))
+                            && ((TagLocation.getRotation().getDegrees()
+                                    < SmartDashboard.getNumber("rError", 1))
+                                && (TagLocation.getRotation().getDegrees()
+                                    > -SmartDashboard.getNumber("rError", 1)))
+                        || !visionSubsystem.CanSeeTagUnchanging(TagAligningToo)
+                        || (RobotContainer.driverXbox.back().getAsBoolean()
+                            || RobotContainer.coralController.back().getAsBoolean()));
 
-            // after setting the condition schedule it
-            conditionalDriveCommand.schedule();
+        // after setting the condition schedule it
+        conditionalDriveCommand.schedule();
 
-            // set the rumble if we have it
-            if (driveXboxController != null) {
-              driveXboxController.setRumble(RumbleType.kBothRumble, 1);
-            }
+        // set the rumble if we have it
+        if (driveXboxController != null) {
+          driveXboxController.setRumble(RumbleType.kBothRumble, 1);
         }
+      }
 
-    // if we cannot see a tag check if we are above the max frames where we give grace
+      // if we cannot see a tag check if we are above the max frames where we give grace
     } else if (GraceFrames > SmartDashboard.getNumber("MaxGraceFrames", 10)) {
 
       // say we are above the limit cancel the command if scheduled/exists
@@ -331,20 +331,27 @@ public class AlignWithNearest extends Command {
       }
 
       // along with that stop the rumble if possible
-      if(driveXboxController != null){
+      if (driveXboxController != null) {
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       }
 
-    // if not above the limit then increment graceframes and do nothing
+      // if not above the limit then increment graceframes and do nothing
     } else {
       GraceFrames += 1;
     }
   }
 
-  /** <h2>Finished if any of the following is true: </h2>
+  /**
+   *
+   *
+   * <h2>Finished if any of the following is true: </h2>
+   *
    * <p>Too close on X, Y, Rot
+   *
    * <p>Lost the tag and been too long
+   *
    * <p>Back buttons pushed (Command A-Stop)
+   *
    * <p>Triggering button released
    */
   @Override
@@ -356,7 +363,7 @@ public class AlignWithNearest extends Command {
         && conditionalDriveCommand != null
         && GraceFrames > SmartDashboard.getNumber("MaxGraceFrames", 10)) {
       conditionalDriveCommand.cancel();
-      if(driveXboxController != null){
+      if (driveXboxController != null) {
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       }
       Logger.getGlobal().log(Level.WARNING, "Cannot see tag exit");
@@ -369,7 +376,7 @@ public class AlignWithNearest extends Command {
             || RobotContainer.coralController.back().getAsBoolean())
         && conditionalDriveCommand != null) {
       conditionalDriveCommand.cancel();
-      if(driveXboxController != null){
+      if (driveXboxController != null) {
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       }
       Logger.getGlobal().log(Level.WARNING, "Back button exit");
@@ -379,10 +386,9 @@ public class AlignWithNearest extends Command {
     // if the triggering button has been released then cancel
     // along with stopping rumble is possible
     if (trigger != null) {
-      if (!trigger.getAsBoolean()
-          && conditionalDriveCommand != null) {
+      if (!trigger.getAsBoolean() && conditionalDriveCommand != null) {
         conditionalDriveCommand.cancel();
-        if(driveXboxController != null){
+        if (driveXboxController != null) {
           driveXboxController.setRumble(RumbleType.kBothRumble, 0);
         }
         Logger.getGlobal().log(Level.WARNING, "Button release exit");
@@ -413,7 +419,7 @@ public class AlignWithNearest extends Command {
               && (TagLocation.getRotation().getDegrees()
                   > -SmartDashboard.getNumber("rError", 1))) {
             conditionalDriveCommand.cancel();
-            if(driveXboxController != null){
+            if (driveXboxController != null) {
               driveXboxController.setRumble(RumbleType.kBothRumble, 0);
             }
             Logger.getGlobal().log(Level.WARNING, "Y, X, Rot Satisfied");

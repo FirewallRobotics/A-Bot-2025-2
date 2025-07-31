@@ -95,6 +95,6 @@ public final class Constants {
 
     public static final double speed = 0.1;
 
-    public static final double[] levels = {-4.90, -5.0, -1.0};
+    public static final double[] levels = {-3.0, -5.0, -1.0};
   }
 }

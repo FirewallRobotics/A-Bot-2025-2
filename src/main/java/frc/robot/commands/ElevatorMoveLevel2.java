@@ -22,12 +22,13 @@ public class ElevatorMoveLevel2 extends Command {
 
   @Override
   public void execute() {
-    elevatorSubsystem.ToCoralLevel(2);
 
     if (elevatorSubsystem.atLevel(2)) {
 
       // Logger.getGlobal().log(Level.INFO, "found level");
       elevatorSubsystem.ElevatorStop();
+    } else {
+      elevatorSubsystem.ToCoralLevel(2);
     }
   }
 

@@ -197,7 +197,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // if flex auto enabled and we are not moving (flex checks this using .isnewpathavailable() )
-    SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
+    if (autonomousCommand != null) {
+      SmartDashboard.putBoolean("AutoDone", autonomousCommand.isFinished());
+    }
     if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
 
       // have flex create points to follow
