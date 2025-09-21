@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,8 +20,6 @@ import frc.robot.commands.ElevatorMoveLevel2;
 import frc.robot.commands.ElevatorMoveLevel3;
 import frc.robot.commands.GoToCommand;
 import frc.robot.commands.algaeStopIntake;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class FlexAutoSubsystem extends SubsystemBase {
 
@@ -127,37 +124,37 @@ public class FlexAutoSubsystem extends SubsystemBase {
     //         new ArmSetToScore(RobotContainer.coralWristSubsystem),
     //         new CoralShootCommand(RobotContainer.coralHoldSubsystem));
 
-    oneSequentialCommand = new SequentialCommandGroup(
-      RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
-      new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
-      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-      new AlignWithNearest(0, null, null),
-      //new ArmSetToScore(RobotContainer.coralWristSubsystem),
-      new ParallelRaceGroup(
-        new CoralShootCommand(RobotContainer.coralHoldSubsystem),
-        new WaitCommand(0.25)),
-      RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
-      new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-      new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
-      new AlignWithNearest(0, null, null),
-      rotCommand,
-      new WaitCommand(0.5),
-      run(
-          () -> {
-            rotCommand.cancel();
-          }),
-      new AlgaeShootCommand(RobotContainer.algaeSubsystem),
-      new WaitCommand(0.25),
-      new algaeStopIntake(RobotContainer.algaeSubsystem),
-      RobotContainer.getCoralPathCommand("left"),
-      new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
-      new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
-      new GoToCommand(6),
-      new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
-      new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
-      new AlignWithNearest(-0.15, null, null),
-      new ArmSetToScore(RobotContainer.coralWristSubsystem),
-      new CoralShootCommand(RobotContainer.coralHoldSubsystem));
+    oneSequentialCommand =
+        new SequentialCommandGroup(
+            RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
+            new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
+            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+            new AlignWithNearest(0, null, null),
+            // new ArmSetToScore(RobotContainer.coralWristSubsystem),
+            new ParallelRaceGroup(
+                new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(0.25)),
+            RobotContainer.drivebase.driveToPose(AlignWithNearest.TagPos[6 - 1], 2, 2),
+            new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+            new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+            new AlignWithNearest(0, null, null),
+            rotCommand,
+            new WaitCommand(0.5),
+            run(
+                () -> {
+                  rotCommand.cancel();
+                }),
+            new AlgaeShootCommand(RobotContainer.algaeSubsystem),
+            new WaitCommand(0.25),
+            new algaeStopIntake(RobotContainer.algaeSubsystem),
+            RobotContainer.getCoralPathCommand("left"),
+            new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+            new CoralIntakeCommand(RobotContainer.coralHoldSubsystem),
+            new GoToCommand(6),
+            new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+            new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+            new AlignWithNearest(-0.15, null, null),
+            new ArmSetToScore(RobotContainer.coralWristSubsystem),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem));
   }
 
   /**
@@ -166,7 +163,6 @@ public class FlexAutoSubsystem extends SubsystemBase {
    */
   public boolean CHECKPANIC() {
     if (counter >= maxTicksBeforePanic) {
-      Logger.getGlobal().log(Level.WARNING, "OMG ITS HAPPENING AHHHHHHHHHH! GOING TO PANIC POINT!");
       RobotContainer.drivebase.driveToPose(PANICPose2d).schedule();
       return true;
     }
@@ -184,169 +180,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
    * @return If we are not moving and the cycle counter is high enough
    */
   public boolean isNewPathAvailable() {
-    // switch (stage) {
-    //   case 0:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (moveCommand0 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 0");
-    //       stage += 1;
-    //       return true;
-    //     }
-    //     if (moveCommand0.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 0");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 1:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand1 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 1");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand1.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 1");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 2:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand2 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 2");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand2.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 2");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 3:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand3 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 3");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand3.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 3");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 4:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (moveCommand4 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 4");
-    //       return true;
-    //     }
-    //     if (moveCommand4.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 4");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 5:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand5 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 5");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand5.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 5");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 6:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (moveCommand6 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 6");
-    //       return true;
-    //     }
-    //     if (moveCommand6.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 6");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 7:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand7 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 7");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand7.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 7");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 8:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (moveCommand8 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 8");
-    //       return true;
-    //     }
-    //     if (moveCommand8.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 8");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 9:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand9 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 9");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand9.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 9");
-    //       return true;
-    //     }
-    //     return false;
-    //   case 10:
-    //     if (CHECKPANIC()) {
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand10 == null) {
-    //       Logger.getGlobal().log(Level.WARNING, "Null allow on stage: 10");
-    //       return true;
-    //     }
-    //     if (sequentialMoveCommand10.isFinished()) {
-    //       stage += 1;
-    //       Logger.getGlobal().log(Level.INFO, "Finished Stage: 10");
-    //       return true;
-    //     }
-    //     return false;
-    // }
 
     return oneSequentialCommand.isFinished() || !oneSequentialCommand.isScheduled();
-
-    // failsafe end the command
-    // Logger.getGlobal().log(Level.WARNING, "Non stage failsafe allow");
-    // return true;
   }
 
   /**
@@ -357,56 +192,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
    * @param CoralStationChoose The current prefered Coral Station (We will cycle to and from this)
    */
   public void CreatePath(String CoralStationChoose) {
-    //   switch (stage) {
-    //       // move to reef (pathplanner)
-    //     case 0:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 0");
-    //       moveCommand0.schedule();
-    //       break;
-    //     case 1:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 1");
-    //       sequentialMoveCommand1.schedule();
-    //       break;
-    //     case 2:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 2");
-    //       sequentialMoveCommand2.schedule();
-    //       break;
-    //     case 3:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 3");
-    //       sequentialMoveCommand3.schedule();
-    //       break;
-    //     case 4:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 4");
-    //       moveCommand4 = new AlgaeIntakeCommand(RobotContainer.algaeSubsystem);
-    //       moveCommand4.schedule();
-    //       break;
-    //     case 5:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 5");
-    //       sequentialMoveCommand5.schedule();
-    //       break;
-    //     case 6:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 6");
-    //       moveCommand6 = RobotContainer.getCoralPathCommand(CoralStationChoose);
-    //       moveCommand6.schedule();
-    //       break;
-    //     case 7:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 7");
-    //       sequentialMoveCommand7.schedule();
-    //       break;
-    //     case 8:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 8");
-    //       moveCommand8 = new GoToCommand(6);
-    //       moveCommand8.schedule();
-    //       break;
-    //     case 9:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 9");
-    //       sequentialMoveCommand9.schedule();
-    //       break;
-    //     case 10:
-    //       Logger.getGlobal().log(Level.INFO, "Started Stage: 10");
-    //       sequentialMoveCommand10.schedule();
-    //       break;
-    //   }
+
     oneSequentialCommand.schedule();
   }
 }

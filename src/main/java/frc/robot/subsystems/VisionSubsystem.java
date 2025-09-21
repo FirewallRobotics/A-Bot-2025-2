@@ -10,8 +10,6 @@ import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
 
@@ -91,16 +89,7 @@ public class VisionSubsystem extends SubsystemBase {
       }*/
   }
 
-  public void getPose3d() {
-    // Get the 3d position of the robot on the field to the logger.
-    Logger.getGlobal()
-        .log(
-            Level.WARNING,
-            "QWERT Current position is - X: "
-                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getX()
-                + " Y: "
-                + LimelightHelpers.getBotPoseEstimate_wpiBlue(name).pose.getY());
-  }
+  public void getPose3d() {}
 
   /**
    * Gets the area of the lowest ID seen AprilTag
@@ -199,11 +188,6 @@ public class VisionSubsystem extends SubsystemBase {
     UpdatePositionOnField();
 
     cachedLimelightResults = LimelightHelpers.getLatestResults(name);
-
-    // Pose2d pose = getTagPose2d(7);
-    // if(pose != null){
-    //  Logger.getGlobal().log(Level.WARNING, pose.getX()+" "+pose.getY());
-    // }
 
     // LimelightHelpers.SetRobotOrientation(
     //    name, RobotContainer.drivebase.getHeading().getDegrees(), 0, 0, 0, 0, 0);

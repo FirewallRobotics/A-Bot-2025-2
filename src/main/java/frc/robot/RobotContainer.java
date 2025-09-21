@@ -250,11 +250,13 @@ public class RobotContainer {
 
     // Coral Controller D-pad
     coralController.povRight().whileTrue(new GoToCommand(6));
-    coralController.povUp().onTrue(
-      new SequentialCommandGroup(
-          new ElevatorMoveLevel2(elevatorCoralSubsystem),
-          new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
-;
+    coralController
+        .povUp()
+        .onTrue(
+            new SequentialCommandGroup(
+                new ElevatorMoveLevel2(elevatorCoralSubsystem),
+                new AlignWithNearest(-0.32, coralController.povUp(), driverXbox)));
+    ;
 
     // Coral controller trigger and bumpers
     coralController.rightBumper().onTrue(new CoralShootCommand(coralHoldSubsystem));
@@ -266,12 +268,12 @@ public class RobotContainer {
     driverXbox.y().onTrue(new AlgaeIntakeCommand(algaeSubsystem));
     driverXbox.b().whileTrue(new AlgaeShootCommand(algaeSubsystem).withTimeout(0.5));
     driverXbox.b().onFalse(new algaeStopIntake(algaeSubsystem));
-    driverXbox
-        .x()
-        .onTrue(
-            new SequentialCommandGroup(
-                new ElevatorMoveLevel2(elevatorCoralSubsystem),
-                new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
+    // driverXbox
+    //     .x()
+    //     .onTrue(
+    //         new SequentialCommandGroup(
+    //             new ElevatorMoveLevel2(elevatorCoralSubsystem),
+    //             new AlignWithNearest(-0.32, coralController.rightBumper(), driverXbox)));
 
     // first controller d-pad
     driverXbox.povLeft().whileTrue(new CoralIntakeCommand(coralHoldSubsystem));

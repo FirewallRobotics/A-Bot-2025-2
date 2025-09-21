@@ -14,8 +14,6 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorSubsystemConstants;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ElevatorCoralSubsystem extends SubsystemBase {
   // The two motors
@@ -105,15 +103,11 @@ public class ElevatorCoralSubsystem extends SubsystemBase {
   // Go up to a coral level
   public void ToCoralLevel(int level) {
 
-    Logger.getGlobal().log(Level.INFO, "trying...");
-
     double setPoint = ElevatorSubsystemConstants.elevatorLevels[level - 1];
 
     if (getPositionEncoder() > setPoint) {
-      Logger.getGlobal().log(Level.INFO, "Starting under...");
       PIDSelect(ElevatorSubsystemConstants.elevatorPNumbers[0]);
     } else if (getPositionEncoder() < setPoint) {
-      Logger.getGlobal().log(Level.INFO, "Starting over...");
       PIDSelect(ElevatorSubsystemConstants.elevatorPNumbers[1], 0.1f);
     }
 
@@ -130,11 +124,9 @@ public class ElevatorCoralSubsystem extends SubsystemBase {
                 > (ElevatorSubsystemConstants.elevatorLevels[levlNeeded - 1] - 0.1));
 
     if (atGoodPosition) {
-      Logger.getGlobal().log(Level.INFO, "At a setpoint");
       return true;
     }
-    Logger.getGlobal()
-        .log(Level.INFO, "Not at Set point, current location: " + getPositionEncoder());
+
     return false;
   }
 

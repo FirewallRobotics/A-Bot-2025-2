@@ -13,8 +13,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.VisionSubsystem;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AlignWithNearest extends Command {
 
@@ -217,7 +215,6 @@ public class AlignWithNearest extends Command {
       // create the local driveCommand
       Command driveCommand = null;
 
-      // if things go bad then bring back this logging
       // SmartDashboard.putNumberArray(
       //     "Calculated pos",
       //     new double[] {
@@ -279,7 +276,6 @@ public class AlignWithNearest extends Command {
           }
 
         } else {
-          Logger.getGlobal().log(Level.WARNING, "Button release cancel");
 
           // cancel the rumble if possible
           if (conditionalDriveCommand != null && driveXboxController != null) {
@@ -325,7 +321,6 @@ public class AlignWithNearest extends Command {
     } else if (GraceFrames > SmartDashboard.getNumber("MaxGraceFrames", 10)) {
 
       // say we are above the limit cancel the command if scheduled/exists
-      Logger.getGlobal().log(Level.WARNING, "No tags cancel");
       if (conditionalDriveCommand != null) {
         conditionalDriveCommand.cancel();
       }
@@ -366,7 +361,6 @@ public class AlignWithNearest extends Command {
       if (driveXboxController != null) {
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       }
-      Logger.getGlobal().log(Level.WARNING, "Cannot see tag exit");
       return true;
     }
 
@@ -379,7 +373,6 @@ public class AlignWithNearest extends Command {
       if (driveXboxController != null) {
         driveXboxController.setRumble(RumbleType.kBothRumble, 0);
       }
-      Logger.getGlobal().log(Level.WARNING, "Back button exit");
       return true;
     }
 
@@ -391,7 +384,6 @@ public class AlignWithNearest extends Command {
         if (driveXboxController != null) {
           driveXboxController.setRumble(RumbleType.kBothRumble, 0);
         }
-        Logger.getGlobal().log(Level.WARNING, "Button release exit");
         return true;
       }
     }
@@ -407,14 +399,12 @@ public class AlignWithNearest extends Command {
                   > ((-SmartDashboard.getNumber("Y-Stop-Dist", 0.025))
                       - SmartDashboard.getNumber("yError", 0.1)))
           && conditionalDriveCommand != null) {
-        Logger.getGlobal().log(Level.INFO, "Y Satisfied");
         if ((TagLocation.getX()
                 < ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
                     + SmartDashboard.getNumber("xError", 0.1))
             && TagLocation.getX()
                 > ((-SmartDashboard.getNumber("X-Stop-Dist", 0.025))
                     - SmartDashboard.getNumber("xError", 0.1)))) {
-          Logger.getGlobal().log(Level.INFO, "Y + X Satisfied");
           if ((TagLocation.getRotation().getDegrees() < SmartDashboard.getNumber("rError", 1))
               && (TagLocation.getRotation().getDegrees()
                   > -SmartDashboard.getNumber("rError", 1))) {
@@ -422,7 +412,6 @@ public class AlignWithNearest extends Command {
             if (driveXboxController != null) {
               driveXboxController.setRumble(RumbleType.kBothRumble, 0);
             }
-            Logger.getGlobal().log(Level.WARNING, "Y, X, Rot Satisfied");
             return true;
           }
         }
