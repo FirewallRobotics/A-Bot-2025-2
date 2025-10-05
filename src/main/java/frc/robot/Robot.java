@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -81,7 +80,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-    flexAutoSubsystem = new FlexAutoSubsystem(500, new Pose2d(4.5, 7.35, new Rotation2d(90)));
+    flexAutoSubsystem = new FlexAutoSubsystem();
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot
     // stop
@@ -181,19 +180,16 @@ public class Robot extends TimedRobot {
         autonomousCommand.addCommands(
             RobotContainer.getCoralPathCommand(CoralStationChooser.getSelected()));
       }
-    } else if (m_autoSelected.equals("wait") && SmartDashboard.getBoolean("FlexAuto", false)) {
-      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
+    } else if (
+      m_autoSelected.equals("wait")
+     && SmartDashboard.getBoolean("FlexAuto", false) 
+    && flexAutoSubsystem.isNewPathAvailable()) {
+      flexAutoSubsystem.CreatePath();
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));
     if (autonomousCommand != null
         && !(CoralStationChooser.getSelected().equals("stop") && m_autoSelected.equals("wait"))) {
       autonomousCommand.schedule();
-    }
-
-    if (SmartDashboard.getBoolean("FlexAuto", false) && flexAutoSubsystem.isNewPathAvailable()) {
-
-      // have flex create points to follow
-      flexAutoSubsystem.CreatePath(CoralStationChooser.getSelected());
     }
   }
 

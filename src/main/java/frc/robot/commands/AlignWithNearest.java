@@ -21,53 +21,30 @@ public class AlignWithNearest extends Command {
   // private Pose2d targetPose;
   // private double distanceAway = -0.55;
 
-  public static Pose2d[] TagPos = {
-    new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712)),
-    new Pose2d(16.296, 7.007, new Rotation2d(0.9075712)),
-    new Pose2d(11.434, 7.398, new Rotation2d(1.570796)),
-    new Pose2d(0, 0, new Rotation2d(0)),
-    new Pose2d(0, 0, new Rotation2d(0)),
-    new Pose2d(13.69, 2.4, new Rotation2d(2.146755)),
-    new Pose2d(14.261, 2.220, new Rotation2d(Math.toRadians(125))),
-    new Pose2d(13.840, 5.217, new Rotation2d(-2.111848)),
-    new Pose2d(12.365, 5.165, new Rotation2d(-1.012291)),
-    new Pose2d(11.638, 4.007, new Rotation2d(0)),
-    new Pose2d(11.3, 2.8, new Rotation2d(1.012291)),
-    new Pose2d(1.161, 1.048, new Rotation2d(-2.216568)),
-    new Pose2d(1.131, 6.950, new Rotation2d(2.181662)),
-    new Pose2d(0, 0, new Rotation2d(0)),
-    new Pose2d(0, 0, new Rotation2d(0)),
-    new Pose2d(6.364, 0.550, new Rotation2d(-1.570796)),
-    new Pose2d(3.390, 2.790, new Rotation2d(1.012291)),
-    new Pose2d(2.638, 4.007, new Rotation2d(0)),
-    new Pose2d(3.365, 5.165, new Rotation2d(-1.012291)),
-    new Pose2d(4.840, 5.217, new Rotation2d(-2.111848)),
-    new Pose2d(5.538, 3.969, new Rotation2d(3.141593)),
-    new Pose2d(4.787, 2.811, new Rotation2d(2.094395))
+  public static double[][] TagPos = {
+    {16.408, 1.048, -0.9075712},
+    {16.296, 7.007, 0.9075712},
+    {11.434, 7.398, 1.570796},
+    {0,0,0},
+    {0,0,0},
+    {13.69, 2.4, 2.146755},
+    {14.261, 2.220, Math.toRadians(125)},
+    {13.840, 5.217, -2.111848},
+    {12.365, 5.165, -1.012291},
+    {11.638, 4.007, 0},
+    {11.3, 2.8, 1.012291},
+    {1.161, 1.048, -2.216568},
+    {1.131, 6.950, 2.181662},
+    {0,0,0},
+    {0,0,0},
+    {6.364, 0.550, -1.570796},
+    {3.390, 2.790, 1.012291},
+    {2.638, 4.007, 0},
+    {3.365, 5.165, -1.012291},
+    {4.840, 5.217, -2.111848},
+    {5.538, 3.969, 3.141593},
+    {4.787, 2.811, 2.094395}
   };
-
-  // Not used commented to save memory and provide visual rep of tag locations
-  // public static Pose2d Tag13 = new Pose2d(1.131, 6.950, new Rotation2d(2.181662));
-  // public static Pose2d Tag12 = new Pose2d(1.161, 1.048, new Rotation2d(-2.216568));
-  // public static Pose2d Tag2 = new Pose2d(16.296, 7.007, new Rotation2d(0.9075712));
-  // public static Pose2d Tag1 = new Pose2d(16.408, 1.048, new Rotation2d(-0.9075712));
-
-  // public static Pose2d Tag3 = new Pose2d(11.434, 7.398, new Rotation2d(1.570796));
-  // public static Pose2d Tag16 = new Pose2d(6.364, 0.550, new Rotation2d(-1.570796));
-
-  // public static Pose2d Tag17 = new Pose2d(3.390, 2.790, new Rotation2d(1.012291));
-  // public static Pose2d Tag18 = new Pose2d(2.638, 4.007, new Rotation2d(0));
-  // public static Pose2d Tag19 = new Pose2d(3.365, 5.165, new Rotation2d(-1.012291));
-  // public static Pose2d Tag20 = new Pose2d(4.840, 5.217, new Rotation2d(-2.111848));
-  // public static Pose2d Tag21 = new Pose2d(5.538, 3.969, new Rotation2d(3.141593));
-  // public static Pose2d Tag22 = new Pose2d(4.787, 2.811, new Rotation2d(2.094395));
-
-  // public static Pose2d Tag6 = new Pose2d(13.69, 2.4, new Rotation2d(2.146755));
-  // public static Pose2d Tag7 = new Pose2d(14.538, 3.969, new Rotation2d(3.141593));
-  // public static Pose2d Tag8 = new Pose2d(13.840, 5.217, new Rotation2d(-2.111848));
-  // public static Pose2d Tag9 = new Pose2d(12.365, 5.165, new Rotation2d(-1.012291));
-  // public static Pose2d Tag10 = new Pose2d(11.638, 4.007, new Rotation2d(0));
-  // public static Pose2d Tag11 = new Pose2d(12.390, 2.790, new Rotation2d(1.012291));
 
   public Command targetCommand;
 
