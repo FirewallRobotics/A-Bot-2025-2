@@ -30,6 +30,6 @@ public class CoralIntakeCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return !m_Coral.getTrigger();
+    return m_Coral.getTrigger();
   }
 }

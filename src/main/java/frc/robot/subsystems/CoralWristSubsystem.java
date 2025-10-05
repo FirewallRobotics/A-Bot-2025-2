@@ -64,7 +64,7 @@ public class CoralWristSubsystem extends SubsystemBase {
 
     // Config limiter (Important: If we don't have this, automatic will destroy)
     // Have both this and setSpeed functions
-    motorConfig.smartCurrentLimit(16);
+    motorConfig.smartCurrentLimit(22);
 
     // Sets up the arm feedforward
     feedforward =
