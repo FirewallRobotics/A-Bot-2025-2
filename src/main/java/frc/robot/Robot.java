@@ -180,10 +180,9 @@ public class Robot extends TimedRobot {
         autonomousCommand.addCommands(
             RobotContainer.getCoralPathCommand(CoralStationChooser.getSelected()));
       }
-    } else if (
-      m_autoSelected.equals("wait")
-     && SmartDashboard.getBoolean("FlexAuto", false) 
-    && flexAutoSubsystem.isNewPathAvailable()) {
+    } else if (m_autoSelected.equals("wait")
+        && SmartDashboard.getBoolean("FlexAuto", false)
+        && flexAutoSubsystem.isNewPathAvailable()) {
       flexAutoSubsystem.CreatePath();
     }
     // autonomousCommand.addCommands((Commands.runOnce(RobotContainer.drivebase::zeroGyro)));

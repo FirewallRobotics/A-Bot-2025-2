@@ -13,7 +13,11 @@ public class GoToCommand extends Command {
   ParallelRaceGroup parallelRaceGroup;
 
   public GoToCommand(int tag) {
-    TagPos = new Pose2d(AlignWithNearest.TagPos[tag - 1][0], AlignWithNearest.TagPos[tag - 1][1], new Rotation2d(AlignWithNearest.TagPos[tag - 1][2]));
+    TagPos =
+        new Pose2d(
+            AlignWithNearest.TagPos[tag - 1][0],
+            AlignWithNearest.TagPos[tag - 1][1],
+            new Rotation2d(AlignWithNearest.TagPos[tag - 1][2]));
     tagNum = tag;
   }
 

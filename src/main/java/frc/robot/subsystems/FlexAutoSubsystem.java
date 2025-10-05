@@ -34,9 +34,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
   private SequentialCommandGroup oneSequentialCommand;
   private Command rotCommand;
 
-  /**
-   * Auto that scores L2 -> remove algae -> get coral -> scores L3
-   */
+  /** Auto that scores L2 -> remove algae -> get coral -> scores L3 */
   public FlexAutoSubsystem() {
     rotCommand = RobotContainer.drivebase.driveCommand(() -> 0, () -> 0, () -> 2);
   }
@@ -48,9 +46,9 @@ public class FlexAutoSubsystem extends SubsystemBase {
    */
   public boolean isNewPathAvailable() {
 
-    if (oneSequentialCommand != null){
+    if (oneSequentialCommand != null) {
       return oneSequentialCommand.isFinished() || !oneSequentialCommand.isScheduled();
-    }else{
+    } else {
       return true;
     }
   }
@@ -64,8 +62,14 @@ public class FlexAutoSubsystem extends SubsystemBase {
 
     oneSequentialCommand =
         new SequentialCommandGroup(
-          // drive to tag 11
-            RobotContainer.drivebase.driveToPose(new Pose2d(AlignWithNearest.TagPos[11 - 1][0], AlignWithNearest.TagPos[11 - 1][1], new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])), 2, 2),
+            // drive to tag 11
+            RobotContainer.drivebase.driveToPose(
+                new Pose2d(
+                    AlignWithNearest.TagPos[11 - 1][0],
+                    AlignWithNearest.TagPos[11 - 1][1],
+                    new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])),
+                2,
+                2),
             // move Elevator to level 2
             new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
             // Move arm to middle pos
@@ -74,9 +78,16 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new AlignWithNearest(-0.32, null, null),
             // shoot preloaded coral
             // new ArmSetToScore(RobotContainer.coralWristSubsystem),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(0.25),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+            new WaitCommand(0.25),
             // move back
-            RobotContainer.drivebase.driveToPose(new Pose2d(AlignWithNearest.TagPos[11 - 1][0], AlignWithNearest.TagPos[11 - 1][1], new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])), 2, 2),
+            RobotContainer.drivebase.driveToPose(
+                new Pose2d(
+                    AlignWithNearest.TagPos[11 - 1][0],
+                    AlignWithNearest.TagPos[11 - 1][1],
+                    new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])),
+                2,
+                2),
             // move elevator to level 3
             new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
             // move coral arm up to accept
@@ -112,7 +123,8 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new AlignWithNearest(-0.32, null, null),
             // shoot preloaded coral
             // new ArmSetToScore(RobotContainer.coralWristSubsystem),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(0.25));
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+            new WaitCommand(0.25));
 
     oneSequentialCommand.schedule();
   }
