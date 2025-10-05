@@ -66,23 +66,32 @@ public class FlexAutoSubsystem extends SubsystemBase {
         new SequentialCommandGroup(
           // drive to tag 11
             RobotContainer.drivebase.driveToPose(new Pose2d(AlignWithNearest.TagPos[11 - 1][0], AlignWithNearest.TagPos[11 - 1][1], new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])), 2, 2),
+            new WaitCommand(2),
             // move Elevator to level 2
             new ElevatorMoveLevel2(RobotContainer.elevatorCoralSubsystem),
+            new WaitCommand(2),
             // Move arm to middle pos
             new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
+            new WaitCommand(2),
             // align with tag
             new AlignWithNearest(-0.32, null, null),
+            new WaitCommand(2),
             // shoot preloaded coral
             // new ArmSetToScore(RobotContainer.coralWristSubsystem),
-            new CoralShootCommand(RobotContainer.coralHoldSubsystem), new WaitCommand(0.25),
+            new CoralShootCommand(RobotContainer.coralHoldSubsystem),
+            new WaitCommand(2),
             // move back
             RobotContainer.drivebase.driveToPose(new Pose2d(AlignWithNearest.TagPos[11 - 1][0], AlignWithNearest.TagPos[11 - 1][1], new Rotation2d(AlignWithNearest.TagPos[11 - 1][2])), 2, 2),
+            new WaitCommand(2),
             // move elevator to level 3
             new ElevatorMoveLevel3(RobotContainer.elevatorCoralSubsystem),
+            new WaitCommand(2),
             // move coral arm up to accept
             new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
+            new WaitCommand(2),
             // align with middle of reef
             new AlignWithNearest(0, null, null),
+            new WaitCommand(2),
             // rotate to nudge algae out
             rotCommand,
             // wait 0.5 sec for rotation
