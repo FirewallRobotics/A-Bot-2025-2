@@ -121,6 +121,8 @@ public class AlignWithNearest extends Command {
     SmartDashboard.putData("yController", yController);
     SmartDashboard.putData("rController", rController);
 
+    SmartDashboard.putNumber("rSetPoint", 0);
+
     visionSubsystem = new VisionSubsystem();
 
     this.trigger = trigger;
