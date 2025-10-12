@@ -140,7 +140,7 @@ public class AlignWithNearest extends Command {
     xController.setTolerance(0.1);
     yController.setSetpoint(0);
     yController.setTolerance(0.1);
-    rController.setSetpoint(0);
+    rController.setSetpoint(SmartDashboard.getNumber("rSetPoint", 0));
     rController.setTolerance(0.01);
 
     // Get the first tags values and make sure we can see a tag
