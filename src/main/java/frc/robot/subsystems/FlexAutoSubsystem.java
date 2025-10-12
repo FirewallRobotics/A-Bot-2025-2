@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -72,7 +73,7 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
             new WaitCommand(2),
             // align with tag
-            new AlignWithNearest(-0.32, null, null),
+            new AlignWithNearest(null, null),
             new WaitCommand(2),
             // shoot preloaded coral
             // new ArmSetToScore(RobotContainer.coralWristSubsystem),
@@ -88,7 +89,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
             new ArmSetToCoralAccept(RobotContainer.coralWristSubsystem),
             new WaitCommand(2),
             // align with middle of reef
-            new AlignWithNearest(0, null, null),
+            run(
+                () -> {
+                  SmartDashboard.putNumber("X-Stop-Dist", 0);
+                }),
+            new AlignWithNearest(null, null),
             new WaitCommand(2),
             // rotate to nudge algae out
             rotCommand,
@@ -116,7 +121,11 @@ public class FlexAutoSubsystem extends SubsystemBase {
             // Move arm to middle pos
             new ArmSetToMiddle(RobotContainer.coralWristSubsystem),
             // align with tag
-            new AlignWithNearest(-0.32, null, null),
+            run(
+                () -> {
+                  SmartDashboard.putNumber("X-Stop-Dist", -0.36);
+                }),
+            new AlignWithNearest(null, null),
             // shoot preloaded coral
             // new ArmSetToScore(RobotContainer.coralWristSubsystem),
             new CoralShootCommand(RobotContainer.coralHoldSubsystem),

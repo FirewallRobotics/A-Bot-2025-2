@@ -100,13 +100,12 @@ public class AlignWithNearest extends Command {
   /**
    * Align with the nearest tag (offset to allow us to align with the left reef stick)
    *
-   * @param offset DEPRECADED UNUSED
    * @param trigger Button that triggered this command (If the trigger is released we stop the
    *     command)
    * @param driveXboxController Controller that the driver holds (used for rumble)
    */
   public AlignWithNearest(
-      double offset, Trigger trigger, CommandXboxController driveXboxController) {
+      Trigger trigger, CommandXboxController driveXboxController) {
 
     // P = speed
     // I = smoothing

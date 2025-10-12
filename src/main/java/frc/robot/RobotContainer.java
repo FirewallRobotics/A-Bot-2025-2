@@ -141,8 +141,8 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // SmartDashboard.putNumber("X-Stop-Dist", -0.26);
-    SmartDashboard.putNumber("X-Stop-Dist", -0.09);
-    SmartDashboard.putNumber("Y-Stop-Dist", 0.31);
+    SmartDashboard.putNumber("X-Stop-Dist", -0.36);
+    SmartDashboard.putNumber("Y-Stop-Dist", 0.3);
     SmartDashboard.putNumber("yError", 0.017);
     SmartDashboard.putNumber("xError", 0.017);
     SmartDashboard.putNumber("rError", 0.02);
@@ -255,7 +255,7 @@ public class RobotContainer {
         .onTrue(
             new SequentialCommandGroup(
                 new ElevatorMoveLevel2(elevatorCoralSubsystem),
-                new AlignWithNearest(-0.32, coralController.povUp(), driverXbox)));
+                new AlignWithNearest(coralController.povUp(), driverXbox)));
     ;
 
     // Coral controller trigger and bumpers
